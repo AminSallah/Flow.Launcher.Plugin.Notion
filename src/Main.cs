@@ -87,9 +87,10 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         await this._NotionDataParser.DatabaseCache();
                         databaseId = LoadJsonData(DatabaseCachePath);
+                        _settings.RelationDatabaseId = databaseId[_settings.RelationDatabase].GetProperty("id").ToString();
+
                         if (!string.IsNullOrEmpty(_settings.RelationDatabaseId))
                         {
-                            _settings.RelationDatabaseId = databaseId[_settings.RelationDatabase].GetProperty("id").ToString();
                             await this._NotionDataParser.QueryDB(_settings.RelationDatabaseId, null, RelationCachePath);
                             ProjectsId = LoadJsonData(RelationCachePath);
                         }
