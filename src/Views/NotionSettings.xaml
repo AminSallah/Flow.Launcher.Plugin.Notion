@@ -57,13 +57,36 @@
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Show Hidden Pages" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, all pages are displayed." />
                 </StackPanel>
-                <ui:ToggleSwitch
-                    Grid.Column="2"
-                    IsOn="{Binding Settings.Hide}"
-                    Style="{DynamicResource SideToggleSwitch}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button
+                    Width="Auto"
+                    Margin="0,4,15,4"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Click="ClearCachedIcons">
+                        <Label HorizontalAlignment="Center">
+                            
+                            <TextBlock Text="{Binding HiddenItemsCount, StringFormat='Clear Hidden Pages:  {0}'}" />
+                        </Label>
+                        <Button.Style>
+                            <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HiddenItemsCount}" Value="0">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <ui:ToggleSwitch IsOn="{Binding Settings.Hide}" Style="{DynamicResource SideToggleSwitch}" />
+                </StackPanel>
                 <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
+
+
+        
 
         <!--#region Unread icons-->
         <Border Style="{DynamicResource SettingGroupBox}">
@@ -86,66 +109,12 @@
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Enable Icons" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="Require restart flow launcher with internet connection."/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button
-                        Width="Auto"
-                        Margin="0,4,4,4"
-                        HorizontalAlignment="Center"
-                        HorizontalContentAlignment="Center"
-                        Click="ClearCachedIcons">
-                        <Label HorizontalAlignment="Center">
-                            <TextBlock Text="{Binding Icons.CachedIconsFileSize, StringFormat='Clear Cached Images:  {0}'}" />
-                        </Label>
-                        <Button.Style>
-                            <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
-                                <Setter Property="IsEnabled" Value="True" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Icons.CachedIconCount}" Value="0">
-                                        <Setter Property="IsEnabled" Value="False" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button Margin="0,4,22,4">
-                        <ui:FontIcon Glyph="&#xf12b;" />
-                        <ui:FlyoutService.Flyout>
-                            <ui:MenuFlyout>
-                                <MenuItem Click="OpenNotebookIconsFolder">
-                                    <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image
-                                                Width="20"
-                                                Height="20"
-                                                Margin="0,0,5,0"
-                                                Source="{Binding NotebookIcon}" />
-                                            <TextBlock Text="Open Notebook Icons Folder" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                    <MenuItem.Icon>
-                                        <ui:FontIcon Glyph="&#xed25;" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Click="OpenSectionIconsFolder">
-                                    <MenuItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image
-                                                Width="20"
-                                                Height="20"
-                                                Margin="0,0,5,0"
-                                                Source="{Binding SectionIcon}" />
-                                            <TextBlock Text="Open Section Icons Folder" />
-                                        </StackPanel>
-                                    </MenuItem.Header>
-                                    <MenuItem.Icon>
-                                        <ui:FontIcon Glyph="&#xed25;" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </ui:MenuFlyout>
-                        </ui:FlyoutService.Flyout>
-                    </Button>
-                    <ui:ToggleSwitch IsOn="{Binding Settings.CreateColoredIcons}" Style="{DynamicResource SideToggleSwitch}" />
+                    <CheckBox Content="Pages"  Margin="7"  IsChecked="{Binding Settings.PagesIcons}"/>
+                    <CheckBox Content="Database"  Margin="7"  IsChecked="{Binding Settings.DatabaseIcons}"/>
+                    <CheckBox Content="Relations"  Margin="7,7,25,7"  IsChecked="{Binding Settings.RelationsIcons}"/>
                 </StackPanel>
                 <ui:FontIcon Glyph="&#xe8b9;" Style="{StaticResource Glyph}" />
             </ItemsControl>

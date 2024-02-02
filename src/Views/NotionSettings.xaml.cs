@@ -4,6 +4,10 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Flow.Launcher.Plugin.Notion.ViewModels;
 using System.IO;
+using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media.Imaging;
+using System;
 
 namespace Flow.Launcher.Plugin.Notion.Views
 {
@@ -15,13 +19,16 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         PluginInitContext Context;
 
+        SettingsViewModel _viewModel;
        
         private readonly Settings _settings;
+
 
         public NotionSettings(PluginInitContext context, SettingsViewModel viewModel)
 		{
 			this.InitializeComponent();
             Context = context;
+            _viewModel = viewModel;
             _settings = viewModel.Settings;
             DataContext = viewModel;
 
@@ -35,32 +42,24 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (_settings.SelectedSearchSource != null)
             {
-                var listView = (ListView)sender;
-
-                var hit = listView.InputHitTest(e.GetPosition(listView));
-                /*if (hit is FrameworkElement fe && fe.DataContext is KeywordViewModel selectedKeyword)
-                {
-                    listView.SelectedItem = selectedKeyword;
-                    EditButton_Click(sender, e);
-                }*/
+                var selected = _settings.SelectedSearchSource;
+                new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
             }
         }
 
 
-
+        
 
         private async void ClearCachedIcons(object sender, RoutedEventArgs e)
         {
             var input = (UIElement)sender;
             var temp = input.IsEnabled;
             input.IsEnabled = false;
-
-            
-
-
-            
+            Main.HiddenItems.Clear();
+            File.WriteAllLines(Main.HiddenItemsPath, Main.HiddenItems);
+            _viewModel.HiddenItemsCount = Main.HiddenItems.Count;
         }
 
         private void OpenNotebookIconsFolder(object sender, RoutedEventArgs e)
@@ -77,8 +76,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
             {
                 var selected = _settings.SelectedSearchSource;
                 new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
-
-
             }
         }
 

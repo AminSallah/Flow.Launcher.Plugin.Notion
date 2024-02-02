@@ -120,7 +120,14 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 JObject properties = (JObject)result["properties"];
                                 string title = null;
-                                string icon = IconParse(result["icon"]);
+                                string icon = _context.CurrentPluginMetadata.IcoPath;
+                                
+                                    if (_settings.PagesIcons)
+                                    {
+                                        icon = IconParse(result["icon"]);
+
+                                    }
+                            
 
                                 foreach (var kvp in properties)
                                 {
@@ -235,7 +242,17 @@ namespace Flow.Launcher.Plugin.Notion
                     List<string> Relation = new List<string>();
                     Dictionary<string, List<string>> MultiSelect = new Dictionary<string, List<string>>();
                     List<string> Date = new List<string>();
-                    string Icon = IconParse(DB["icon"]);
+
+                    string Icon = _context.CurrentPluginMetadata.IcoPath;
+
+                    if (_settings.DatabaseIcons)
+                    {
+                        Icon = IconParse(DB["icon"]);
+
+                    }
+
+
+
 
                     foreach (var kvp in properties)
                     {
@@ -286,7 +303,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {"date", Date},
                         {"multi_select", MultiSelect},
                         {"relation", Relation},
-                        {"url", DB["url"].ToString()},
+                        {"url", DB["url"].ToString().Replace("https://", "notion://")},
                     };
                 }
                 catch (Exception ex) 

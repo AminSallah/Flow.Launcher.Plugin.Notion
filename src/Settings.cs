@@ -19,7 +19,10 @@ namespace Flow.Launcher.Plugin.Notion
 		public string RelationCachePath { get; set; } = string.Empty;
 		public string FullCachePath { get; set; } = string.Empty;
 		public bool Cachable { get; set; } = false;
-		public bool UseBrowser { get; set; } = false;
+		public bool RelationsIcons { get; set; } = true;
+		public bool DatabaseIcons { get; set; } = true;
+		public bool PagesIcons { get; set; } = true;
+        public bool UseBrowser { get; set; } = false;
 
 
 		public Dictionary<string, JsonElement> SharedDB

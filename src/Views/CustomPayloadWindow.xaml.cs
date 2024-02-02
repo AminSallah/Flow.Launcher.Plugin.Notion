@@ -72,7 +72,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private async void OnSelectIconClick(object sender, RoutedEventArgs e)
         {
-            const string filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp) |*.jpg; *.jpeg; *.gif; *.png; *.bmp";
+            const string filter = "Image files (*.jpg, *.jpeg, *.gif, *.png, *.bmp, *.svg) |*.jpg; *.jpeg; *.gif; *.png; *.bmp; *.svg";
             var dialog = new OpenFileDialog { InitialDirectory = Main.CustomImagesDirectory, Filter = filter };
 
             var result = dialog.ShowDialog();

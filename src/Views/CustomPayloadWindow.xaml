@@ -227,7 +227,8 @@
                         Margin="0,0,15,0"
                         HorizontalAlignment="Left"
                         IsChecked="{Binding Cachable}"
-                            Content="Cachable"
+                        Content="Cachable"
+                        IsEnabled="{Binding FilterSettingsVisibility}"
                          />
                         <CheckBox
                         Margin="0,0,15,0"

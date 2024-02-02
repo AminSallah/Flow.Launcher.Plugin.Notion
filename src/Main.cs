@@ -33,7 +33,7 @@ namespace Flow.Launcher.Plugin.Notion
         private static string RelationCachePath;
         private static string FullCachePath;
 
-        private string HiddenItemsPath;
+        public static string HiddenItemsPath;
 
 
 
@@ -53,7 +53,7 @@ namespace Flow.Launcher.Plugin.Notion
 
         private bool RequestNewCache = false;
 
-        private List<string> HiddenItems = new List<string>();
+        public static List<string> HiddenItems = new List<string>();
 
 
         public static Dictionary<string, JsonElement> databaseId = LoadJsonData(RelationCachePath);
@@ -68,6 +68,8 @@ namespace Flow.Launcher.Plugin.Notion
             RelationCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "relation.json");
             _settings.RelationCachePath = RelationCachePath;
             HiddenItemsPath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "HiddenItems.json");
+            HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
+
             FullCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "cache_search.json");
             _settings.FullCachePath = FullCachePath;
 
@@ -729,7 +731,6 @@ namespace Flow.Launcher.Plugin.Notion
 
             Dictionary<string, List<string>> userInputSearch = new Dictionary<string, List<string>>(); // Initialize the dictionary
 
-            string splitQuery = query.Search.ToLower().Trim();
             if (filtered_query.ContainsKey("filter"))
             {
                 string splitQueryFilter = query.Search.Replace(filtered_query["filter"].ToString(), "").ToLower().Trim();
@@ -1070,10 +1071,6 @@ namespace Flow.Launcher.Plugin.Notion
                         Action = c =>
                         {
                             OpenNotionPage(Convert.ToString((item.Value[0])));
-
-
-
-                            // OpenNotionPage(item.Key,item.Value[1]);
                             return true;
                         },
                         IcoPath = item.Value[3]
@@ -1094,32 +1091,37 @@ namespace Flow.Launcher.Plugin.Notion
 
 
 
-            if (query_string.Contains("@") && (filteredItems_db.Count > 1 || filteredItems_db == null))
+            if (query.Search.Contains("@") && (filteredItems_db.Count > 1 || filteredItems_db == null))
             {
+                var splitQuery = query_string.Split('@');
 
-
-                foreach (var db in filteredItems_db)
+                foreach (var kv in databaseId)
                 {
-                    var result = new Result
-                    {
-                        Title = db,
-                        SubTitle = $"",
-                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${db}$",
-                        Action = c =>
+                    if (Context.API.FuzzySearch(splitQuery[^1].ToLower().Trim(), kv.Key.ToLower().Trim()).Score > 0 || string.IsNullOrEmpty(splitQuery[^1])) {
+                        var result = new Result
                         {
+                            Title = kv.Key,
+                            SubTitle = $"",
+                            AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${kv.Key}$",
+                            Action = c =>
+                            {
+                                if(c.SpecialKeyState.CtrlPressed){
+                                OpenNotionPage(kv.Value.GetProperty("url").GetString());
+                                return true;}
+                                else 
+                                {
+                                    Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}@{kv.Key} ");
+                                    return false;
+                                }
 
-                            OpenNotionPage(Convert.ToString(databaseId[db].GetProperty("url").ToString()));
-                            return true;
-                        },
-                        IcoPath = "Images/database.png"
-                    };
-                    resultList.Add(result);
+                            },
+                            IcoPath = kv.Value.GetProperty("icon").GetString()
+                        };
+                        resultList.Add(result);
+                    }
                 }
 
             }
-
-
-            // if ((filtered_query["Name"].ToString().Length != 3 || editingMode) && !query_string.ToLower().StartsWith("search") && query_string != "refresh" && !query_string.ToLower().StartsWith("today") && (!query_string.Contains("$") || editingMode))
 
             else if (!query_string.ToLower().StartsWith("search") && query_string != "refresh" && !AdvancedFilterMode && (!query_string.Contains("$") || editingMode))
             {
@@ -1589,11 +1591,11 @@ namespace Flow.Launcher.Plugin.Notion
 
 
 
-        Dictionary<string, object> GetData(string inputString, string defaultDB = "", bool TimeSkip = false)
+        Dictionary<string, object> GetData(string inputString, string defaultDB = "", bool TimeSkip = false, bool ManualDBRunning = false)
         {
 
             Dictionary<string, object> dataDict = new Dictionary<string, object>();
-            string pattern = @"((\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|(#\s?[a-zA-Z0:9]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([\-\|\:\da-zA-Z\s\'_.ا-ي]*)";
+            string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|(#\s?[a-zA-Z0:9]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([\-\|\:\da-zA-Z\s\'_.ا-ي]*)";
 
             var match = Regex.Matches(inputString, pattern);
 
@@ -1730,7 +1732,8 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     if (!type.Contains($"$ {type}") && !type.Contains($"{type}$"))
                     {
-
+                        
+                        
                         dataDict["Name"] = type.Trim();
                     }
                 }
@@ -1802,6 +1805,38 @@ namespace Flow.Launcher.Plugin.Notion
 
 
             }
+            if (!ManualDBRunning){
+
+            if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
+            {
+                string Pattern = @"(@\s?[\sa-zA-Z0-9]*)";
+                var DatabaseMatch = Regex.Matches(inputString, Pattern);
+                if (DatabaseMatch.Count > 0)
+                {
+                    var splitQuery = DatabaseMatch[0].Value.Split('@');
+                    var userInput = splitQuery[1].Trim();
+                    foreach (var item in databaseId.Keys)
+                    {
+                        if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                        {
+                            dataDict["databaseId"] = item.Trim();
+                            string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
+                            if (GetData(Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
+                            {
+                                dataDict["Name"] = Name.ToString();
+                            }
+                            else
+                            {
+                                dataDict["Name"] = TransformName;
+                            }
+
+                        }
+                    }
+                }
+
+            }}
+
+
 
 
             if (!TimeSkip)
@@ -1859,8 +1894,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
 
 
-
-
+            
             if (!dataDict.ContainsKey("databaseId") && !string.IsNullOrEmpty(defaultDB))
             {
                 dataDict["databaseId"] = defaultDB;
