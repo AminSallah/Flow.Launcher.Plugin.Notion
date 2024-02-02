@@ -955,7 +955,7 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 Title = project.Key,
                                 SubTitle = $"",
-                                AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project}$",
+                                AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project.Key}$",
                                 Score = -1,
                                 Action = c =>
                                 {
