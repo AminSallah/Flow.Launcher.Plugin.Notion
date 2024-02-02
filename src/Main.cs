@@ -912,21 +912,10 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 if (!filtered_query.ContainsKey("Project"))
                 {
-                    var splitQuery_3 = query_string.Split('!');
-                    var userInput_3 = splitQuery_3[^1].Trim();
-
-                    var filteredItems = ProjectsId.Keys
-                        .Where(item => item.ToLower().Contains(userInput_3.ToLower()))
-                        .ToList();
-
-                    // if (filteredItems.Count != 1)
-
-                    // foreach (var project in filteredItems)
-                    // {
+                    var splitQuery = query_string.Split('!');
+                    var userInput = splitQuery[^1].Trim();
 
                     JsonElement MultiRelationOptions = databaseId[KeyForId].GetProperty("relation");
-
-
 
                     if (!(MultiRelationOptions.EnumerateArray().Count() > 1))
                     {
@@ -937,7 +926,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         foreach (var _projectName in MultiRelationOptions.EnumerateArray())
                         {
-                            if (Context.API.FuzzySearch(query.Search.Split('!')[^1].ToLower().Trim(), _projectName.ToString().ToLower()).Score > 1 || string.IsNullOrEmpty(userInput_3))
+                            if (Context.API.FuzzySearch(query.Search.Split('!')[^1].ToLower().Trim(), _projectName.ToString().ToLower()).Score > 1 || string.IsNullOrEmpty(userInput))
                             {
 
                                 var result = new Result
@@ -946,7 +935,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     SubTitle = $"",
                                     Action = c =>
                                     {
-                                        Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery_3[0].Trim()}{(splitQuery_3[0].Length > 0 ? " " : "")}!");
+                                        Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!");
                                         ProjectName = _projectName.ToString();
                                         return false;
                                     },
@@ -960,13 +949,11 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                     else
                     {
-                        foreach (var project in filteredItems)
+                        foreach (var project in ProjectsId)
                         {
-
-
                             var result = new Result
                             {
-                                Title = project,
+                                Title = project.Key,
                                 SubTitle = $"",
                                 AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project}$",
                                 Score = -1,
@@ -974,15 +961,15 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     if (c.SpecialKeyState.CtrlPressed)
                                     {
-                                        OpenNotionPage(Convert.ToString(ProjectsId[project][1]));
+                                        OpenNotionPage(project.Value[1].ToString());
                                         return true;
 
                                     }
-                                    Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery_3[0].Trim()}{(splitQuery_3[0].Length > 0 ? " " : "")}!{project} ");
+                                    Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!{project} ");
                                     return false;
 
                                 },
-                                IcoPath = "Images/database.png"
+                                IcoPath = project.Value[4].ToString()
                             };
                             resultList.Add(result);
 
@@ -1038,11 +1025,6 @@ namespace Flow.Launcher.Plugin.Notion
 
 
 
-
-
-
-
-
             if (userInputSearch.Count() > 0 && !AdvancedFilterMode)
             {
                 foreach (var item in userInputSearch)
@@ -1062,9 +1044,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 { "Project_name", $"{item.Value[2]}" },
                                 {"CreateFirst", false},
                                 {"HideAll", userInputSearch.Keys.ToList<string>()}
-
-
-
                             },
 
 
@@ -1079,19 +1058,8 @@ namespace Flow.Launcher.Plugin.Notion
                     resultList.Add(result);
                 }
             }
-            List<string> filteredItems_db = null;
-            var split_query_db = query_string.Split('@');
-            if (split_query_db.Length == 2)
-            {
-                var user_input_db = split_query_db[1].Trim();
-                filteredItems_db = databaseId.Keys
-                .Where(item => item.ToString().ToLower().Contains(user_input_db.ToLower()))
-                .ToList();
-            }
-
-
-
-            if (query.Search.Contains("@") && (filteredItems_db.Count > 1 || filteredItems_db == null))
+  
+            if (query.Search.Contains("@"))
             {
                 var splitQuery = query_string.Split('@');
 
