@@ -179,8 +179,29 @@
                             </StackPanel>
 
 
+                            
+
+
                             <TextBlock
+                             Grid.Row="3"
+                             Grid.Column="0"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
+                             FontSize="14"
+                             Text="Type" />
+                            <ComboBox
+                            x:Name="TypeComboBox"
                             Grid.Row="3"
+                            Grid.Column="1"
+                                Margin="10"
+                            Width="150"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding TypeOptions}"
+                            SelectedItem="{Binding JsonType}"
+                            />
+
+                            <TextBlock
+                            Grid.Row="4"
                             Grid.Column="0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
@@ -189,32 +210,14 @@
 
                             <ComboBox
                              Grid.Column="1"
-                             Grid.Row="3"
+                             Grid.Row="4"
                             HorizontalAlignment="Left"
                             Margin="10"
                             Width="150"
                             HorizontalContentAlignment="Center"
                             ItemsSource="{Binding DefaultDBOptions}"
+                            IsEnabled = "{Binding FilterSettingsVisibility}"
                             SelectedItem="{Binding Database}" SelectionChanged="ComboBox_SelectionChanged" />
-
-
-                            <TextBlock
-                             Grid.Row="4"
-                             Grid.Column="0"
-                             HorizontalAlignment="Left"
-                             VerticalAlignment="Center"
-                             FontSize="14"
-                             Text="Type" />
-                            <ComboBox
-                            x:Name="TypeComboBox"
-                            Grid.Row="4"
-                            Grid.Column="1"
-                                Margin="10"
-                            Width="150"
-                            HorizontalAlignment="Left"
-                            ItemsSource="{Binding TypeOptions}"
-                            SelectedItem="{Binding JsonType}"
-                            />
                         </Grid>
                     </StackPanel>
 

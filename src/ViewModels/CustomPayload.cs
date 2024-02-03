@@ -8,7 +8,9 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private string _subTitle = string.Empty;
         private string _database;
         private string _json;
-        private string _icopath = "Images/app.png";
+        private string _icopath = System.IO.Path.Combine(
+                          System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData),
+                          "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images", "app.png");
         private bool _cachable = false;
         private bool _status = true;
         private JsonType _jsonType = JsonType.Filter;
@@ -20,9 +22,9 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             {
                 _name = value;
                 OnPropertyChanged(nameof(Title));
-            } 
+            }
         }
-        
+
         public string SubTitle
         {
             get => _subTitle;
@@ -32,7 +34,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 OnPropertyChanged(nameof(SubTitle));
             }
         }
-        
+
         public string Database
         {
             get => _database;

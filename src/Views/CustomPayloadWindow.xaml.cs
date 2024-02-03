@@ -127,7 +127,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         {
             if (_action == Action.Add)
             {
-                if (viewModel.ChangeKeyword(out string errorMessage))
+                if (viewModel.NewCustomPayload(out string errorMessage))
                 {
                     Close();
                 }
@@ -138,7 +138,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             }
             else
             {
-                if (!_settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == viewModel.FilterTitle.ToLower().Trim()) || currentCustomBrowser.Title == viewModel.FilterTitle)
+                if (!_settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == viewModel.FilterTitle.ToLower().Trim()) || currentCustomBrowser.Title == viewModel.FilterTitle || !viewModel.FilterSettingsVisibility)
                 {
                     currentCustomBrowser.Title = viewModel.FilterTitle;
                     currentCustomBrowser.SubTitle = viewModel.FilterSubTitle;

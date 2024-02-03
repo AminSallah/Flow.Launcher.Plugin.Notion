@@ -249,6 +249,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         Icon = IconParse(DB["icon"]);
                     }
+                    
 
                     foreach (var kvp in properties)
                     {
@@ -380,6 +381,9 @@ namespace Flow.Launcher.Plugin.Notion
         public string ExternalIconParse(dynamic dataIcon)
         {
             string iconUrl = dataIcon.external.url;
+            iconUrl = iconUrl.StartsWith("/images")
+            ? $"https://www.notion.so{iconUrl}"
+            : iconUrl;
             string filename = System.IO.Path.GetFileName(iconUrl);
             string filePath = System.IO.Path.Combine(_iconPath, filename);
 

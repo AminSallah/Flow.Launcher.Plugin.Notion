@@ -23,13 +23,6 @@
     <StackPanel Margin="25,0,25,25">
 
 
-
-
-
-
-
-
-        <!--#region Encrypted Sections-->
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
@@ -86,10 +79,6 @@
             </ItemsControl>
         </Border>
 
-
-        
-
-        <!--#region Unread icons-->
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
@@ -103,9 +92,7 @@
                 <ui:FontIcon Glyph="&#xf6fa;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
-        <!--#endregion-->
 
-        <!--#region Coloured icons-->
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
@@ -120,9 +107,7 @@
                 <ui:FontIcon Glyph="&#xe8b9;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
-        <!--#endregion-->
 
-        <!--#region Recents pages-->
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
@@ -182,7 +167,7 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             Style="{DynamicResource SettingTitleLabel}"
-                            Text="Keywords" />
+                            Text="Custom Payloads" />
                         </ItemsControl>
                         <WrapPanel HorizontalAlignment="Right" Grid.RowSpan="2">
                             <Button
@@ -240,8 +225,6 @@
                                 </StackPanel>
                             </Button>
 
-                            
-
                             <Button
                             Grid.Column="0"
                             Width="120"
@@ -262,10 +245,10 @@
                                 </Button.Style>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:FontIcon
-                Margin="0,0,15,0"
-                FontSize="12"
-                Glyph="&#xe711;"
-                Style="{StaticResource Glyph}" />
+                                    Margin="0,0,15,0"
+                                    FontSize="12"
+                                    Glyph="&#xe711;"
+                                    Style="{StaticResource Glyph}" />
                                     <TextBlock Text="Delete" />
                                 </StackPanel>
                             </Button>
@@ -275,7 +258,7 @@
                     </Grid>
                 </Expander.Header>
                 <ListView
-                    Name="CustomBrowsers"
+                    Name="CustomPayloadListView"
                     Margin="42,5,15,10"
                     d:ItemsSource="{d:SampleData}"
                     Background="{DynamicResource Color02B}"
@@ -288,7 +271,6 @@
                     Style="{StaticResource {x:Static GridView.GridViewStyleKey}}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">
-
                             <GridViewColumn Width="40">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
@@ -351,6 +333,5 @@
                 </ListView>
             </Expander>
         </Border>
-        <!--#endregion-->
     </StackPanel>
 </UserControl>

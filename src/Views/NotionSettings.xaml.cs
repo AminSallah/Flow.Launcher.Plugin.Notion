@@ -78,7 +78,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CustomBrowsers.SelectedItem is CustomPayload selectedCustomBrowser)
+            if (CustomPayloadListView.SelectedItem is CustomPayload selectedCustomBrowser)
             {
                 if (selectedCustomBrowser.Cachable)
                 {

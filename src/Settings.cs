@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 using System.Text.Json;
 using Flow.Launcher.Plugin.Notion.ViewModels;
 using System.Collections.ObjectModel;
@@ -60,7 +61,7 @@ namespace Flow.Launcher.Plugin.Notion
 
 		public string _relationDatabaseId = string.Empty;
 		public string RelationDatabaseId { get; set; } = string.Empty;
-		
+
 
 
 
@@ -73,7 +74,9 @@ namespace Flow.Launcher.Plugin.Notion
 				Title = "Complete",
 				JsonType = JsonType.Property,
 				Json = """{"properties":{"Status":{"status":{"name":"✅"}}}}""",
-				IcoPath = "Images/item_complete_3d.png",
+				IcoPath = System.IO.Path.Combine(
+						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_complete.png"),
 
 			},
 			new CustomPayload
@@ -81,7 +84,9 @@ namespace Flow.Launcher.Plugin.Notion
 				Title = "Delete",
 				JsonType = JsonType.Property,
 				Json = """{"archived" : true}""",
-				IcoPath = "Images/item_delete_3d.png",
+				IcoPath = System.IO.Path.Combine(
+						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_delete.png"),
 
 			}
 		};

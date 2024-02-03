@@ -103,7 +103,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             }
         }
 
-        public bool ChangeKeyword(out string errorMessage)
+        public bool NewCustomPayload(out string errorMessage)
         {
             errorMessage = null;
             //var oldKeyword = SelectedKeyword.Keyword;
@@ -117,11 +117,14 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 errorMessage = "The Title cannot be duplicated.";
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(Database))
+            if (FilterSettingsVisibility && string.IsNullOrEmpty(Database))
             {
                 errorMessage = "The Database cannot be empty.";
                 return false;
             }
+
+            if(!FilterSettingsVisibility) 
+                Database = string.Empty;
 
 
             var Filter = new CustomPayload

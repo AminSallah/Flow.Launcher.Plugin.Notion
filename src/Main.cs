@@ -203,7 +203,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     _ = Task.Run(async delegate
                                     {
-                                        var response = await DeleteTask(PageId: dict["PageId"].ToString(), payload: PropertyEdit.Json);
+                                        var response = await EditPropertyFromContext(PageId: dict["PageId"].ToString(), payload: PropertyEdit.Json);
                                         if (response.IsSuccessStatusCode)
                                         {
                                             JObject EditedObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
@@ -416,17 +416,12 @@ namespace Flow.Launcher.Plugin.Notion
                 double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
                 if (minutesDifference > secondsThreshold)
                 {
-                    /*     Context.API.ShowMsg("Fire", "done");*/
-
                     fileInfo = DateTime.Now;
                     Task.Run(async () =>
                     {
                         // await this._NotionDataParser.CallApiForSearch();
                         await this._NotionDataParser.GetStartCursour();
-                        // await this._NotionDataParser.BuildCacheUsingHttp();
-                        // Add other background tasks if needed
                     });
-                    /* subProcess(refresh: true);*/
                 }
 
                 foreach (var path in _settings.Filters)
@@ -439,12 +434,6 @@ namespace Flow.Launcher.Plugin.Notion
                         });
                     }
                 }
-
-
-
-
-
-
             }
         }
 
@@ -1973,7 +1962,7 @@ namespace Flow.Launcher.Plugin.Notion
                                             $"{dataDict["Name"]}\n{((dataDict.ContainsKey("Project")) ? $"<{dataDict["Project"]}>" : "")}",
                                             iconPath: Context.CurrentPluginMetadata.IcoPath);
 
-                        Task.Run(async () =>
+                        _ = Task.Run(async () =>
                         {
                             await this._NotionDataParser.GetStartCursour(delay: 14000);
                         });
@@ -2061,6 +2050,7 @@ namespace Flow.Launcher.Plugin.Notion
                             StringContent content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
 
                             response = await client.PatchAsync(EditUrl, content);
+
                         }
                     }
                     if (response != null && response.IsSuccessStatusCode)
@@ -2082,10 +2072,36 @@ namespace Flow.Launcher.Plugin.Notion
                         }
 
 
-                        _ = Task.Run(async () =>
+
+                        if (data.Count != 0)
                         {
-                            await this._NotionDataParser.GetStartCursour(delay: 14000, manuanl_cursour: pageId);
-                        });
+                            var jsonArray = searchResults[pageId].EnumerateArray().ToList();
+
+                            if (filteredQueryEditing.ContainsKey("Name") && !string.IsNullOrEmpty(filteredQueryEditing["Name"].ToString()))
+                            {
+                                jsonArray[0] = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(filteredQueryEditing["Name"])).RootElement; ;
+                            }
+                            if (filteredQueryEditing.TryGetValue("Project", out var Project) && !string.IsNullOrEmpty(Project.ToString()))
+                            {
+                                jsonArray[1] = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(Project)).RootElement; ;
+
+
+                            }
+
+                            var newArray = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(jsonArray)).RootElement;
+                            searchResults[pageId] = newArray;
+
+                            string jsonString = System.Text.Json.JsonSerializer.Serialize(searchResults, new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            });
+                            File.WriteAllText(_settings.FullCachePath, jsonString);
+                        }
+
+                        // _ = Task.Run(async () =>
+                        // {
+                        //     await this._NotionDataParser.GetStartCursour(delay: 14000, manuanl_cursour: pageId);
+                        // });
                     }
                     else
                     {
@@ -2125,18 +2141,18 @@ namespace Flow.Launcher.Plugin.Notion
             HiddenItems.RemoveAll(_item => ItemId.Contains(_item));
             File.WriteAllLines(HiddenItemsPath, HiddenItems);
         }
-        async Task<HttpResponseMessage> DeleteTask(string PageId, string payload, List<string> fromContext = null)
+        async Task<HttpResponseMessage> EditPropertyFromContext(string PageId, string payload, List<string> fromContext = null)
         {
             HttpResponseMessage response = null;
             if (IsInternetConnected())
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    StringContent Archive = new StringContent(JsonConvert.SerializeObject(JsonConvert.DeserializeObject<dynamic>(payload)), Encoding.UTF8, "application/json");
+                    StringContent Payload = new StringContent(JsonConvert.SerializeObject(JsonConvert.DeserializeObject<dynamic>(payload)), Encoding.UTF8, "application/json");
                     string delete_url = $"https://api.notion.com/v1/pages/{PageId}";
                     client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
                     client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
-                    response = await client.PatchAsync(delete_url, Archive);
+                    response = await client.PatchAsync(delete_url, Payload);
                     return response;
                 }
             }
