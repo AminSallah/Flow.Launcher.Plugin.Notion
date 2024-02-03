@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using System;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Flow.Launcher.Plugin.Notion.Views
 {
@@ -20,7 +21,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         SettingsViewModel _viewModel;
         private readonly Settings _settings;
         private NotionDataParser _dataParser;
-        private bool isProcessing = false;
+        private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public NotionSettings(PluginInitContext context, SettingsViewModel viewModel)
 		{
@@ -112,11 +113,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         {
             try
             {
-                if (isProcessing)
-                {
-                    return; // If already processing, exit early
-                }
-                isProcessing = true;
+                await semaphoreSlim.WaitAsync();
 
                 await Task.Run(async () =>
                 {
@@ -127,7 +124,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
                     Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
                     }finally{
-                        isProcessing = false;
+                        semaphoreSlim.Release();
                     }
                 });
                 
