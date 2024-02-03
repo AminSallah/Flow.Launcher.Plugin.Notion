@@ -22,7 +22,7 @@ using System.Reflection;
 
 namespace Flow.Launcher.Plugin.Notion
 {
-    public class Main : IAsyncPlugin, IContextMenu, ISettingProvider
+    public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable
     {
         DateTime refresh_search = DateTime.Now;
         public static int secondsThreshold = 30;
@@ -54,7 +54,7 @@ namespace Flow.Launcher.Plugin.Notion
             _settings.DatabaseCachePath = DatabaseCachePath;
             RelationCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "relation.json");
             _settings.RelationCachePath = RelationCachePath;
-            HiddenItemsPath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "HiddenItems.json");
+            HiddenItemsPath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "HiddenItems.txt");
             HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
             FullCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "cache_search.json");
             _settings.FullCachePath = FullCachePath;
@@ -549,18 +549,18 @@ namespace Flow.Launcher.Plugin.Notion
 
             string link;
             Dictionary<string, object> filtered_query = GetData(query.Search, defaultDB: _settings.DefaultDatabase);
-            
+
             if (!filtered_query.ContainsKey("Name"))
             {
                 filtered_query["Name"] = string.Empty;
             }
-            
+
             if (editingMode)
             {
                 filtered_query["Name"] = filtered_query["Name"].ToString().Replace(editingPatternIdMatch.Groups[1].Value, "").Trim();
             }
 
-            if(filtered_query.ContainsKey("link"))
+            if (filtered_query.ContainsKey("link"))
             {
                 link = $"\n{filtered_query["link"]}";
             }
@@ -1312,6 +1312,19 @@ namespace Flow.Launcher.Plugin.Notion
         {
             Context.API.VisibilityChanged -= OnVisibilityChanged;
 
+        }
+
+
+        public async Task ReloadDataAsync()
+        {
+            var projectsTask = _NotionDataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
+            var databaseIdTask = _NotionDataParser.DatabaseCache();
+            var callApiTask = _NotionDataParser.CallApiForSearch();
+
+            await Task.WhenAll(projectsTask, databaseIdTask, callApiTask);
+
+            ProjectsId = await projectsTask;
+            databaseId = await databaseIdTask;
         }
 
         Dictionary<string, object> GetData(string inputString, string defaultDB = "", bool TimeSkip = false, bool ManualDBRunning = false)
