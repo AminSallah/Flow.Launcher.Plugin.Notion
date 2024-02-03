@@ -53,28 +53,29 @@
 
 
 	<Target Name="CreateEmptyJsonFiles" BeforeTargets="BeforeBuild">
-		<ItemGroup>
-			<JsonFile Include="$(OutputPath)\cache\cache_search.json">
-				<Content>{}</Content>
-			</JsonFile>
-			<JsonFile Include="$(OutputPath)\cache\relation.json">
-				<Content>{}</Content>
-			</JsonFile>
-			<JsonFile Include="$(OutputPath)\cache\database.json">
-				<Content>{}</Content>
-			</JsonFile>
+    <ItemGroup>
+        <JsonFile Include="$(OutputPath)\cache\search.json">
+            <Content>{}</Content>
+        </JsonFile>
+        <JsonFile Include="$(OutputPath)\cache\relation.json">
+            <Content>{}</Content>
+        </JsonFile>
+        <JsonFile Include="$(OutputPath)\cache\database.json">
+            <Content>{}</Content>
+        </JsonFile>
+        <TextFile Include="$(OutputPath)\cache\HiddenItems.txt">
+            <Content></Content>
+        </TextFile>
+        <AllFiles Include="@(JsonFile);@(TextFile)" />
+    </ItemGroup>
 
-			<JsonFile Include="$(OutputPath)\cache\HiddenItems.json">
-				<Content></Content>
-			</JsonFile>
-		</ItemGroup>
-		<WriteLinesToFile
-		  File="%(JsonFile.FullPath)"
-		  Lines="@(JsonFile->'%(Content)')"
-		  Overwrite="true"
-		  Encoding="UTF-8"
+    <WriteLinesToFile
+        File="%(AllFiles.FullPath)"
+        Lines="%(AllFiles.Content)"
+        Overwrite="true"
+        Encoding="UTF-8"
     />
-	</Target>
+</Target>
 
 
 

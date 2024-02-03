@@ -303,6 +303,8 @@ namespace Flow.Launcher.Plugin.Notion
                     }));
 
                     Databases[DB["title"][0]["text"]["content"].ToString()] = jsonElement;
+                    string jsonString = System.Text.Json.JsonSerializer.Serialize(Databases, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(_settings.DatabaseCachePath, jsonString);
                 }
                 catch (Exception ex)
                 {

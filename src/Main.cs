@@ -30,7 +30,6 @@ namespace Flow.Launcher.Plugin.Notion
         private static string RelationCachePath;
         private static string FullCachePath;
         public static string HiddenItemsPath;
-        public static string today_tasks_cache_path = "C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\cache\\today_cache_results.json";
         static Dictionary<string, object> dataDict = new Dictionary<string, object>();
         private PluginInitContext Context;
         internal NotionBlockTypes? _notionBlockTypes;
@@ -56,7 +55,7 @@ namespace Flow.Launcher.Plugin.Notion
             _settings.RelationCachePath = RelationCachePath;
             HiddenItemsPath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "HiddenItems.txt");
             HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
-            FullCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "cache_search.json");
+            FullCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "search.json");
             _settings.FullCachePath = FullCachePath;
             try
             {
@@ -220,14 +219,14 @@ namespace Flow.Launcher.Plugin.Notion
                                             }
                                             if (Convert.ToBoolean(EditedObject["archived"]))
                                             {
-                                                Context.API.ShowMsg("Page Deletion", $"{title} has been deleted", iconPath: "C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Notion\\Images\\item_delete_3d.png");
+                                                Context.API.ShowMsg("Page Deletion", $"{title} has been deleted", iconPath: Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "Images", "item_delete.png"));
                                                 searchResults.Remove(dict["PageId"].ToString());
                                                 string jsonString = System.Text.Json.JsonSerializer.Serialize(searchResults, new JsonSerializerOptions { WriteIndented = true });
                                                 File.WriteAllText(_settings.FullCachePath, jsonString);
                                             }
                                             else
                                             {
-                                                Context.API.ShowMsg("Edit Page Success", $"{title} has been Edited", iconPath: "C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\Images\\item_delete_3d.png");
+                                                Context.API.ShowMsg("Edit Page Success", $"{title} has been Edited", iconPath: Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "Images", "item_complete.png"));
                                             }
                                         }
                                         else
@@ -412,7 +411,7 @@ namespace Flow.Launcher.Plugin.Notion
         {
             if (e.IsVisible)
             {
-                DateTime fileInfo = new FileInfo("C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\cache\\cache_search.json").LastWriteTime;
+                DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
                 double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
                 if (minutesDifference > secondsThreshold)
                 {
@@ -1270,12 +1269,12 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 await Task.Run(async () =>
                 {
-                    await EditTask(pageId: pageId, filteredQueryEditing: dict_arg, open: open);
+                    await EditPageMainProperty(pageId: pageId, filteredQueryEditing: dict_arg, open: open);
                 });
             }
             if (refresh)
             {
-                DateTime fileInfo = new FileInfo("C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\cache\\cache_search.json").LastWriteTime;
+                DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
                 double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
                 await Task.Run(async () =>
                 {
@@ -1323,7 +1322,7 @@ namespace Flow.Launcher.Plugin.Notion
             string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|(#\s?[a-zA-Z0:9]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([\-\|\:\da-zA-Z\s\'_.ا-ي]*)";
             var match = Regex.Matches(inputString, pattern);
             var dataList = match.Cast<Match>().SelectMany(m => m.Groups.Cast<Group>().Skip(1)).Select(g => g.Value.Trim()).Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
-
+            bool autoSelect = false;
             foreach (var type in dataList)
             {
                 if (type.StartsWith("$") && type.EndsWith("$"))
@@ -1331,29 +1330,32 @@ namespace Flow.Launcher.Plugin.Notion
                     dataDict["filter"] = type.Trim();
                     break;
                 }
-                if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
+                if (autoSelect)
                 {
-                    var splitQuery = type.Split('!', 2);
-                    var userInput = splitQuery[1].Trim();
-                    if (splitQuery.Length == 2)
+                    if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
                     {
-                        var filteredItems = ProjectsId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
-                        if (filteredItems.Count == 1)
+                        var splitQuery = type.Split('!', 2);
+                        var userInput = splitQuery[1].Trim();
+                        if (splitQuery.Length == 2)
                         {
-                            dataDict["Project"] = string.Join("", filteredItems);
+                            var filteredItems = ProjectsId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
+                            if (filteredItems.Count == 1)
+                            {
+                                dataDict["Project"] = string.Join("", filteredItems);
+                            }
                         }
                     }
-                }
-                if (type.StartsWith("@"))
-                {
-                    var splitQuery = type.Split('@', 2);
-                    var userInput = splitQuery[1].Trim();
-                    if (splitQuery.Length == 2)
+                    if (type.StartsWith("@"))
                     {
-                        var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
-                        if (filteredItems.Count == 1)
+                        var splitQuery = type.Split('@', 2);
+                        var userInput = splitQuery[1].Trim();
+                        if (splitQuery.Length == 2)
                         {
-                            dataDict["databaseId"] = string.Join("", filteredItems);
+                            var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
+                            if (filteredItems.Count == 1)
+                            {
+                                dataDict["databaseId"] = string.Join("", filteredItems);
+                            }
                         }
                     }
                 }
@@ -2012,7 +2014,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        async Task EditTask(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null)
+        async Task EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null)
         {
             try
             {
@@ -2071,8 +2073,6 @@ namespace Flow.Launcher.Plugin.Notion
                             }
                         }
 
-
-
                         if (data.Count != 0)
                         {
                             var jsonArray = searchResults[pageId].EnumerateArray().ToList();
@@ -2084,8 +2084,6 @@ namespace Flow.Launcher.Plugin.Notion
                             if (filteredQueryEditing.TryGetValue("Project", out var Project) && !string.IsNullOrEmpty(Project.ToString()))
                             {
                                 jsonArray[1] = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(Project)).RootElement; ;
-
-
                             }
 
                             var newArray = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(jsonArray)).RootElement;
