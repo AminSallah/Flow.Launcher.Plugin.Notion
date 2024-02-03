@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using System;
 using System.Threading.Tasks;
 using System.Threading;
+using System.ComponentModel;
 
 namespace Flow.Launcher.Plugin.Notion.Views
 {
@@ -117,13 +118,16 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
                 await Task.Run(async () =>
                 {
-                    try{
+                    try
+                    {
                     Context.API.ShowMsg("Relation database", $"{_settings.RelationDatabase} successfully set as relation database please wait while querying it for you.");
                     _settings.RelationDatabaseId = Main.databaseId[_settings.RelationDatabase].GetProperty("id").GetString();
                     Main.databaseId = await _dataParser.DatabaseCache();
                     Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
                     Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
-                    }finally{
+                    }
+                    finally
+                    {
                         semaphoreSlim.Release();
                     }
                 });
@@ -133,6 +137,17 @@ namespace Flow.Launcher.Plugin.Notion.Views
             {
                 Context.API.LogException(nameof(NotionSettings), "Error while selection changed of relation ComboBox", ex);
             }
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Unsubscribe from events or perform cleanup here
+            if (RelationComboBox != null)
+            {
+                RelationComboBox.Loaded -= RelationComboBox_Loaded;
+                RelationComboBox.SelectionChanged -= Relation_SelectionChanged;
+            }
+            // Add more cleanup if needed
         }
 
 
