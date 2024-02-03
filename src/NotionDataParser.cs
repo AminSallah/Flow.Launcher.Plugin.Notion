@@ -42,7 +42,7 @@ namespace Flow.Launcher.Plugin.Notion
 
 
         }
-        private static string _defaultIconPath = "icons\\notion-icon.png";
+        private static string _defaultIconPath = "Images\\app.png";
         private static string _emojiIconPath = "icons\\emojis";
         private string _iconPath;
         private PluginInitContext _context { get; set; }
