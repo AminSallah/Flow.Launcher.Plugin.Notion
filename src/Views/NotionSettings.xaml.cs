@@ -15,12 +15,8 @@ namespace Flow.Launcher.Plugin.Notion.Views
 	public partial class NotionSettings : UserControl
 	{
         public CustomPayload SelectedCustomBrowser;
-
-
         PluginInitContext Context;
-
         SettingsViewModel _viewModel;
-       
         private readonly Settings _settings;
 
 
@@ -31,13 +27,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             _viewModel = viewModel;
             _settings = viewModel.Settings;
             DataContext = viewModel;
-
-
-
         }
-
-        
-
 
 
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -98,23 +88,18 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-
-
             new CustomPayloadWindow(_settings, new CustomPayload(), Action.Add, Context).ShowDialog();
-
-            /*if (_viewModel.SelectedKeyword == null)
-            {
-                MessageBox.Show("Please select a keyword");
-            }
-            else
-            {
-                new ChangeKeywordWindow(_viewModel).ShowDialog();
-            }*/
         }
 
 
 
         private void ListView_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            
+        }
+
+
+        private void Relation_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             
         }

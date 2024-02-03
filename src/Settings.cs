@@ -8,10 +8,10 @@ using Flow.Launcher.Plugin.Notion.Views;
 
 namespace Flow.Launcher.Plugin.Notion
 {
-    /// <Summary>
-    /// Flow Launcher Toggl Track plugin settings.
-    /// </Summary>
-    public class Settings
+	/// <Summary>
+	/// Flow Launcher Toggl Track plugin settings.
+	/// </Summary>
+	public class Settings
 	{
 
 		public string InernalInegrationToken { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ namespace Flow.Launcher.Plugin.Notion
 		public bool RelationsIcons { get; set; } = true;
 		public bool DatabaseIcons { get; set; } = true;
 		public bool PagesIcons { get; set; } = true;
-        public bool UseBrowser { get; set; } = false;
+		public bool UseBrowser { get; set; } = false;
 
 
 		public Dictionary<string, JsonElement> SharedDB
@@ -57,14 +57,31 @@ namespace Flow.Launcher.Plugin.Notion
 
 
 		public string RelationDatabase { get; set; } = string.Empty;
-		
-		public string RelationDatabaseId { get; set; } = string.Empty;
+
+		public string _relationDatabaseId = string.Empty;
+		public string RelationDatabaseId
+		{
+			get
+			{
+				// If the default database is empty, set it to the first key in SharedDB
+				if (SharedDB.Any())
+				{
+					_relationDatabaseId = Main.databaseId[RelationDatabase].GetProperty("id").GetString();
+				}
+
+				return _relationDatabaseId;
+			}
+			set
+			{
+				_relationDatabaseId = value;
+			}
+		}
 
 
 
 
 
-        public ObservableCollection<CustomPayload> Filters { get; set; } = new ObservableCollection<CustomPayload>
+		public ObservableCollection<CustomPayload> Filters { get; set; } = new ObservableCollection<CustomPayload>
 		{
 			new CustomPayload
 			{

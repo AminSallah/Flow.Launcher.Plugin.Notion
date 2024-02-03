@@ -151,7 +151,8 @@
             Margin="10,0,18,0"
             HorizontalContentAlignment="Center"
             ItemsSource="{Binding Settings.DefaultRecentCountOptions}"
-            SelectedItem="{Binding Settings.RelationDatabase}" />
+            SelectedItem="{Binding Settings.RelationDatabase}" 
+            SelectionChanged="Relation_SelectionChanged"/>
                 <ui:FontIcon  Glyph="&#xE946;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>

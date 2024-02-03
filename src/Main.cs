@@ -74,7 +74,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         await this._NotionDataParser.DatabaseCache();
                         databaseId = LoadJsonData(DatabaseCachePath);
-                        _settings.RelationDatabaseId = databaseId[_settings.RelationDatabase].GetProperty("id").ToString();
+                        //_settings.RelationDatabaseId = databaseId[_settings.RelationDatabase].GetProperty("id").ToString();
 
                         if (!string.IsNullOrEmpty(_settings.RelationDatabaseId))
                         {
@@ -269,7 +269,7 @@ namespace Flow.Launcher.Plugin.Notion
                         var HideItem = new Result
                         {
                             Title = $"Hide {dict["Title"].ToString()}",
-                            IcoPath = "Images/cat.webp",
+                            Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ued1a"),
                             Action = c =>
                             {
                                 Task.Run(async delegate
@@ -301,7 +301,7 @@ namespace Flow.Launcher.Plugin.Notion
                         var UnHideItem = new Result
                         {
                             Title = $"UnHide {dict["Title"].ToString()}",
-                            IcoPath = "Images/cat.webp",
+                            Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ued1a"),
 
 
 
@@ -340,7 +340,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var HideAll = new Result
                             {
                                 Title = $"Hide All Current Query ({CurrentQueryItems.Count})",
-                                IcoPath = "Images/cat.webp",
+                                Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ued1a"),
                                 Action = c =>
                                 {
                                     Task.Run(async delegate
@@ -369,7 +369,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var HideAll = new Result
                             {
                                 Title = $"Unhide All Current Query ({CurrentQueryItems.Count})",
-                                IcoPath = "Images/cat.webp",
+                                Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ued1a"),
 
 
 
@@ -817,71 +817,91 @@ namespace Flow.Launcher.Plugin.Notion
 
             if (query.Search.Contains("!"))
             {
-                if (!filtered_query.ContainsKey("Project"))
+                if (!string.IsNullOrEmpty(_settings.RelationDatabaseId))
                 {
-                    var splitQuery = query_string.Split('!');
-                    var userInput = splitQuery[^1].Trim();
-
-                    JsonElement MultiRelationOptions = databaseId[KeyForId].GetProperty("relation");
-
-                    if (!(MultiRelationOptions.EnumerateArray().Count() > 1))
+                    if (!filtered_query.ContainsKey("Project"))
                     {
-                        ProjectName = MultiRelationOptions.EnumerateArray().FirstOrDefault().ToString();
-                    }
+                        var splitQuery = query_string.Split('!');
+                        var userInput = splitQuery[^1].Trim();
 
-                    if (string.IsNullOrEmpty(ProjectName))
-                    {
-                        foreach (var _projectName in MultiRelationOptions.EnumerateArray())
+                        JsonElement MultiRelationOptions = databaseId[KeyForId].GetProperty("relation");
+
+                        if (!(MultiRelationOptions.EnumerateArray().Count() > 1))
                         {
-                            if (Context.API.FuzzySearch(query.Search.Split('!')[^1].ToLower().Trim(), _projectName.ToString().ToLower()).Score > 1 || string.IsNullOrEmpty(userInput))
-                            {
-
-                                var result = new Result
-                                {
-                                    Title = _projectName.ToString(),
-                                    SubTitle = $"",
-                                    Action = c =>
-                                    {
-                                        Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!");
-                                        ProjectName = _projectName.ToString();
-                                        return false;
-                                    },
-                                    IcoPath = "Images/database.png"
-                                };
-                                resultList.Add(result);
-                            }
+                            ProjectName = MultiRelationOptions.EnumerateArray().FirstOrDefault().ToString();
                         }
-                        return resultList;
 
-                    }
-                    else
-                    {
-                        foreach (var project in ProjectsId)
+                        if (string.IsNullOrEmpty(ProjectName))
                         {
-                            if (Context.API.FuzzySearch(splitQuery[1].ToLower(), project.Key.ToLower()).Score > 1 || string.IsNullOrEmpty(splitQuery[1]))
+                            foreach (var _projectName in MultiRelationOptions.EnumerateArray())
                             {
-                                var result = new Result
+                                if (Context.API.FuzzySearch(query.Search.Split('!')[^1].ToLower().Trim(), _projectName.ToString().ToLower()).Score > 1 || string.IsNullOrEmpty(userInput))
                                 {
-                                    Title = project.Key,
-                                    SubTitle = $"",
-                                    AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project.Key}$",
-                                    Score = -1,
-                                    Action = c =>
+
+                                    var result = new Result
                                     {
-                                        if (c.SpecialKeyState.CtrlPressed)
+                                        Title = _projectName.ToString(),
+                                        SubTitle = $"",
+                                        Action = c =>
                                         {
-                                            OpenNotionPage(project.Value[1].ToString());
-                                            return true;
-                                        }
-                                        Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!{project.Key} ");
-                                        return false;
-                                    },
-                                    IcoPath = project.Value[4].ToString()
-                                };
-                                resultList.Add(result);
+                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!");
+                                            ProjectName = _projectName.ToString();
+                                            return false;
+                                        },
+                                        IcoPath = "Images/database.png"
+                                    };
+                                    resultList.Add(result);
+                                }
+                            }
+                            return resultList;
+
+                        }
+                        else
+                        {
+                            foreach (var project in ProjectsId)
+                            {
+                                if (Context.API.FuzzySearch(splitQuery[1].ToLower(), project.Key.ToLower()).Score > 1 || string.IsNullOrEmpty(splitQuery[1]))
+                                {
+                                    var result = new Result
+                                    {
+                                        Title = project.Key,
+                                        SubTitle = $"",
+                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project.Key}$",
+                                        Score = -1,
+                                        Action = c =>
+                                        {
+                                            if (c.SpecialKeyState.CtrlPressed)
+                                            {
+                                                OpenNotionPage(project.Value[1].ToString());
+                                                return true;
+                                            }
+                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!{project.Key} ");
+                                            return false;
+                                        },
+                                        IcoPath = project.Value[4].ToString()
+                                    };
+                                    resultList.Add(result);
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    resultList.Add(
+                        new Result
+                        {
+                            Title = "No Relation Database Selected",
+                            SubTitle = "Click to open settings dialog to select relation database",
+                            Action = c =>
+                            {
+                                Context.API.OpenSettingDialog();
+                                return true;
+                            },
+                            IcoPath = "icons\\emojis\\1f6a8.png"
+                        }
+                    );
+                    return resultList;
                 }
 
             }
@@ -1282,10 +1302,7 @@ namespace Flow.Launcher.Plugin.Notion
                     await CreatePage(dict_arg, open: open);
 
                 });
-                await Task.Run(async () =>
-                {
-                    await this._NotionDataParser.GetStartCursour(delay: 14000);
-                });
+
             }
             if (edit)
             {
@@ -1967,37 +1984,24 @@ namespace Flow.Launcher.Plugin.Notion
                         JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
 
                         Context.API.ShowMsg($"A new item added into ({dataDict["databaseId"]})",
-                                            $"{dataDict["Name"]}\n{((dataDict.ContainsKey("Project")) ? $"<{dataDict["Project"]}>" : "")}", iconPath: Context.CurrentPluginMetadata.IcoPath);
+                                            $"{dataDict["Name"]}\n{((dataDict.ContainsKey("Project")) ? $"<{dataDict["Project"]}>" : "")}",
+                                            iconPath: Context.CurrentPluginMetadata.IcoPath);
 
-                        Console.WriteLine("Page created successfully.");
+                        Task.Run(async () =>
+                        {
+                            await this._NotionDataParser.GetStartCursour(delay: 14000);
+                        });
 
                         if (open)
                         {
                             string created_PageID = jsonObject["id"].ToString().Replace("-", "");
                             string notionUrl = $"notion://www.notion.so/{created_PageID}";
-                            try
-                            {
-                                OpenNotionPage(notionUrl);
-
-                                /*ProcessStartInfo psi = new ProcessStartInfo
-                                {
-                                    FileName = notionUrl,
-                                    UseShellExecute = true
-                                };
-
-                                Process.Start(psi);*/
-                            }
-                            catch
-                            {
-
-                            }
+                            OpenNotionPage(notionUrl);
                         }
                     }
                     else
                     {
                         Context.API.ShowMsgError($"Error: {response.StatusCode}", response.ReasonPhrase);
-
-                        Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                     }
                 }
             }
