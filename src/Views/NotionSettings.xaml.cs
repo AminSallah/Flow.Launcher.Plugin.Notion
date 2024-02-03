@@ -20,7 +20,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         SettingsViewModel _viewModel;
         private readonly Settings _settings;
         private NotionDataParser _dataParser;
-
+        private bool isProcessing = false;
 
         public NotionSettings(PluginInitContext context, SettingsViewModel viewModel)
 		{
@@ -112,14 +112,23 @@ namespace Flow.Launcher.Plugin.Notion.Views
         {
             try
             {
+                if (isProcessing)
+                {
+                    return; // If already processing, exit early
+                }
+                isProcessing = true;
+
                 await Task.Run(async () =>
                 {
+                    try{
                     Context.API.ShowMsg("Relation database", $"{_settings.RelationDatabase} successfully set as relation database please wait while querying it for you.");
                     _settings.RelationDatabaseId = Main.databaseId[_settings.RelationDatabase].GetProperty("id").GetString();
                     Main.databaseId = await _dataParser.DatabaseCache();
                     Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
                     Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
-
+                    }finally{
+                        isProcessing = false;
+                    }
                 });
                 
             }
