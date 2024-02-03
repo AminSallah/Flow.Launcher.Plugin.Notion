@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using System;
+using System.Threading.Tasks;
 
 namespace Flow.Launcher.Plugin.Notion.Views
 {
@@ -18,6 +19,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         PluginInitContext Context;
         SettingsViewModel _viewModel;
         private readonly Settings _settings;
+        private NotionDataParser _dataParser;
 
 
         public NotionSettings(PluginInitContext context, SettingsViewModel viewModel)
@@ -27,6 +29,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             _viewModel = viewModel;
             _settings = viewModel.Settings;
             DataContext = viewModel;
+            this._dataParser = new NotionDataParser(Context, _settings);
         }
 
 
@@ -99,9 +102,38 @@ namespace Flow.Launcher.Plugin.Notion.Views
         }
 
 
-        private void Relation_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void RelationComboBox_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            // Attach SelectionChanged event handler after the UserControl is loaded
+            ((ComboBox)sender).SelectionChanged += Relation_SelectionChanged;
+        }
+
+        private async void Relation_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    Context.API.ShowMsg("Relation database", $"{_settings.RelationDatabase} successfully set as relation database please wait while querying it for you.");
+                    _settings.RelationDatabaseId = Main.databaseId[_settings.RelationDatabase].GetProperty("id").GetString();
+                    Main.databaseId = await _dataParser.DatabaseCache();
+                    Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
+                    Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
+
+                });
+                
+            }
+            catch (Exception ex)
+            {
+                Context.API.LogException(nameof(NotionSettings), "Error while selection changed of relation ComboBox", ex);
+            }
+        }
+
+
+        private void Database_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+           
+
         }
     }
 

@@ -59,23 +59,8 @@ namespace Flow.Launcher.Plugin.Notion
 		public string RelationDatabase { get; set; } = string.Empty;
 
 		public string _relationDatabaseId = string.Empty;
-		public string RelationDatabaseId
-		{
-			get
-			{
-				// If the default database is empty, set it to the first key in SharedDB
-				if (SharedDB.Any())
-				{
-					_relationDatabaseId = Main.databaseId[RelationDatabase].GetProperty("id").GetString();
-				}
-
-				return _relationDatabaseId;
-			}
-			set
-			{
-				_relationDatabaseId = value;
-			}
-		}
+		public string RelationDatabaseId { get; set; } = string.Empty;
+		
 
 
 

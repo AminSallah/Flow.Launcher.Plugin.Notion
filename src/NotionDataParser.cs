@@ -228,11 +228,11 @@ namespace Flow.Launcher.Plugin.Notion
         }
 
 
-        public async Task DatabaseCache()
+        public async Task<Dictionary<string, JsonElement>> DatabaseCache()
         {
             JArray allDatabases = await CallApiForSearch(Value: "database");
 
-            OrderedDictionary Databases = new OrderedDictionary();
+            Dictionary<string, JsonElement> Databases = new Dictionary<string, JsonElement>();
             foreach (var DB in allDatabases)
             {
                 try
@@ -248,11 +248,7 @@ namespace Flow.Launcher.Plugin.Notion
                     if (_settings.DatabaseIcons)
                     {
                         Icon = IconParse(DB["icon"]);
-
                     }
-
-
-
 
                     foreach (var kvp in properties)
                     {
@@ -274,7 +270,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 Relation.Add(kvp.Key.ToString());
                                 continue;
                             }
-
                             else if (values["type"].ToString().Contains("multi_select"))
                             {
                                 MultiSelect[kvp.Key.ToString()] = new List<string>();
@@ -295,25 +290,28 @@ namespace Flow.Launcher.Plugin.Notion
                         }
                     }
 
-                    Databases[DB["title"][0]["text"]["content"].ToString()] = new OrderedDictionary
+                    var jsonElement = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(System.Text.Json.JsonSerializer.Serialize(new
                     {
-                        {"title", title},
-                        {"id", DB["id"].ToString()},
-                        {"icon", Icon},
-                        {"date", Date},
-                        {"multi_select", MultiSelect},
-                        {"relation", Relation},
-                        {"url", DB["url"].ToString().Replace("https://", "notion://")},
-                    };
+                        title,
+                        id = DB["id"].ToString(),
+                        icon = Icon,
+                        date = Date,
+                        multi_select = MultiSelect,
+                        relation = Relation,
+                        url = DB["url"].ToString().Replace("https://", "notion://")
+                    }));
+
+                    Databases[DB["title"][0]["text"]["content"].ToString()] = jsonElement;
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     _context.API.LogException(className: nameof(NotionDataParser), "An error occurred during Database Cache", ex);
                 }
-                string jsonString = System.Text.Json.JsonSerializer.Serialize(Databases, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(_settings.DatabaseCachePath, jsonString);
             }
+
+            return Databases;
         }
+
 
         public string FileIconParse(dynamic dataIcon)
         {

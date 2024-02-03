@@ -134,7 +134,8 @@
                     Margin="10,0,18,0"
                     HorizontalContentAlignment="Center"
                     ItemsSource="{Binding Settings.DefaultRecentCountOptions}"
-                    SelectedItem="{Binding Settings.DefaultDatabase}" />
+                    SelectedItem="{Binding Settings.DefaultDatabase}"
+                    SelectionChanged="Database_SelectionChanged"/>
                 <ui:FontIcon Glyph="&#xe923;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
@@ -146,13 +147,15 @@
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="The entire DB will be cached, and you can select one of them when creating a page (e.g., Workout !Health)." />
                 </StackPanel>
                 <ComboBox
+                    x:Name="RelationComboBox" 
             Grid.Column="2"
             Width="150"
             Margin="10,0,18,0"
             HorizontalContentAlignment="Center"
             ItemsSource="{Binding Settings.DefaultRecentCountOptions}"
             SelectedItem="{Binding Settings.RelationDatabase}" 
-            SelectionChanged="Relation_SelectionChanged"/>
+                    Loaded="RelationComboBox_Loaded"
+            />
                 <ui:FontIcon  Glyph="&#xE946;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
