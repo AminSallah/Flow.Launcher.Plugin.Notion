@@ -12,7 +12,9 @@
    >  <img src="Demo Assets/tokenCapabilities.png">
    >
    > - At least One database should be shared With Token
-6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases
+   > -- You can share full database by navigate to Database page (a full page database) and choose your integration name
+   > -- <img src="Demo Assets/fullDB.png">
+6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases 
    
    
    
