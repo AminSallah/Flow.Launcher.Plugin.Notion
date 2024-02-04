@@ -8,7 +8,8 @@
 5. paste your Internal Integration Token or [create a new one](https://www.notion.so/my-integrations)
    > **Notes:**
    > - Internal Integration Token Content Capabilities should able to Read,Update,Insert content
-   > - <img src="Demo Assets/tokenCapabilities.png">
+   >  <img src="Demo Assets/tokenCapabilities.png">
+   
    > - At least One database should be shared With Token
 6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases
 7. 
