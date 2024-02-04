@@ -14,7 +14,15 @@
    > - At least One database should be shared With Token
    >    - You can share full database by navigate to Database page (a full page database) and choose your integration name
    >    - <img src="Demo Assets/fullDB.png">
-6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases 
+6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases
+7. Test databases by `c @`
+   > You should see your databases that is shared with Token
+   >
+   > 
+
+8. Now Navigate to settings > plugins > Notion and choose your relation database and change default database if needed
+
+   <img src="Demo Assets/chooseRelation.png">
    
    
    
