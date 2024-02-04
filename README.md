@@ -20,8 +20,7 @@
    >
    > 
 
-8. Now Navigate to settings > plugins > Notion and choose your relation database and change default database if needed
-
+8. Now Navigate to settings > plugins > Notion and choose your relation database and wait for success message
    <img src="Demo Assets/chooseRelation.png">
    
    
