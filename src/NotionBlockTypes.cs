@@ -8,12 +8,8 @@ namespace Flow.Launcher.Plugin.Notion
     internal class NotionBlockTypes
     {
         public Func<string, int?, Dictionary<string, object>> _default_serialize_fn;
-        
-        public List<Object> _enable = new List<object> {"paragraph", new List<string>()};
-
         public Dictionary<int, Func<string,int?, Dictionary<string, object>>> _enabled = new Dictionary<int, Func<string,int?, Dictionary<string, object>>>();
         public Dictionary<int, object> additional_options = new Dictionary<int, object>();
-
         private PluginInitContext _context { get; set; }
 
 
@@ -22,25 +18,18 @@ namespace Flow.Launcher.Plugin.Notion
             this._context = context;
         }
 
-        
-        
-        
         internal List<Result> SetBlockChild(string query, string result_string, int block)
         {
-            //string fuzzyQuery = query.Replace($"""*{result_string}""", """^""");
-
             string fuzzyQuery = query.Replace($"*{query.Split("*")[^1]}", "^");
-
 
             Result CreateResult(string title, string blockType, Func<string, int?, Dictionary<string, object>> serialize_fn, string updatedQuery)
             {
-               
                 if (_context.API.FuzzySearch(result_string.Trim().ToLower(), title.Trim().ToLower()).Score > 0 || string.IsNullOrEmpty(result_string))
                 {
                     return new Result
                     {
                         Title = title,
-                        Score = 5000 ,
+                        Score = 4000 ,
                         IcoPath = $"Images/{blockType}.png",
                         TitleToolTip = "Hold Ctrl key to set type as default",
                         Action = c => {
@@ -50,7 +39,6 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 _default_serialize_fn = serialize_fn;
                                 _context.API.ShowMsg(title,$"{title} has been set as a default block type");
-
                             }
                             _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeyword} {updatedQuery}", requery: true);
 
@@ -79,16 +67,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
             .Where(result => result != null)
             .ToList();
-
-
         }
-
-
-
-
-
-
-
 
         public Dictionary<string, object> paragraph(string dataDict, int? block = null)
         {
@@ -119,17 +98,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
                             }
                         };
-                    
-                
-            
-            
 
             throw new ArgumentException("Missing 'content' in dataDict for paragraph");
         }
-
-
-
-
 
         public Dictionary<string, object> code(string dataDict, int? block = null)
         {
@@ -237,13 +208,8 @@ namespace Flow.Launcher.Plugin.Notion
                             }
                         };
 
-
-
-
-
             throw new ArgumentException("Missing 'content' in dataDict for paragraph");
         }
-
 
         public Dictionary<string, object> bulleted_list(string dataDict, int? block = null)
         {
@@ -276,14 +242,8 @@ namespace Flow.Launcher.Plugin.Notion
                             }
                         };
                     
-                
-            
-            
-
             throw new ArgumentException("Missing 'content' in dataDict for paragraph");
         }
-
-
 
         public Dictionary<string, object> to_do(string dataDict, int? block = null)
         {
@@ -316,15 +276,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
                             }
                         };
-                    
-                
-            
-            
 
             throw new ArgumentException("Missing 'content' in dataDict for paragraph");
         }
-
-
 
         public Dictionary<string, object> numbered_list(string dataDict, int? block = null)
         {
@@ -357,16 +311,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
                             }
                         };
-                    
-                
-            
-            
 
             throw new ArgumentException("Missing 'content' in dataDict for paragraph");
         }
-
-
-
 
         public Dictionary<string, object> bookmark(string dataDict, int? block = null)
         {
@@ -387,13 +334,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
                             };
 
-
-
-
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-            
-
             throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
         }
         public Dictionary<string, object> embed(string dataDict, int? block = null)
@@ -410,21 +350,13 @@ namespace Flow.Launcher.Plugin.Notion
                                 { "embed", new Dictionary<string, object>
                                     {
                                         { "url",  $"https://embed.notion.co/api/iframe?app=1&url={Convert.ToString(dataDict)}&key=656ac74fac4fff346b811dca7919d483"}
-                                        
                                         // { "url", $"{Convert.ToString(dataDict)}" }
                                     }
                                 }
-                            
                };
 
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-
-
-            throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
+            throw new ArgumentException("Missing 'embed' in dataDict for Embed");
         }
-
-
 
         public Dictionary<string, object> CreateLinkPreviewChildren(string dataDict, int? block = null)
         {
@@ -445,14 +377,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
                             
                };
-
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-
-
-            throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
         }
-
 
         public Dictionary<string, object> image(string dataDict, int? block = null)
         {
@@ -475,14 +400,9 @@ namespace Flow.Launcher.Plugin.Notion
                                     }
                                     }
                                 }
-                            
                };
 
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-
-
-            throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
+            throw new ArgumentException("Missing 'url' in dataDict for Image");
         }
 
 
@@ -518,11 +438,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             };
 
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-
-
-            throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
+            throw new ArgumentException("Missing 'Text' in dataDict for Quote");
         }
 
         public Dictionary<string, object> video(string dataDict, int? block = null)
@@ -549,20 +465,8 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                };
 
-
-            throw new ArgumentException("Missing 'url' in bookmarkData");
-
-
-            throw new ArgumentException("Missing 'bookmark' in dataDict for bookmark");
+            throw new ArgumentException("Missing 'url' in dataDict for Video");
         }
-
-
-
-
-
-
-
-
 
     }
 }

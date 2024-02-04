@@ -111,6 +111,7 @@ namespace Flow.Launcher.Plugin.Notion
                     }
 
                     if (Value.Contains("database")) return allResults;
+                    
                     if (allResults.Count != 1 || Force)
                     {
                         Dictionary<string, List<string>> resultDataDictionary = new Dictionary<string, List<string>>();
@@ -140,7 +141,15 @@ namespace Flow.Launcher.Plugin.Notion
 
 
                                 // Extract the title from the response
-                                string extractedTitle = result["properties"][title]["title"][0]["text"]["content"].ToString();
+                                string extractedTitle;
+                                try
+                                {
+                                    extractedTitle = result["properties"][title]["title"][0]["text"]["content"].ToString();
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    extractedTitle = string.Empty;
+                                }
                                 string idDatabase;
 
                                 // Try to Extract the Database Id from the response if it's exist
@@ -188,7 +197,7 @@ namespace Flow.Launcher.Plugin.Notion
                             }
                             catch (Exception ex)
                             {
-                                _context.API.LogException(nameof(NotionDataParser), $"Error processing result", ex);
+                                _context.API.LogException(nameof(NotionDataParser), $"Error processing result: {result}", ex);
                             }
                         }
 
