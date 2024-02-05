@@ -3,13 +3,13 @@
 
 # Commands
 
-- `@` select database
-- `!` select relation
-- `#` select Tag (multi select only) support multiple tags
-- `[` add a link
-- `*` or `^` insert a block type
-- `$` used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
-- `$` used by auto complete `Tab Key` to change mode to Edit when auto complete a database item
+- `@` To select database
+- `!` To select relation
+- `#` To select Tag (multi select only) support multiple tags
+- `[` To add a link
+- `*` or `^` To insert a block
+- `$` Used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
+- `$` Used by auto complete `Tab Key` to change mode to Edit when auto complete a database item
 
 
 ## Installation Process
