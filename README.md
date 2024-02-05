@@ -1,4 +1,4 @@
-# Professional Setup Instructions
+# Flow launcher Plugin Notion
 
 
 - [Features](#features)
