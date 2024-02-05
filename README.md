@@ -11,7 +11,7 @@
 
    > ![No API Image](assets/screenshots/ErrorIIT.png)
 
-## Configuration Steps
+### Configuration Steps
 
 3. **Navigate to Settings:**
    - Within the settings, navigate to `Settings > Plugins > Notion`.
@@ -35,6 +35,7 @@
 
 6. **Testing Databases:**
    - Test the databases using the command `c @`.
+     ![Choose Relation Database Image](assets/screenshots/DatabaseSelection.png)
    - Confirm that your databases shared with the token are visible.
 
 7. **Select Relation Database:**
@@ -42,5 +43,7 @@
    - Choose your relational database and await the success message.
 
    > ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
+
+8. Finally restart Flow Launcher.
 
 These comprehensive setup instructions ensure a seamless integration process for optimal performance and functionality. If images are not loading, please check your internet connection or access the images directly in the provided file paths.
