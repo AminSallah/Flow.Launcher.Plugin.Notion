@@ -27,8 +27,9 @@
    >  ![Token Capabilities Image](assets/screenshots/TokenCapabilities.png)
    >
    > - Share at least one database with the token.
-   >    - To share a full database, go to the Database page and select your integration name.
-   >    - ![Full Database Sharing Image](assets/screenshots/FullDB.png)
+   >    - To share a database, go to the Database page and select your integration name.
+   >      
+   >     ![Full Database Sharing Image](assets/screenshots/FullDB.png)
 
 5. **Database Query:**
    - Trigger the plugin again after setting the Internal Integration Token.
