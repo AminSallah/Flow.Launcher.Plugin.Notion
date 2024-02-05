@@ -29,7 +29,7 @@
 - `*` or `^` To insert a block
 - `$` Used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
 - `$` Used by auto complete `Tab Key` to change mode to Edit when auto complete a database item
-
+- Date is automatically selected once it is recognized.
 
 ## Installation Process
 1. **Plugin Installation:**
