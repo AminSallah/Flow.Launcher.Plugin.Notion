@@ -1,27 +1,46 @@
-# Setup Instructions
-1. Install the Plugin
-2. Trigger the plugin with the action keyword `c` then click to open settings panel
-   
-   > <img src="Demo Assets/noApi.png">
-   
-4. Navigate to settings > plugins > Notion
-5. paste your Internal Integration Token or [create a new one](https://www.notion.so/my-integrations)
-   > **Notes:**
-   > - Internal Integration Token Content Capabilities should able to Read,Update,Insert content
-   >   
-   >  <img src="Demo Assets/tokenCapabilities.png">
-   >
-   > - At least One database should be shared With Token
-   >    - You can share full database by navigate to Database page (a full page database) and choose your integration name
-   >    - <img src="Demo Assets/fullDB.png">
-6. Trigger the plugin again after set Internal Integration Token and wait while plugin query the databases
-7. Test databases by `c @`
-   > You should see your databases that is shared with Token
-   >
-   > 
+# Professional Setup Instructions
 
-8. Now Navigate to settings > plugins > Notion and choose your relation database and wait for success message
-   <img src="Demo Assets/chooseRelation.png">
-   
-   
-   
+## Installation Process
+
+1. **Plugin Installation:**
+   - Begin by installing the plugin.
+
+2. **Plugin Activation:**
+   - Trigger the plugin using the action keyword `c`.
+   - Click to open the settings panel.
+
+   > ![No API Image](assets/screenshots/error IIT.png)
+
+## Configuration Steps
+
+3. **Navigate to Settings:**
+   - In the settings, go to `Settings > Plugins > Notion`.
+
+4. **Integration Token Setup:**
+   - Paste your Internal Integration Token.
+   - [Create a new token](https://www.notion.so/my-integrations) if needed.
+
+   > **Notes:**
+   > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
+   >   
+   >  ![Token Capabilities Image](assets/screenshots/token capabilities.png)
+   >
+   > - Share at least one database with the token.
+   >    - To share a full database, navigate to the Database page and select your integration name.
+   >    - ![Full Database Sharing Image](assets/screenshots/full DB.png)
+
+5. **Database Query:**
+   - Trigger the plugin again after setting the Internal Integration Token.
+   - Wait while the plugin queries the databases.
+
+6. **Testing Databases:**
+   - Test the databases using the command `c @`.
+   - Verify that your databases shared with the token are visible.
+
+7. **Select Relation Database:**
+   - Navigate to `Settings > Plugins > Notion`.
+   - Choose your relational database and wait for the success message.
+
+   > ![Choose Relation Database Image](assets/screenshots/relation selection.png)
+
+These professional setup instructions ensure a seamless integration process for optimal performance and functionality.
