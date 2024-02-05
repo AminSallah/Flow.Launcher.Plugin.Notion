@@ -94,10 +94,10 @@
 ![Plugin demo](assets/demos/Create.gif)
 
 #### `Search`, `Open` and `Edit` existing page.
-![View tracked time reports](assets/demos/edit.gif)
+![View tracked time reports](assets/demos/Edit.gif)
 
 #### `Append` blocks for an existing page or a new page.
-![View tracked time reports](assets/demos/blocks.gif)
+![View tracked time reports](assets/demos/Blocks.gif)
 
 #### `Delate` and `Complete` existing page (Plugin comes with two custom payload (delete and complete)).
-![View tracked time reports](assets/demos/custompayload.gif)
+![View tracked time reports](assets/demos/CustomPayload.gif)
