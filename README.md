@@ -3,31 +3,31 @@
 ## Installation Process
 
 1. **Plugin Installation:**
-   - Begin by installing the plugin.
+   - Start by installing the plugin.
 
 2. **Plugin Activation:**
    - Trigger the plugin using the action keyword `c`.
    - Click to open the settings panel.
 
-   > ![No API Image](assets/screenshots/error IIT.png)
+   > ![No API Image](assets/screenshots/error_IIT.png)
 
 ## Configuration Steps
 
 3. **Navigate to Settings:**
-   - In the settings, go to `Settings > Plugins > Notion`.
+   - Within the settings, navigate to `Settings > Plugins > Notion`.
 
 4. **Integration Token Setup:**
    - Paste your Internal Integration Token.
-   - [Create a new token](https://www.notion.so/my-integrations) if needed.
+   - [Create a new token](https://www.notion.so/my-integrations) if necessary.
 
    > **Notes:**
    > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
    >   
-   >  ![Token Capabilities Image](assets/screenshots/token capabilities.png)
+   >  ![Token Capabilities Image](assets/screenshots/token_capabilities.png)
    >
    > - Share at least one database with the token.
-   >    - To share a full database, navigate to the Database page and select your integration name.
-   >    - ![Full Database Sharing Image](assets/screenshots/full DB.png)
+   >    - To share a full database, go to the Database page and select your integration name.
+   >    - ![Full Database Sharing Image](assets/screenshots/full_DB.png)
 
 5. **Database Query:**
    - Trigger the plugin again after setting the Internal Integration Token.
@@ -35,12 +35,12 @@
 
 6. **Testing Databases:**
    - Test the databases using the command `c @`.
-   - Verify that your databases shared with the token are visible.
+   - Confirm that your databases shared with the token are visible.
 
 7. **Select Relation Database:**
    - Navigate to `Settings > Plugins > Notion`.
-   - Choose your relational database and wait for the success message.
+   - Choose your relational database and await the success message.
 
-   > ![Choose Relation Database Image](assets/screenshots/relation selection.png)
+   > ![Choose Relation Database Image](assets/screenshots/relation_selection.png)
 
-These professional setup instructions ensure a seamless integration process for optimal performance and functionality.
+These comprehensive setup instructions ensure a seamless integration process for optimal performance and functionality. If images are not loading, please check your internet connection or access the images directly in the provided file paths.
