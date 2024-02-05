@@ -9,7 +9,7 @@
    - Trigger the plugin using the action keyword `c`.
    - Click to open the settings panel.
 
-   > ![No API Image](assets/screenshots/ErrorIIT.png)
+    ![No API Image](assets/screenshots/ErrorIIT.png)
 
 ### Configuration Steps
 
@@ -24,7 +24,7 @@
    > **Notes:**
    > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
    >   
-   >  ![Token Capabilities Image](assets/screenshots/TokenCapabilities.png)
+        ![Token Capabilities Image](assets/screenshots/TokenCapabilities.png)
    >
    > - Share at least one database with the token.
    >    - To share a database, go to the Database page and select your integration name.
