@@ -14,7 +14,7 @@
 ### Configuration Steps
 
 3. **Navigate to Settings:**
-   - Within the settings, navigate to `Settings > Plugins > Notion`.
+   - Within the settings, navigate to `Plugins > Notion`.
 
 4. **Integration Token Setup:**
    - Paste your Internal Integration Token.
