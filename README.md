@@ -20,6 +20,7 @@
    - Paste your Internal Integration Token.
    - [Create a new token](https://www.notion.so/my-integrations) if necessary.
 
+
    > **Notes:**
    > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
    >   
