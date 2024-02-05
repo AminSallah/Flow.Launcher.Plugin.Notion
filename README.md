@@ -1,5 +1,15 @@
 # Professional Setup Instructions
 
+# Features
+
+- High-Speed Interface
+- Efficient search (withour latency) and quick access to Notion items (pages, database and relations)
+- Support for databases, multi selections, relations and date properties
+- Optional icons for Notion items, with the flexibility to disable them
+- Human-friendly date and time display
+- Open-source for transparency
+- All data is cached and stored locally for optimal performance
+- Prioritizing user privacy and security
 
 # Commands
 
