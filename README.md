@@ -2,7 +2,6 @@
 
 ## Installation Process
 
-   ![Configuration Steps](assets/gif/ConfigurationSteps.gif)
    
 1. **Plugin Installation:**
    - Start by installing the plugin.
@@ -14,6 +13,8 @@
      ![No API Image](assets/screenshots/ErrorIIT.png)
 
 ### Configuration Steps
+
+   ![Configuration Steps](assets/gif/ConfigurationSteps.gif)
 
 3. **Navigate to Settings:**
    - Within the settings, navigate to `Plugins > Notion`.
