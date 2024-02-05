@@ -89,8 +89,15 @@
 
 
 # Demos
-### Notes and Warnings
-> **Note**  
-> 1. If an `End Time Span` is specified, the time entry will be stopped (if it is currently running).
-> 2. The `End Time Span` and `Resume Time Entry` flags are mutually exclusive (cannot be used together).
-> 3. The `Clear Description` flag will only empty the time entry description from the Flow search bar, so a replacement can be input quickly.
+
+## `Create` a new database item with relation.
+![Plugin demo](assets/demos/create.gif)
+
+## `Search`, `Open` and `Edit` existing page.
+![View tracked time reports](assets/demos/edit.gif)
+
+## `Append` blocks for an existing page or a new page.
+![View tracked time reports](assets/demos/blocks.gif)
+
+## `Delate` and `Complete` existing page (Plugin comes with two custom payload (delete and complete)).
+![View tracked time reports](assets/demos/custompayload.gif)
