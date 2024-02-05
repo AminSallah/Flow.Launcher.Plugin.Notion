@@ -2,7 +2,7 @@
 
 ## Installation Process
 
-   [Configuration Steps Video](assets/ConfigurationSteps.mp4)
+   ![Configuration Steps](assets/ConfigurationSteps.gif)
    
 1. **Plugin Installation:**
    - Start by installing the plugin.
