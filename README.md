@@ -82,6 +82,8 @@
 
 9. Finally, restart Flow Launcher.
 10. After Flow Launcher opens, if the search cache is provided properly (require internet connection), you will see all shared pages with your token. The create mode is only allowed when there is no match with the query and shared pages.
+    
+    > In case of any error Relod Plugins data or Restart flow lunacher with good internet connection to build a cache.
 
 
 
