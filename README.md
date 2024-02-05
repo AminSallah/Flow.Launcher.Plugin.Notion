@@ -9,7 +9,7 @@
    - Trigger the plugin using the action keyword `c`.
    - Click to open the settings panel.
 
-    ![No API Image](assets/screenshots/ErrorIIT.png)
+   > ![No API Image](assets/screenshots/ErrorIIT.png)
 
 ### Configuration Steps
 
