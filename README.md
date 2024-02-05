@@ -86,6 +86,7 @@
     
     > In case of any error Relod Plugins data or Restart flow lunacher with good internet connection to build a cache.
 
-
+> **Note**
+> sdafsa
 
 # Demos
