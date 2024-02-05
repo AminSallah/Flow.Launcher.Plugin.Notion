@@ -4,8 +4,9 @@
 - [Features](#features)
 - [Commands](#commands)
 - [Demos](#demos)
-- [Setup Instructions](#installation-process)
+- [Installation Process](#installation-process)
 - [Command Reference](#command-reference)
+- [Custom Payload](#custom-payload)
 - [Licence](#licence)
 
 # Features
@@ -101,3 +102,12 @@
 
 #### `Delate` and `Complete` existing page (Plugin comes with two custom payload (delete and complete)).
 ![View tracked time reports](assets/demos/CustomPayload.gif)
+
+# Command Reference
+> UNDER CONSTRUCTION
+
+# Custom Payload
+> UNDER CONSTRUCTION
+
+# Licence
+The source code for this plugin is licensed under MIT.
