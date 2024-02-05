@@ -38,7 +38,7 @@
 6. **Testing Databases:**
    - Test the databases using the command `c @`.
     
-     ![Choose Relation Database Image](assets/screenshots/DatabaseSelection.png)
+     ![Choose Relation Database Image](assets/gif/DatabaseSelection.gif)
 
    - Confirm that your databases shared with the token are visible.
 
