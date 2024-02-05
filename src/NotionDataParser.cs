@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
 using System.Dynamic;
@@ -373,7 +373,7 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 Task.Run(async () =>
                 {
-                    await _context.API.HttpDownloadAsync(url, filePath);
+                    await _context.API.HttpDownloadAsync(url, Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,filePath));
                 });
             }
         }
@@ -590,10 +590,4 @@ namespace Flow.Launcher.Plugin.Notion
         }
     }
 }
-
-
-
-
-
-
 
