@@ -80,6 +80,9 @@
 
    > ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
 
-9. Finally restart Flow Launcher.
+9. Finally, restart Flow Launcher.
+10. After Flow Launcher opens, if the search cache is provided properly (require internet connection), you will see all shared pages with your token. The create mode is only allowed when there is no match with the query and shared pages.
 
 
+
+# Demo
