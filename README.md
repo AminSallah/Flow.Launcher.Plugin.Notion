@@ -86,7 +86,11 @@
     
     > In case of any error Relod Plugins data or Restart flow lunacher with good internet connection to build a cache.
 
-> **Note**
-> sdafsa
+
 
 # Demos
+### Notes and Warnings
+> **Note**  
+> 1. If an `End Time Span` is specified, the time entry will be stopped (if it is currently running).
+> 2. The `End Time Span` and `Resume Time Entry` flags are mutually exclusive (cannot be used together).
+> 3. The `Clear Description` flag will only empty the time entry description from the Flow search bar, so a replacement can be input quickly.
