@@ -1,8 +1,18 @@
 # Professional Setup Instructions
 
-## Installation Process
 
-   
+# Commands
+
+- `@` select database
+- `!` select relation
+- `#` select Tag
+- `[` add a link
+- `*` or `^` insert a block type
+- `$` used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
+- `$` used by auto complete `Tab Key` to change mode to Edit when auto complete a database item
+
+
+## Installation Process
 1. **Plugin Installation:**
    - Start by installing the plugin.
 
