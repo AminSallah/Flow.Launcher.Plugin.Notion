@@ -9,7 +9,7 @@
    - Trigger the plugin using the action keyword `c`.
    - Click to open the settings panel.
 
-   > ![No API Image](assets/screenshots/error_IIT.png)
+   > ![No API Image](assets/screenshots/ErrorIIT.png)
 
 ## Configuration Steps
 
@@ -23,11 +23,11 @@
    > **Notes:**
    > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
    >   
-   >  ![Token Capabilities Image](assets/screenshots/token_capabilities.png)
+   >  ![Token Capabilities Image](assets/screenshots/TokenCapabilities.png)
    >
    > - Share at least one database with the token.
    >    - To share a full database, go to the Database page and select your integration name.
-   >    - ![Full Database Sharing Image](assets/screenshots/full_DB.png)
+   >    - ![Full Database Sharing Image](assets/screenshots/FullDB.png)
 
 5. **Database Query:**
    - Trigger the plugin again after setting the Internal Integration Token.
@@ -41,6 +41,6 @@
    - Navigate to `Settings > Plugins > Notion`.
    - Choose your relational database and await the success message.
 
-   > ![Choose Relation Database Image](assets/screenshots/relation_selection.png)
+   > ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
 
 These comprehensive setup instructions ensure a seamless integration process for optimal performance and functionality. If images are not loading, please check your internet connection or access the images directly in the provided file paths.
