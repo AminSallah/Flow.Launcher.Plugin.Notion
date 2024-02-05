@@ -5,7 +5,7 @@
 
 - `@` select database
 - `!` select relation
-- `#` select Tag
+- `#` select Tag (multi select only) support multiple tags
 - `[` add a link
 - `*` or `^` insert a block type
 - `$` used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
@@ -63,4 +63,4 @@
 
 9. Finally restart Flow Launcher.
 
-These comprehensive setup instructions ensure a seamless integration process for optimal performance and functionality. If images are not loading, please check your internet connection or access the images directly in the provided file paths.
+
