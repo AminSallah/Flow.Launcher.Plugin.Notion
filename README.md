@@ -90,14 +90,14 @@
 
 # Demos
 
-## `Create` a new database item with relation.
-![Plugin demo](assets/demos/create.gif)
+#### `Create` a new database item with relation.
+![Plugin demo](assets/demos/Create.gif)
 
-## `Search`, `Open` and `Edit` existing page.
+#### `Search`, `Open` and `Edit` existing page.
 ![View tracked time reports](assets/demos/edit.gif)
 
-## `Append` blocks for an existing page or a new page.
+#### `Append` blocks for an existing page or a new page.
 ![View tracked time reports](assets/demos/blocks.gif)
 
-## `Delate` and `Complete` existing page (Plugin comes with two custom payload (delete and complete)).
+#### `Delate` and `Complete` existing page (Plugin comes with two custom payload (delete and complete)).
 ![View tracked time reports](assets/demos/custompayload.gif)
