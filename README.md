@@ -55,7 +55,7 @@
    - [Create a new token](https://www.notion.so/my-integrations) if necessary.
 
    
-      > **Note**    
+      > **Warning**  
       > - Ensure that the Internal Integration Token Content Capabilities include Read, Update, and Insert content.
       >   
       >     ![Token Capabilities Image](assets/screenshots/TokenCapabilities.png)
