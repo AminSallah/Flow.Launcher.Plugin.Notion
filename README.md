@@ -109,8 +109,7 @@
 # Custom Payload
 > UNDER CONSTRUCTION
 
-> **Warning**  
-> 1. The `Time Span` flag must be the entered after the time entry description. Anything entered after the 
+
 
 # Licence
 The source code for this plugin is licensed under MIT.
