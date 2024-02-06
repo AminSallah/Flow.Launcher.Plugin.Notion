@@ -1,5 +1,4 @@
-using System.Text.RegularExpressions;
-using System.Globalization;
+﻿using System.Text.RegularExpressions;
 using System.Linq;
 using System.Dynamic;
 using System.Text.Json;
@@ -544,6 +543,12 @@ namespace Flow.Launcher.Plugin.Notion
 
                     return FilterResults;
                 }
+                else if (response.ReasonPhrase == "Bad Request")
+                {
+                    _context.API.ShowMsgError("Custom Filter Payload Error", "Please check out custom payload from settings panel");
+                    _context.API.OpenSettingDialog();
+                    return FilterResults;
+                }
                 else
                 {
                     return FilterResults;
@@ -552,7 +557,7 @@ namespace Flow.Launcher.Plugin.Notion
         }
 
 
-        static string ConvertVariables(string input)
+        public string ConvertVariables(string input)
         {
             Regex curlyBracesRegex = new Regex(@"\{\{([^}]+)\}\}");
             MatchCollection bracketMatches = curlyBracesRegex.Matches(input);
@@ -592,5 +597,10 @@ namespace Flow.Launcher.Plugin.Notion
         }
     }
 }
+
+
+
+
+
 
 

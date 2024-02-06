@@ -19,7 +19,6 @@ using System.Net.NetworkInformation;
 using File = System.IO.File;
 using Newtonsoft.Json;
 using System.Reflection;
-using System.Text.Json.Nodes;
 
 namespace Flow.Launcher.Plugin.Notion
 {
@@ -188,7 +187,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         {
                                             if (response.ReasonPhrase == "Bad Request")
                                             {
-                                                Context.API.ShowMsgError("Custom Payload Error", "Please check out custom payload from settings panel");
+                                                Context.API.ShowMsgError("Custom Property Payload Error", "Please check out custom payload from settings panel");
                                                 Context.API.OpenSettingDialog();
                                             }
                                             else if (response != null)
@@ -321,9 +320,6 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 Title = $"Unhide All Current Query ({CurrentQueryItems.Count})",
                                 Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ued1a"),
-
-
-
                                 Action = c =>
 
                                 {
@@ -915,7 +911,7 @@ namespace Flow.Launcher.Plugin.Notion
 
 
 
-            if (filtered_query.ContainsKey("Time") && string.IsNullOrEmpty(DateName) && !AdvancedFilterMode || timeForce && filtered_query.ContainsKey("Time"))
+            if (filtered_query.ContainsKey("Time") && (timeForce || string.IsNullOrEmpty(DateName)) && !AdvancedFilterMode)
             {
                 JsonElement MultiDateOptions = databaseId[KeyForId].GetProperty("date");
                 if (!(MultiDateOptions.EnumerateArray().Count() > 1))
@@ -1989,6 +1985,7 @@ namespace Flow.Launcher.Plugin.Notion
         async Task<HttpResponseMessage> EditPropertyFromContext(string PageId, string payload, List<string> fromContext = null)
         {
             HttpResponseMessage response = null;
+            payload = _NotionDataParser.ConvertVariables(payload);
             if (IsInternetConnected())
             {
                 using (HttpClient client = new HttpClient())
