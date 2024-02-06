@@ -164,7 +164,56 @@
 
 8. Click Add button and trigger the plugin you should see the advanced filter or search it by title.
    
+### How to Add New custom payload as `property`
 
+- Same as filter But the whole differnce is that
+     1. Property payloads query in context menu (shif + enter {or right arrow}) on page in the query
+     2. Property payloads Json different from Filter payloads
+           
+- Paste your own Payload (Json) or edit these to match your needs
+     ```
+   {
+     "properties": {
+       "Status": {
+         "status": {
+           "name": "✅"
+         }
+       }
+     }
+   }
+
+     ```
+
+     > This Json gonna set property name "Status" of type "status" into option "✅"
+     Also you can combine more than one property
+     ```
+   {
+     "properties": {
+       "Status": {
+         "status": {
+           "name": "✅"
+         }
+       },
+       "Latest Review": {
+         "date": {
+           "start": "{{current date}}",
+          
+         }
+       }
+     }
+   }
+
+     ```
+     > > This Json gonna do the same as before With set start date of latetest review to current date
+     
+### Json Variables as `current date` 
+
+Right now plugin only support convert to dates
+- To add a date variable set variable within two curly brackets only use spaces to separate in between words `{{current date}}`
+- To check if your variable supported try to type it in query if give a result this mean it's supported
+
+  ![current date variables](assets/gif/Variables.gif)
+  
 > UNDER CONSTRUCTION
 
 
