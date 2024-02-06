@@ -131,11 +131,12 @@
 7. Create a new payload (Json) or Use this filter.
    > For more Information about how you can do more advanced filters navigate to [notion](https://developers.notion.com/reference/post-database-query-filter#the-filter-object)
 ```
+{
  "and": [
       {
         "property": "Due",
         "date": {
-          "on_or_before": {{current date}}
+          "on_or_before": "{{current date}}"
         }
       },
       {
@@ -158,7 +159,10 @@
 }
 ```
 - This filter represnt this on notion UI
-- ![Advanced notion filter](assets/screenshots/AdvancedFilter.png)
+ ![Advanced notion filter](assets/screenshots/AdvancedFilter.png)
+
+8. Click Add button and trigger the plugin you should see the advanced filter or search it by title.
+   
 
 > UNDER CONSTRUCTION
 
