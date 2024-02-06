@@ -107,6 +107,58 @@
 > UNDER CONSTRUCTION
 
 # Custom Payload
+
+### Description
+> :memo: Using custom payload allow you to:
+> - Query specific filter as notion pages as (All uncompleted tasks and outdue)
+> - Edit specific task based on payload from context menu (shift + enter) as `change state to complete and set complete date to now`
+> **Note**
+>   Plugin comes with two payloads:
+>   - Complete Payload need to configure to match your database properites names.
+>   - Delete Payload No need to configure.
+>  
+### How to Add New custom payload as `filter`
+
+![Add New custom filter](assets/demos/AddCustomFilter.png)
+1. Navigate to `Settings > Plugins > Notion > Custom Payload`.
+2. Click Add Button.
+3. Set a title (required) and subtitle (optinal) for the filter.
+
+   > Title can't be duplicated
+   
+5. Keep Type to filter.
+6. Choose the database to query.
+7. Create a new payload (Json) or Use this filter.
+   > For more Information about how you can do more advanced filters navigate to (notion)[https://developers.notion.com/reference/post-database-query-filter#the-filter-object]
+```
+ "and": [
+      {
+        "property": "Due",
+        "date": {
+          "on_or_before": {{current date}}
+        }
+      },
+      {
+        "or": [
+          {
+            "property": "Status",
+            "status": {
+              "equals": "🍵"
+            }
+          },
+          {
+            "property": "Status",
+            "status": {
+              "equals": "🔄"
+            }
+          }
+        ]
+      }
+    ]
+}
+
+```
+
 > UNDER CONSTRUCTION
 
 
