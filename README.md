@@ -158,7 +158,7 @@
 }
 ```
 - This filter represnt this on notion UI
-- (Advanced notion filter)[assets/screenshots/AdvancedFilter.png]
+- ![Advanced notion filter](assets/screenshots/AdvancedFilter.png)
 
 > UNDER CONSTRUCTION
 
