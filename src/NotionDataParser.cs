@@ -337,9 +337,10 @@ namespace Flow.Launcher.Plugin.Notion
             string iconUrl = dataIcon.file.url;
             string filename = System.IO.Path.GetFileName(iconUrl.Split('?')[0]);
             string filePath = System.IO.Path.Combine(_iconPath, filename);
-            if (!File.Exists(filePath))
+            string fullFilePath = System.IO.Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, filePath);
+            if (!File.Exists(fullFilePath))
             {
-                FileSave(iconUrl, filePath);
+                FileSave(iconUrl, fullFilePath);
             }
             return filePath;
         }
@@ -373,7 +374,7 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 Task.Run(async () =>
                 {
-                    await _context.API.HttpDownloadAsync(url, Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,filePath));
+                    await _context.API.HttpDownloadAsync(url, filePath);
                 });
             }
         }
@@ -590,4 +591,5 @@ namespace Flow.Launcher.Plugin.Notion
         }
     }
 }
+
 
