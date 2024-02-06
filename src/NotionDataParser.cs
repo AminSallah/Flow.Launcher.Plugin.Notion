@@ -405,10 +405,11 @@ namespace Flow.Launcher.Plugin.Notion
             : iconUrl;
             string filename = System.IO.Path.GetFileName(iconUrl);
             string filePath = System.IO.Path.Combine(_iconPath, filename);
+            string fullFilePath = System.IO.Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,filePath);
 
-            if (!File.Exists(filePath))
+            if (!File.Exists(fullFilePath))
             {
-                FileSave(iconUrl, filePath);
+                FileSave(iconUrl, fullFilePath);
             }
             return filePath;
         }
