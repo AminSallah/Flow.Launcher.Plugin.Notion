@@ -159,6 +159,7 @@
 }
 ```
 - This filter represnt this on notion UI
+  
  ![Advanced notion filter](assets/screenshots/AdvancedFilter.png)
 
 8. Click Add button and trigger the plugin you should see the advanced filter or search it by title.
