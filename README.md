@@ -14,7 +14,7 @@
 - High-Speed Interface
 - Efficient search (without latency) and quick access to Notion items (pages, database and relations)
 - Hide and Unhide pages from query
-- Support for databases, multi selections, relations and date properties
+- Support for databases, multi selections, relations, links and date properties
 - Quick create database items with custom supported properties
 - Optional icons for Notion items, with the flexibility to disable them
 - Support for custom payload to search or Edit
