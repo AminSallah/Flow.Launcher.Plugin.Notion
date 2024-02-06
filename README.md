@@ -204,7 +204,7 @@
    }
 
      ```
-     > > This Json gonna do the same as before With set start date of latetest review to current date
+     > This Json gonna do the same as before With set start date of latetest review to current date
      
 ### Json Variables as `current date` 
 
