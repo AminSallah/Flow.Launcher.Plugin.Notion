@@ -28,7 +28,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
             viewModel = new CustomPayloadViewModel(settings);
             _settings = settings;
             currentCustomBrowser = customPayload;
-            // Initialize properties with values from the provided CustomBrowser instance
             viewModel.FilterTitle = customPayload.Title;
             viewModel.FilterSubTitle = customPayload.SubTitle;
             viewModel.Database = customPayload.Database;
@@ -83,20 +82,15 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
                 if (!string.IsNullOrEmpty(selectedNewIconImageFullPath))
                 {
-                    /*if (viewModel.ShouldProvideHint(selectedNewIconImageFullPath))
-                        MessageBox.Show(_api.GetTranslation("flowlauncher_plugin_websearch_iconpath_hint"));*/
-                    CopyNewImageToUserDataDirectoryIfRequired(fullpathToSelectedImage: selectedNewIconImageFullPath);
-                    viewModel.IcoPath = selectedNewIconImageFullPath;
+                    viewModel.IcoPath = CopyNewImageToUserDataDirectoryIfRequired(fullpathToSelectedImage: selectedNewIconImageFullPath);
                     BitmapImage bitmapImage = new BitmapImage(new Uri(selectedNewIconImageFullPath));
-
                     imgPreviewIcon.Source = bitmapImage;
-                    //imgPreviewIcon.Source = await viewModel.LoadPreviewIconAsync(selectedNewIconImageFullPath);
                 }
             }
         }
 
 
-        public void CopyNewImageToUserDataDirectoryIfRequired(
+        public string CopyNewImageToUserDataDirectoryIfRequired(
             string fullpathToSelectedImage)
         {
             var destinationFileNameFullPath = Path.Combine(Main.CustomImagesDirectory, Path.GetFileName(fullpathToSelectedImage));
@@ -111,14 +105,12 @@ namespace Flow.Launcher.Plugin.Notion.Views
                 }
                 catch (Exception)
                 {
-
                     //throw;
-
                 MessageBox.Show(string.Format("Copying the selected image file to {0} has failed, changes will now be reverted", destinationFileNameFullPath));
-                //UpdateIconAttributes(selectedSearchSource, fullPathToOriginalImage);
-
                 }
             }
+
+            return destinationFileNameFullPath;
         }
 
 
@@ -156,15 +148,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     MessageBox.Show(this, "Title cannot be duplicated", "Notion Filters", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 }
-
-
-                /*if (viewModel.EditExistingFilter(out string errorMessage))
-                {
-                }
-                else
-                {
-                    MessageBox.Show(this, errorMessage, "Invalid Keyword", MessageBoxButton.OK, MessageBoxImage.Error);
-                }*/
             }
         }
 

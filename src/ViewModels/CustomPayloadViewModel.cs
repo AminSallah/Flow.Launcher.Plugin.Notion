@@ -9,7 +9,6 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
     public class CustomPayloadViewModel : Model
     {
         private readonly PluginInitContext context;
-        //private readonly KeywordViewModel[] keywords;
         private string filterTitle;
         private string filterSubTitle;
         private string database;
@@ -19,24 +18,21 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private bool status;
         private JsonType jsonType;
 
+        public string FilterTitle { get => filterTitle; set => SetProperty(ref filterTitle, value); }
+        public string FilterSubTitle { get => filterSubTitle; set => SetProperty(ref filterSubTitle, value); }
+        public string Database { get => database; set => SetProperty(ref database, value); }
+        public string Json { get => json; set => SetProperty(ref json, value); }
+        public string IcoPath { get => icoPath; set => SetProperty(ref icoPath, value); }
+        public bool Cachable { get => cachable; set => SetProperty(ref cachable, value); }
+        public bool Status { get => status; set => SetProperty(ref status, value); }
 
         public Settings Settings { get; init; }
         
-
-
         public IEnumerable<string> DefaultDBOptions => Settings.SharedDB.Keys.ToList();
         public CustomPayloadViewModel(Settings settings)
         {
             this.Settings = settings;
-            //context = settingsViewModel.context;
-            //keywords = settingsViewModel.Keywords;
-            //SelectedKeyword = settingsViewModel.SelectedKeyword;
         }
-        //public KeywordViewModel SelectedKeyword { get; init; }
-
-
-
-
 
         private ObservableCollection<JsonType> _typeOptions = new ObservableCollection<JsonType> { JsonType.Filter, JsonType.Property };
         public ObservableCollection<JsonType> TypeOptions
@@ -46,18 +42,6 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         private bool _filterSettingsVisibility = true;
         public bool FilterSettingsVisibility
         {
@@ -65,33 +49,11 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             set => SetProperty(ref _filterSettingsVisibility, value);
         }
 
-        // Add other visibility properties for other panels and buttons as needed
 
         private void UpdateVisibility()
         {
             FilterSettingsVisibility = JsonType == JsonType.Filter;
-            // Add similar logic for other panels and buttons
         }
-
-
-
-
-
-
-
-
-
-
-
-        public string FilterTitle { get => filterTitle; set => SetProperty(ref filterTitle, value); }
-        public string FilterSubTitle { get => filterSubTitle; set => SetProperty(ref filterSubTitle, value); }
-        public string Database { get => database; set => SetProperty(ref database, value); }
-        public string Json { get => json; set => SetProperty(ref json, value); }
-        public string IcoPath { get => icoPath; set => SetProperty(ref icoPath, value); }
-
-        public bool Cachable { get => cachable; set => SetProperty(ref cachable, value); }
-        public bool Status { get => status; set => SetProperty(ref status, value); }
-
 
         public JsonType JsonType
         {
@@ -106,7 +68,6 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         public bool NewCustomPayload(out string errorMessage)
         {
             errorMessage = null;
-            //var oldKeyword = SelectedKeyword.Keyword;
             if (string.IsNullOrWhiteSpace(FilterTitle))
             {
                 errorMessage = "The Title cannot be empty.";

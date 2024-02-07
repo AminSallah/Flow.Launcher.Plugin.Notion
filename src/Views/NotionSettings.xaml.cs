@@ -106,7 +106,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void RelationComboBox_Loaded(object sender, RoutedEventArgs e)
         {
-            // Attach SelectionChanged event handler after the UserControl is loaded
             ((ComboBox)sender).SelectionChanged += Relation_SelectionChanged;
         }
 
@@ -141,13 +140,11 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            // Unsubscribe from events or perform cleanup here
             if (RelationComboBox != null)
             {
                 RelationComboBox.Loaded -= RelationComboBox_Loaded;
                 RelationComboBox.SelectionChanged -= Relation_SelectionChanged;
             }
-            // Add more cleanup if needed
         }
 
 
