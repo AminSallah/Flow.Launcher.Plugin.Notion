@@ -109,27 +109,28 @@
 # Custom Payload
 
 ### Description
-> :memo: Using custom payload allow you to:
-> - Query specific filter as (All uncompleted tasks and outdue)
-> - Edit specific task based on payload from context menu (shift + enter) as `change state to complete and set complete date to now`
-> **Note**
->   Plugin comes with two payloads:
->   - Complete Payload need to configure to match your database properites names.
->   - Delete Payload No need to configure.
+> :memo: Utilizing custom payloads allows you to:
+> - Query specific filters such as (All uncompleted tasks and overdue).
+> - Edit specific tasks based on payload from the context menu (Shift + Enter), for example, `change state to complete and set complete date to now`.
+
+> **Note:**
+>   The plugin comes with two payloads:
+>   1. **Complete** Payload needs to be configured to match your database property names.
+>   2. **Delete** Payload does not need configuration.
 >  
-### How to Add New custom payload as `filter`
+### How to Add a New Custom Payload as a `filter`
 
-![Add New custom filter](assets/screenshots/AddCustomFilter.png)
+![Add a New Custom Filter](assets/screenshots/AddCustomFilter.png)
 1. Navigate to `Settings > Plugins > Notion > Custom Payload`.
-2. Click Add Button.
-3. Set a title (required) and subtitle (optinal) for the filter.
+2. Click the Add Button.
+3. Set a title (required) and subtitle (optional) for the filter.
 
-   > Title can't be duplicated
+   > Titles cannot be duplicated.
    
-5. Keep Type to filter.
+5. Keep the type as a filter.
 6. Choose the database to query.
-7. Create a new payload (Json) or Use this filter.
-   > For more Information about how you can do more advanced filters navigate to [notion](https://developers.notion.com/reference/post-database-query-filter#the-filter-object)
+7. Create a new payload (JSON) or use this filter.
+   > For more information about how you can create more advanced filters, navigate to [notion](https://developers.notion.com/reference/post-database-query-filter#the-filter-object).
 ```
 {
  "and": [
@@ -158,19 +159,19 @@
     ]
 }
 ```
-- This filter represnt this on notion UI
+- This filter represents this on the Notion UI
   
- ![Advanced notion filter](assets/screenshots/AdvancedFilter.png)
+ ![Advanced Notion Filter](assets/screenshots/AdvancedFilter.png)
 
-8. Click Add button and trigger the plugin you should see the advanced filter or search it by title.
+8. Click the Add button and trigger the plugin; you should see the advanced filter or search for it by title.
    
-### How to Add New custom payload as `property`
+### How to Add a New Custom Payload as a `property`
 
-- Same as filter But the whole differnce is that
-     1. Property payloads query in context menu (shif + enter {or right arrow}) on page in the query
-     2. Property payloads Json different from Filter payloads
+- Similar to a filter, but the key difference is that
+     1. Property payloads query in the context menu (Shift + Enter {or right arrow}) on the page in the query.
+     2. Property payloads JSON differs from Filter payloads.
            
-- Paste your own Payload (Json) or edit these to match your needs
+- Paste your own Payload (JSON) or edit these to match your needs.
      ```
    {
      "properties": {
@@ -184,8 +185,8 @@
 
      ```
 
-     > This Json gonna set property name "Status" of type "status" into option "✅"
-     Also you can combine more than one property
+     > This JSON will set the property name "Status" of type "status" into the option "✅".
+     You can also combine more than one property.
      ```
    {
      "properties": {
@@ -204,15 +205,15 @@
    }
 
      ```
-     > This Json gonna do the same as before With set start date of latetest review to current date
+     > This JSON will do the same as before, setting the start date of the latest review to the current date.
      
-### Json Variables as `current date` 
+### JSON Variables as `current date` 
 
-Right now plugin only support convert to dates
-- To add a date variable set variable within two curly brackets only use spaces to separate in between words `{{current date}}`
-- To check if your variable supported try to type it in query if give a result this mean it's supported
+Right now, the plugin only supports converting to dates.
+- To add a date variable, set the variable within two curly brackets; only use spaces to separate words, like `{{current date}}`.
+- To check if your variable is supported, try typing it in the query; if it gives a result, this means it's supported.
 
-  ![current date variables](assets/gif/Variables.gif)
+  ![Current Date Variables](assets/gif/Variables.gif)
   
 > UNDER CONSTRUCTION
 
