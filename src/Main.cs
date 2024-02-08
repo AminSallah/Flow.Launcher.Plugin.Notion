@@ -453,6 +453,7 @@ namespace Flow.Launcher.Plugin.Notion
             HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
 
 
+            Dictionary<string, object> filtered_query = GetData(query.Search, defaultDB: _settings.DefaultDatabase);
 
             string editingPatternId = @"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})";
 
@@ -461,6 +462,7 @@ namespace Flow.Launcher.Plugin.Notion
             if (editingPatternIdMatch.Success)
             {
                 editingMode = true;
+                filtered_query["databaseId"] = databaseId.FirstOrDefault(_dB => _dB.Value.GetProperty("id").GetString() == searchResults[editingPatternIdMatch.Groups[1].Value][2].GetString()).Key;
             }
             else
             {
@@ -468,7 +470,6 @@ namespace Flow.Launcher.Plugin.Notion
             }
 
             string link;
-            Dictionary<string, object> filtered_query = GetData(query.Search, defaultDB: _settings.DefaultDatabase);
 
             if (!filtered_query.ContainsKey("Name"))
             {
@@ -837,7 +838,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (query.Search.Contains("@") && (bool)filtered_query["IsDefaultDB"] == true)
+            if (query.Search.Contains("@") && (bool)filtered_query["IsDefaultDB"] == true && !editingMode)
             {
                 var splitQuery = query.Search.Split('@');
                 timeForce = true;
@@ -920,7 +921,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    string[] splitQuery = Regex.Split(query.Search,filtered_query["TimeText"].ToString(),options:RegexOptions.IgnoreCase);
+                    string[] splitQuery = Regex.Split(query.Search, filtered_query["TimeText"].ToString(), options: RegexOptions.IgnoreCase);
                     string userInput;
                     if (splitQuery.Length != 2)
                         userInput = string.Empty;
@@ -940,9 +941,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     DateName = _dateName.ToString();
                                     timeForce = false;
-                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + " " + 
-                                    (string.IsNullOrEmpty(splitQuery[0].Trim().Replace(filtered_query["TimeText"].ToString(),"" ,
-                                     culture: null,ignoreCase:true)) ? "" 
+                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + " " +
+                                    (string.IsNullOrEmpty(splitQuery[0].Trim().Replace(filtered_query["TimeText"].ToString(), "",
+                                     culture: null, ignoreCase: true)) ? ""
                                      : splitQuery[0].Trim() + " ") + filtered_query["TimeText"].ToString().Trim() + " ", requery: true);
                                     return false;
                                 },
@@ -1410,7 +1411,6 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         var splitQuery = ProjectMatch[0].Value.Split('!');
                         var userInput = splitQuery[1].Trim();
-                        Context.API.ShowMsg("input", userInput);
                         foreach (var item in ProjectsId.Keys)
                         {
                             if (Context.API.FuzzySearch(item, userInput).Score > 1)
@@ -1418,7 +1418,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 dataDict["Project"] = item;
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
                                 string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?!\s?{item}", "", RegexOptions.IgnoreCase).Trim();
-                                Context.API.ShowMsg("input", unRawInputString);
                                 if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, Skip: true, ManualProjectRunning: true).TryGetValue("Name", out object Name))
                                 {
                                     dataDict["Name"] = Name.ToString();
@@ -1496,16 +1495,16 @@ namespace Flow.Launcher.Plugin.Notion
                         }
                         if (!string.IsNullOrEmpty(array_returned[0]))
                         {
-                            if (!Regex.IsMatch(inputString,$@"\\s?{array_returned[3]}",RegexOptions.IgnoreCase))
+                            if (!Regex.IsMatch(inputString, $@"\\s?{array_returned[3]}", RegexOptions.IgnoreCase))
                             {
-                            dataDict["Name"] = array_returned[1].ToString().Trim();
-                            dataDict["Time"] = array_returned[2].ToString();
-                            dataDict["TimeText"] = array_returned[3].ToString();
-                            dataDict["parsedDate"] = array_returned[0].ToString(); // Convert later to dateTime
+                                dataDict["Name"] = array_returned[1].ToString().Trim();
+                                dataDict["Time"] = array_returned[2].ToString();
+                                dataDict["TimeText"] = array_returned[3].ToString();
+                                dataDict["parsedDate"] = array_returned[0].ToString(); // Convert later to dateTime
                             }
                             else
                             {
-                                dataDict["Name"] = Regex.Replace(input: dataDict["Name"].ToString(), pattern:$@"\\s?{array_returned[3]}", replacement:array_returned[3].ToString());
+                                dataDict["Name"] = Regex.Replace(input: dataDict["Name"].ToString(), pattern: $@"\\s?{array_returned[3]}", replacement: array_returned[3].ToString());
                             }
                         }
                         else if (dataDict.ContainsKey("Name_dir") && !dataDict.ContainsKey("Name"))
@@ -1643,34 +1642,45 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        (Dictionary<string, Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>, string) FormatData(Dictionary<string, object> filtered_data_arg, string default_DB = null, string DbNameInCache = null)
+        (Dictionary<string, Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>, string) FormatData(Dictionary<string, object> filtered_data_arg, string Mode = "Create", string DbNameInCache = "")
         {
             string DATABASE_ID = null;
             Dictionary<string, List<Dictionary<string, object>>> children = new Dictionary<string, List<Dictionary<string, object>>> {
                 { "children", new List<Dictionary<string, object>>() }};
 
             dataDict = filtered_data_arg;
-            if (DbNameInCache != null)
-            {
-                dataDict["databaseId"] = DbNameInCache;
-            }
-            try
-            {
-                if (dataDict.ContainsKey("databaseId"))
-                {
-                    DATABASE_ID = Convert.ToString(databaseId[dataDict["databaseId"].ToString()].GetProperty("id").ToString());
-                }
-            }
-            catch
-            {
 
+            if (dataDict.ContainsKey("databaseId") && Mode != "Edit")
+            {
+                DATABASE_ID = Convert.ToString(databaseId[dataDict["databaseId"].ToString()].GetProperty("id").ToString());
+            }
+            else
+            {
+                if (DbNameInCache != null)
+                {
+                    dataDict["databaseId"] = DbNameInCache;
+                    DATABASE_ID = DbNameInCache;
+                }
+                else
+                {
+                    DATABASE_ID = null;
+                }
             }
 
             var data = new Dictionary<string, Dictionary<string, object>> { };
 
             if (!string.IsNullOrWhiteSpace(dataDict["Name"].ToString()))
             {
-                data[$"{databaseId[dataDict["databaseId"].ToString()].GetProperty("title").ToString()}"] = new Dictionary<string, object>
+                string titleMap;
+                if (!string.IsNullOrEmpty(DATABASE_ID))
+                {
+                    titleMap = $"{databaseId[dataDict["databaseId"].ToString()].GetProperty("title").ToString()}";
+                }
+                else
+                {
+                    titleMap = "title";
+                }
+                data[titleMap] = new Dictionary<string, object>
                 {
                     { "title", new List<Dictionary<string, object>>
                         {
@@ -1686,58 +1696,61 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                 };
             };
-
-            if (dataDict.ContainsKey("parsedDate") && databaseId[dataDict["databaseId"].ToString()].GetProperty("date").GetArrayLength() > 0)
+            if (!string.IsNullOrEmpty(DATABASE_ID))
             {
-                string parsed_result_string;
-                DateTime parsed_result = Convert.ToDateTime(dataDict["parsedDate"]);
-                if (parsed_result.TimeOfDay != TimeSpan.Zero)
+
+                if (dataDict.ContainsKey("parsedDate") && databaseId[dataDict["databaseId"].ToString()].GetProperty("date").GetArrayLength() > 0)
                 {
-                    parsed_result = parsed_result.ToUniversalTime();
-                    parsed_result_string = parsed_result.ToString("yyyy-MM-ddTHH:mm:ss");
-                }
-                else
-                {
-                    parsed_result_string = parsed_result.ToString("yyyy-MM-dd");
+                    string parsed_result_string;
+                    DateTime parsed_result = Convert.ToDateTime(dataDict["parsedDate"]);
+                    if (parsed_result.TimeOfDay != TimeSpan.Zero)
+                    {
+                        parsed_result = parsed_result.ToUniversalTime();
+                        parsed_result_string = parsed_result.ToString("yyyy-MM-ddTHH:mm:ss");
+                    }
+                    else
+                    {
+                        parsed_result_string = parsed_result.ToString("yyyy-MM-dd");
+                    }
+
+                    if (!data.ContainsKey(DateName))
+                    {
+                        data.Add(DateName, new Dictionary<string, object>());
+                    }
+                    data[DateName].Add("date", new Dictionary<string, object> { { "start", parsed_result_string }, { "end", null } });
                 }
 
-                if (!data.ContainsKey(DateName))
+                if (dataDict.ContainsKey("tags"))
                 {
-                    data.Add(DateName, new Dictionary<string, object>());
-                }
-                data[DateName].Add("date", new Dictionary<string, object> { { "start", parsed_result_string }, { "end", null } });
-            }
+                    var tags_string = dataDict["tags"];
+                    var tags = tags_string.ToString().Split(",");
+                    var tag_options = new List<Dictionary<string, string>> { };
+                    foreach (var tag in tags)
+                    {
+                        tag_options.Add(new Dictionary<string, string> { { "name", Convert.ToString(tag) } });
+                    }
 
-            if (dataDict.ContainsKey("tags"))
-            {
-                var tags_string = dataDict["tags"];
-                var tags = tags_string.ToString().Split(",");
-                var tag_options = new List<Dictionary<string, string>> { };
-                foreach (var tag in tags)
+                    if (!data.ContainsKey(TagName))
+                    {
+                        data.Add(TagName, new Dictionary<string, object>());
+                    }
+                    data[TagName].Add("multi_select", tag_options);
+                }
+
+                if (dataDict.ContainsKey("link"))
                 {
-                    tag_options.Add(new Dictionary<string, string> { { "name", Convert.ToString(tag) } });
+                    data[UrlMap] = new Dictionary<string, object> { { "url", dataDict["link"] } };
                 }
 
-                if (!data.ContainsKey(TagName))
+                if (dataDict.ContainsKey("Project"))
                 {
-                    data.Add(TagName, new Dictionary<string, object>());
+                    var ProjectRelationID = ProjectsId[Convert.ToString(dataDict["Project"]).Trim()][3];
+                    if (!data.ContainsKey("Project"))
+                    {
+                        data.Add(ProjectName, new Dictionary<string, object>());
+                    }
+                    data[ProjectName].Add("relation", new List<Dictionary<string, object>> { new Dictionary<string, object> { { "id", ProjectRelationID } } });
                 }
-                data[TagName].Add("multi_select", tag_options);
-            }
-
-            if (dataDict.ContainsKey("link"))
-            {
-                data[UrlMap] = new Dictionary<string, object> { { "url", dataDict["link"] } };
-            }
-
-            if (dataDict.ContainsKey("Project"))
-            {
-                var ProjectRelationID = ProjectsId[Convert.ToString(dataDict["Project"]).Trim()][3];
-                if (!data.ContainsKey("Project"))
-                {
-                    data.Add(ProjectName, new Dictionary<string, object>());
-                }
-                data[ProjectName].Add("relation", new List<Dictionary<string, object>> { new Dictionary<string, object> { { "id", ProjectRelationID } } });
             }
 
             if (dataDict.ContainsKey("content"))
@@ -1888,7 +1901,7 @@ namespace Flow.Launcher.Plugin.Notion
         {
             try
             {
-                var (data, children, DatabaseId) = FormatData(filteredQueryEditing, DbNameInCache: databaseId.FirstOrDefault(kv => Convert.ToString(kv.Value.GetProperty("id").ToString()) == Convert.ToString(searchResults[pageId][2])).Key);
+                var (data, children, DatabaseId) = FormatData(filteredQueryEditing, Mode:"Edit" ,DbNameInCache: databaseId.FirstOrDefault(kv => Convert.ToString(kv.Value.GetProperty("id").ToString()) == Convert.ToString(searchResults[pageId][2])).Key);
                 using (HttpClient client = new HttpClient())
                 {
                     HttpResponseMessage response = null;

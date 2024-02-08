@@ -191,8 +191,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 };
 
                                 resultDataDictionary[idPage] = resultDataList;
-
-
                             }
                             catch (Exception ex)
                             {
