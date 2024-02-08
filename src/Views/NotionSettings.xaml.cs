@@ -37,9 +37,9 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (_settings.SelectedSearchSource != null)
+            if (_settings.SelectedPayload != null)
             {
-                var selected = _settings.SelectedSearchSource;
+                var selected = _settings.SelectedPayload;
                 new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
             }
         }
@@ -67,9 +67,9 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_settings.SelectedSearchSource != null)
+            if (_settings.SelectedPayload != null)
             {
-                var selected = _settings.SelectedSearchSource;
+                var selected = _settings.SelectedPayload;
                 new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
             }
         }

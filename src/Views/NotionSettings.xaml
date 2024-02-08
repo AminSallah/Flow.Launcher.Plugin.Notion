@@ -267,7 +267,7 @@
                     ItemsSource="{Binding Settings.Filters}"
                     MouseDoubleClick="ListView_MouseDoubleClick"
                     MouseUp="ListView_MouseUp"
-                    SelectedItem="{Binding Settings.SelectedSearchSource}"
+                    SelectedItem="{Binding Settings.SelectedPayload}"
                     Style="{StaticResource {x:Static GridView.GridViewStyleKey}}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False">

@@ -36,7 +36,6 @@ namespace Flow.Launcher.Plugin.Notion
 		{
 			get
 			{
-				// If the default database is empty, set it to the first key in SharedDB
 				if (string.IsNullOrEmpty(_defaultDatabase) && SharedDB.Any())
 				{
 					_defaultDatabase = SharedDB.Keys.First();
@@ -78,7 +77,7 @@ namespace Flow.Launcher.Plugin.Notion
 		};
 
 		[JsonIgnore]
-		public CustomPayload SelectedSearchSource { get; set; }
+		public CustomPayload SelectedPayload { get; set; }
 
 		public Settings()
 		{
