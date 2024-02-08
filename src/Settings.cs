@@ -9,9 +9,6 @@ using Flow.Launcher.Plugin.Notion.Views;
 
 namespace Flow.Launcher.Plugin.Notion
 {
-	/// <Summary>
-	/// Flow Launcher Toggl Track plugin settings.
-	/// </Summary>
 	public class Settings
 	{
 
@@ -54,18 +51,9 @@ namespace Flow.Launcher.Plugin.Notion
 		}
 
 		public IEnumerable<string> DefaultRecentCountOptions => SharedDB.Keys.ToList();
-
-
-
 		public string RelationDatabase { get; set; } = string.Empty;
-
 		public string _relationDatabaseId = string.Empty;
 		public string RelationDatabaseId { get; set; } = string.Empty;
-
-
-
-
-
 
 		public ObservableCollection<CustomPayload> Filters { get; set; } = new ObservableCollection<CustomPayload>
 		{
@@ -77,7 +65,6 @@ namespace Flow.Launcher.Plugin.Notion
 				IcoPath = System.IO.Path.Combine(
 						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_complete.png"),
-
 			},
 			new CustomPayload
 			{
@@ -87,14 +74,11 @@ namespace Flow.Launcher.Plugin.Notion
 				IcoPath = System.IO.Path.Combine(
 						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_delete.png"),
-
 			}
 		};
 
-
 		[JsonIgnore]
 		public CustomPayload SelectedSearchSource { get; set; }
-
 
 		public Settings()
 		{
@@ -102,30 +86,12 @@ namespace Flow.Launcher.Plugin.Notion
 		}
 
 
-
-
-
 		public bool Hide { get; set; } = false;
-		public bool ShowUsageExamples { get; set; } = true;
-		public bool ShowUsageWarnings { get; set; } = true;
-
-		public bool AllowSuccessNotifications { get; set; } = true;
-		public bool AllowErrorNotifications { get; set; } = true;
-
 
 		public static Dictionary<string, JsonElement> LoadJsonData(string filePath = "C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\cache\\cache_search.json")
 		{
 			string json_data = System.IO.File.ReadAllText(filePath);
 			return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json_data);
 		}
-
-
-
 	}
-
-
-
-
-
-
 }
