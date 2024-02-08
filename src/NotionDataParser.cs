@@ -506,6 +506,12 @@ namespace Flow.Launcher.Plugin.Notion
                         string project_name;
 
                         string Name = page["properties"][TargetDatabaseMap.GetProperty("title").GetString()]["title"][0]["text"]["content"].ToString();
+                        
+                        // Trim In case of Relation DB query to prevent any errors while parsing using GetData method
+                        if (string.IsNullOrEmpty(filterPayload) && DB == _settings.RelationDatabaseId)
+                        {
+                            Name = Name.Trim();
+                        }
 
                         try
                         {
@@ -550,7 +556,6 @@ namespace Flow.Launcher.Plugin.Notion
                         _context.API.ShowMsgError("Custom Filter Payload Error", "Please check out custom payload from settings panel");
                         _context.API.OpenSettingDialog();
                     }
-
                     return FilterResults;
                 }
                 else

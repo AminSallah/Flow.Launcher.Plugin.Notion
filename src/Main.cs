@@ -91,7 +91,7 @@ namespace Flow.Launcher.Plugin.Notion
                 Context.API.LogWarn(nameof(Main), "No internet Connection for Init cache using last cached data", MethodBase.GetCurrentMethod().Name);
             }
 
-            if(databaseId.Count == 0)
+            if (databaseId.Count == 0)
                 RequestNewCache = true;
 
             Main._viewModel = new SettingsViewModel(this._settings);
@@ -106,7 +106,6 @@ namespace Flow.Launcher.Plugin.Notion
 
             try
             {
-                // We should await for database to finish cache before Init FLow Launcher
                 _ = Task.Run(async () =>
                 {
                     await this._NotionDataParser.CallApiForSearch();
@@ -1281,7 +1280,7 @@ namespace Flow.Launcher.Plugin.Notion
             databaseId = await databaseIdTask;
         }
 
-        Dictionary<string, object> GetData(string inputString, string defaultDB = "", bool TimeSkip = false, bool ManualDBRunning = false)
+        Dictionary<string, object> GetData(string inputString, string defaultDB = "", bool Skip = false, bool ManualDBRunning = false)
         {
             Dictionary<string, object> dataDict = new Dictionary<string, object>();
             string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|(#\s?[a-zA-Z0:9]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([^!@#*^$\[\]]+)";
@@ -1388,33 +1387,37 @@ namespace Flow.Launcher.Plugin.Notion
                 }
 
             }
-
-            if (!dataDict.ContainsKey("Project") && inputString.Contains("!") && !string.IsNullOrEmpty(ProjectName))
+            if (!Skip)
             {
-                string ProjectPattern = @"(!\s?.+)";
-                var ProjectMatch = Regex.Matches(inputString, ProjectPattern);
-                if (ProjectMatch.Count > 0)
+                if (!dataDict.ContainsKey("Project") && inputString.Contains("!") && !string.IsNullOrEmpty(ProjectName))
                 {
-                    var splitQuery = ProjectMatch[0].Value.Split('!');
-                    var userInput = splitQuery[1].Trim();
-                    foreach (var item in ProjectsId.Keys)
+                    string ProjectPattern = @"(!\s?.+)";
+                    var ProjectMatch = Regex.Matches(inputString, ProjectPattern);
+                    if (ProjectMatch.Count > 0)
                     {
-                        if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                        var splitQuery = ProjectMatch[0].Value.Split('!');
+                        var userInput = splitQuery[1].Trim();
+                        foreach (var item in ProjectsId.Keys)
                         {
-                            dataDict["Project"] = item;
-                            string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
-                            if (GetData(Regex.Replace(inputString.Trim(), $@"\s?!\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, TimeSkip: true).TryGetValue("Name", out object Name))
+                            if (Context.API.FuzzySearch(item, userInput).Score > 1)
                             {
-                                dataDict["Name"] = Name.ToString();
-                            }
-                            else
-                            {
-                                dataDict["Name"] = TransformName;
+                                dataDict["Project"] = item;
+                                string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
+                                string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?!\s?{item}", "", RegexOptions.IgnoreCase).Trim();
+
+                                if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, Skip: true).TryGetValue("Name", out object Name))
+                                {
+                                    dataDict["Name"] = Name.ToString();
+                                }
+                                else
+                                {
+                                    dataDict["Name"] = TransformName;
+                                }
                             }
                         }
                     }
-                }
 
+                }
             }
             if (!ManualDBRunning)
             {
@@ -1432,7 +1435,7 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 dataDict["databaseId"] = item;
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
-                                if (GetData(Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
+                                if (GetData(Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, Skip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
                                 {
                                     dataDict["Name"] = Name.ToString();
                                 }
@@ -1447,7 +1450,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (!TimeSkip)
+            if (!Skip)
             {
                 if (!dataDict.ContainsKey("Time"))
                 {
