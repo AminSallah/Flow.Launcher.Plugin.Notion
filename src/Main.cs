@@ -91,7 +91,8 @@ namespace Flow.Launcher.Plugin.Notion
                 Context.API.LogWarn(nameof(Main), "No internet Connection for Init cache using last cached data", MethodBase.GetCurrentMethod().Name);
             }
 
-
+            if(databaseId.Count == 0)
+                RequestNewCache = true;
 
             Main._viewModel = new SettingsViewModel(this._settings);
 
@@ -428,7 +429,7 @@ namespace Flow.Launcher.Plugin.Notion
                         Score = 100,
                         Action = c =>
                         {
-                            Context.API.OpenSettingDialog();
+                            // Context.API.OpenSettingDialog();
                             return false;
                         },
                     };
@@ -1000,11 +1001,9 @@ namespace Flow.Launcher.Plugin.Notion
                                             { "id", editingPatternIdMatch.Groups[1].Value },
                                             { "edit", true },
                                             {"CreateFirst", false},
-
                                     },
                             Action = c =>
                             {
-
                                 _ = subProcess(edit: true, pageId: editingPatternIdMatch.Groups[1].Value, dict_arg: filtered_query, open: c.SpecialKeyState.CtrlPressed);
                                 refresh_search = DateTime.Now;
                                 return true;

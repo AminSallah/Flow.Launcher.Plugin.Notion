@@ -11,7 +11,6 @@ namespace Flow.Launcher.Plugin.Notion
 {
 	public class Settings
 	{
-
 		public string InernalInegrationToken { get; set; } = string.Empty;
 		public string DatabaseCachePath { get; set; } = string.Empty;
 		public string RelationCachePath { get; set; } = string.Empty;
@@ -21,24 +20,18 @@ namespace Flow.Launcher.Plugin.Notion
 		public bool DatabaseIcons { get; set; } = true;
 		public bool PagesIcons { get; set; } = true;
 		public bool UseBrowser { get; set; } = false;
+		public bool Hide { get; set; } = false;
 
-
-		public Dictionary<string, JsonElement> SharedDB
-		{
-			get
-			{
-				return Main.databaseId;
-			}
-		}
+		[JsonIgnore]
+		public IEnumerable<string> DatabaseSelectionOptions => Main.databaseId.Keys.ToList();
 		private string _defaultDatabase = string.Empty;
-
 		public string DefaultDatabase
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_defaultDatabase) && SharedDB.Any())
+				if (string.IsNullOrEmpty(_defaultDatabase) && DatabaseSelectionOptions.Any())
 				{
-					_defaultDatabase = SharedDB.Keys.First();
+					_defaultDatabase = DatabaseSelectionOptions.FirstOrDefault();
 				}
 
 				return _defaultDatabase;
@@ -48,10 +41,8 @@ namespace Flow.Launcher.Plugin.Notion
 				_defaultDatabase = value;
 			}
 		}
-
-		public IEnumerable<string> DefaultRecentCountOptions => SharedDB.Keys.ToList();
+		
 		public string RelationDatabase { get; set; } = string.Empty;
-		public string _relationDatabaseId = string.Empty;
 		public string RelationDatabaseId { get; set; } = string.Empty;
 
 		public ObservableCollection<CustomPayload> Filters { get; set; } = new ObservableCollection<CustomPayload>
@@ -82,15 +73,6 @@ namespace Flow.Launcher.Plugin.Notion
 		public Settings()
 		{
 			this.Filters = Filters;
-		}
-
-
-		public bool Hide { get; set; } = false;
-
-		public static Dictionary<string, JsonElement> LoadJsonData(string filePath = "C:\\Users\\mohammed\\AppData\\Roaming\\FlowLauncher\\Plugins\\Flow.Launcher.Plugin.Search\\cache\\cache_search.json")
-		{
-			string json_data = System.IO.File.ReadAllText(filePath);
-			return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json_data);
 		}
 	}
 }

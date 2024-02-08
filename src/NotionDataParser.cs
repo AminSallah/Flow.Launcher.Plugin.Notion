@@ -51,7 +51,7 @@ namespace Flow.Launcher.Plugin.Notion
         {
             this._context = context;
             this._settings = settings;
-            _iconPath = Path.Combine("icons","icons");
+            _iconPath = Path.Combine("icons", "icons");
         }
 
         internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 100, bool Force = false, string Value = "page")
@@ -110,7 +110,7 @@ namespace Flow.Launcher.Plugin.Notion
                     }
 
                     if (Value.Contains("database")) return allResults;
-                    
+
                     if (allResults.Count != 1 || Force)
                     {
                         Dictionary<string, List<string>> resultDataDictionary = new Dictionary<string, List<string>>();
@@ -121,13 +121,13 @@ namespace Flow.Launcher.Plugin.Notion
                                 JObject properties = (JObject)result["properties"];
                                 string title = null;
                                 string icon = _context.CurrentPluginMetadata.IcoPath;
-                                
-                                    if (_settings.PagesIcons)
-                                    {
-                                        icon = IconParse(result["icon"]);
 
-                                    }
-                            
+                                if (_settings.PagesIcons)
+                                {
+                                    icon = IconParse(result["icon"]);
+
+                                }
+
 
                                 foreach (var kvp in properties)
                                 {
@@ -258,7 +258,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         Icon = IconParse(DB["icon"]);
                     }
-                    
+
 
                     foreach (var kvp in properties)
                     {
@@ -404,7 +404,7 @@ namespace Flow.Launcher.Plugin.Notion
             : iconUrl;
             string filename = System.IO.Path.GetFileName(iconUrl);
             string filePath = System.IO.Path.Combine(_iconPath, filename);
-            string fullFilePath = System.IO.Path.Combine(_context.CurrentPluginMetadata.PluginDirectory,filePath);
+            string fullFilePath = System.IO.Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, filePath);
 
             if (!File.Exists(fullFilePath))
             {
@@ -545,8 +545,12 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else if (response.ReasonPhrase == "Bad Request")
                 {
-                    _context.API.ShowMsgError("Custom Filter Payload Error", "Please check out custom payload from settings panel");
-                    _context.API.OpenSettingDialog();
+                    if (!string.IsNullOrEmpty(filterPayload) && !(DB == _settings.RelationDatabaseId))
+                    {
+                        _context.API.ShowMsgError("Custom Filter Payload Error", "Please check out custom payload from settings panel");
+                        _context.API.OpenSettingDialog();
+                    }
+
                     return FilterResults;
                 }
                 else
@@ -593,7 +597,7 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 return string.Empty;
             }
-            
+
         }
     }
 }

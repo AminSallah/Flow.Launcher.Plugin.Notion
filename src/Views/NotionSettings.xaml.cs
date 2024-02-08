@@ -47,7 +47,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         
 
-        private async void ClearCachedIcons(object sender, RoutedEventArgs e)
+        private async void ClearHiddenItems(object sender, RoutedEventArgs e)
         {
             var input = (UIElement)sender;
             var temp = input.IsEnabled;

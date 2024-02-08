@@ -14,7 +14,6 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         public int HiddenItemsCount
         {
             get => Main.HiddenItems.Count;
-            // Add OnPropertyChanged for HiddenItemsCount
             set
             {
                 OnPropertyChanged(nameof(HiddenItemsCount));

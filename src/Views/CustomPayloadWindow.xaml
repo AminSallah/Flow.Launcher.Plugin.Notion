@@ -215,7 +215,7 @@
                             Margin="10"
                             Width="150"
                             HorizontalContentAlignment="Center"
-                            ItemsSource="{Binding DefaultDBOptions}"
+                            ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
                             IsEnabled = "{Binding FilterSettingsVisibility}"
                             SelectedItem="{Binding Database}" SelectionChanged="ComboBox_SelectionChanged" />
                         </Grid>

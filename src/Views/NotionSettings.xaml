@@ -57,9 +57,8 @@
                     Margin="0,4,15,4"
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center"
-                    Click="ClearCachedIcons">
+                    Click="ClearHiddenItems">
                         <Label HorizontalAlignment="Center">
-                            
                             <TextBlock Text="{Binding HiddenItemsCount, StringFormat='Clear Hidden Pages:  {0}'}" />
                         </Label>
                         <Button.Style>
@@ -119,7 +118,7 @@
                     Width="150"
                     Margin="10,0,18,0"
                     HorizontalContentAlignment="Center"
-                    ItemsSource="{Binding Settings.DefaultRecentCountOptions}"
+                    ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
                     SelectedItem="{Binding Settings.DefaultDatabase}"
                     SelectionChanged="Database_SelectionChanged"/>
                 <ui:FontIcon Glyph="&#xe923;" Style="{StaticResource Glyph}" />
@@ -138,7 +137,7 @@
             Width="150"
             Margin="10,0,18,0"
             HorizontalContentAlignment="Center"
-            ItemsSource="{Binding Settings.DefaultRecentCountOptions}"
+            ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
             SelectedItem="{Binding Settings.RelationDatabase}" 
                     Loaded="RelationComboBox_Loaded"
             />

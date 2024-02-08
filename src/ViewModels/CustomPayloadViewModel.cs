@@ -27,8 +27,6 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         public bool Status { get => status; set => SetProperty(ref status, value); }
 
         public Settings Settings { get; init; }
-        
-        public IEnumerable<string> DefaultDBOptions => Settings.SharedDB.Keys.ToList();
         public CustomPayloadViewModel(Settings settings)
         {
             this.Settings = settings;
