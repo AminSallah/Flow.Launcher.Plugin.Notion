@@ -42,7 +42,7 @@ namespace Flow.Launcher.Plugin.Notion
 
         }
         private static string _defaultIconPath = "Images\\app.png";
-        private static string _emojiIconPath = "icons\\emojis";
+        private static string _emojiIconPath = "Icons\\emojis";
         private string _iconPath;
         private PluginInitContext _context { get; set; }
         private Settings _settings { get; set; }
@@ -51,7 +51,7 @@ namespace Flow.Launcher.Plugin.Notion
         {
             this._context = context;
             this._settings = settings;
-            _iconPath = Path.Combine("icons", "icons");
+            _iconPath = Path.Combine("Icons", "icons");
         }
 
         internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 100, bool Force = false, string Value = "page")

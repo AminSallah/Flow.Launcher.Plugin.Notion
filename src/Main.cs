@@ -43,19 +43,28 @@ namespace Flow.Launcher.Plugin.Notion
         public static Dictionary<string, JsonElement> ProjectsId = LoadJsonData(RelationCachePath);
 
         public Dictionary<string, JsonElement> searchResults = LoadJsonData(FullCachePath);
-
+        
         public async Task InitAsync(PluginInitContext context)
         {
             Context = context;
             this._settings = context.API.LoadSettingJsonStorage<Settings>();
-            DatabaseCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "database.json");
+
+            string cacheDirectory = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache");
+            string icons = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "Icons","icons");
+            DirExist(cacheDirectory);
+            DirExist(icons);
+            
+            DatabaseCachePath = System.IO.Path.Combine(cacheDirectory, "database.json");
             _settings.DatabaseCachePath = DatabaseCachePath;
-            RelationCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "relation.json");
+            PathExist(_settings.DatabaseCachePath);
+            RelationCachePath = System.IO.Path.Combine(cacheDirectory, "relation.json");
             _settings.RelationCachePath = RelationCachePath;
-            HiddenItemsPath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "HiddenItems.txt");
-            HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
-            FullCachePath = System.IO.Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache", "search.json");
+            PathExist(_settings.RelationCachePath);
+            HiddenItemsPath = System.IO.Path.Combine(cacheDirectory, "HiddenItems.txt");
+            PathExist(HiddenItemsPath);
+            FullCachePath = System.IO.Path.Combine(cacheDirectory, "search.json");
             _settings.FullCachePath = FullCachePath;
+            PathExist(_settings.FullCachePath);
             try
             {
                 this._notionBlockTypes = new NotionBlockTypes(this.Context);
@@ -99,8 +108,7 @@ namespace Flow.Launcher.Plugin.Notion
 
 
             CustomImagesDirectory = System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "Icons", "CustomIcons");
-            if (!Directory.Exists(Main.CustomImagesDirectory))
-                Directory.CreateDirectory(Main.CustomImagesDirectory);
+            DirExist(CustomImagesDirectory);
             Context.API.VisibilityChanged += OnVisibilityChanged;
 
 
@@ -117,9 +125,21 @@ namespace Flow.Launcher.Plugin.Notion
 
             }
         }
+        void PathExist(string path)
+        {
+            if (!Path.Exists(path))
+            {
+                File.Create(path);
+            }
 
-
-
+        }
+        void DirExist(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
 
         public static Dictionary<string, JsonElement> LoadJsonData(string filePath)
         {
