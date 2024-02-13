@@ -36,6 +36,11 @@
 ## Installation Process
 1. **Plugin Installation:**
    - Start by installing the plugin.
+     In flow launcher query paste
+     
+     ```
+     pm install notion by Amin Salah
+     ```
 
 2. **Plugin Activation:**
    - Trigger the plugin using the action keyword `c`.
