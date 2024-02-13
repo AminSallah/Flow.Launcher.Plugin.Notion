@@ -95,6 +95,20 @@
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests (Beta)" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
+                </StackPanel>
+                <ui:ToggleSwitch
+                    Grid.Column="2"
+                    IsOn="{Binding Settings.FailedRequests}"
+                    Style="{DynamicResource SideToggleSwitch}" />
+                <ui:FontIcon Glyph="&#xecc5;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
+        <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Enable Icons" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="Require restart flow launcher with internet connection."/>
                 </StackPanel>

@@ -25,11 +25,13 @@ namespace Flow.Launcher.Plugin.Notion
     public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IAsyncReloadable
     {
         DateTime refresh_search = DateTime.Now;
+        private ApiCacheManager _apiCacheManager;
         public static int secondsThreshold = 30;
         private static string DatabaseCachePath;
         private static string RelationCachePath;
         private static string FullCachePath;
         public static string HiddenItemsPath;
+        public static string ImagesPath;
         static Dictionary<string, object> dataDict = new Dictionary<string, object>();
         private PluginInitContext Context;
         internal NotionBlockTypes? _notionBlockTypes;
@@ -43,17 +45,18 @@ namespace Flow.Launcher.Plugin.Notion
         public static Dictionary<string, JsonElement> ProjectsId = LoadJsonData(RelationCachePath);
 
         public Dictionary<string, JsonElement> searchResults = LoadJsonData(FullCachePath);
-        
+
         public async Task InitAsync(PluginInitContext context)
         {
             Context = context;
+            ImagesPath = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "Images");
             this._settings = context.API.LoadSettingJsonStorage<Settings>();
 
             string cacheDirectory = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "cache");
-            string icons = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "Icons","icons");
+            string icons = Path.Combine(context.CurrentPluginMetadata.PluginDirectory, "Icons", "icons");
             DirExist(cacheDirectory);
             DirExist(icons);
-            
+
             DatabaseCachePath = System.IO.Path.Combine(cacheDirectory, "database.json");
             _settings.DatabaseCachePath = DatabaseCachePath;
             PathExist(_settings.DatabaseCachePath);
@@ -69,6 +72,7 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 this._notionBlockTypes = new NotionBlockTypes(this.Context);
                 this._notionDataParser = new NotionDataParser(this.Context, _settings);
+                this._apiCacheManager = new ApiCacheManager(context);
             }
             catch { }
 
@@ -104,8 +108,6 @@ namespace Flow.Launcher.Plugin.Notion
                 RequestNewCache = true;
 
             Main._viewModel = new SettingsViewModel(this._settings);
-
-
 
             CustomImagesDirectory = System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "Icons", "CustomIcons");
             DirExist(CustomImagesDirectory);
@@ -381,6 +383,13 @@ namespace Flow.Launcher.Plugin.Notion
         {
             if (e.IsVisible)
             {
+                if (_settings.FailedRequests && IsInternetConnected())
+                {
+                    Task.Run(async () =>
+                    {
+                        await RetryCachedFunctions();
+                    });
+                }
                 DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
                 double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
                 if (minutesDifference > secondsThreshold)
@@ -623,7 +632,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             foreach (var item in today_tasks)
                             {
-                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty), item.Key).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty)))
+                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase), item.Key).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase)))
                                 {
                                     var result = new Result
                                     {
@@ -1649,6 +1658,22 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
         }
+        void HideItems(List<string> ItemsId)
+        {
+            /*foreach (var item in ItemsId)
+            {
+                if (!HiddenItems.Contains(item))
+                    File.AppendAllLinesAsync(HiddenItemsPath, new string[] {item});
+            }*/
+
+            File.AppendAllLines(HiddenItemsPath, ItemsId);
+
+        }
+        void UnHideItems(List<string> ItemId)
+        {
+            HiddenItems.RemoveAll(_item => ItemId.Contains(_item));
+            File.WriteAllLines(HiddenItemsPath, HiddenItems);
+        }
 
         void OpenNotionPage(string url)
         {
@@ -1810,7 +1835,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        private async Task CreatePage(Dictionary<string, object> Datadict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false)
+        public async Task<HttpResponseMessage> CreatePage(Dictionary<string, object> Datadict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false)
         {
             try
             {
@@ -1880,10 +1905,12 @@ namespace Flow.Launcher.Plugin.Notion
                             string notionUrl = $"notion://www.notion.so/{created_PageID}";
                             OpenNotionPage(notionUrl);
                         }
+                        return response;
                     }
                     else
                     {
                         Context.API.ShowMsgError($"Error: {response.StatusCode}", response.ReasonPhrase);
+                        return null;
                     }
                 }
             }
@@ -1895,10 +1922,17 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
-
+                    if (_settings.FailedRequests)
+                    {
+                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { Datadict, children, DatabaseId, open });
+                        Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
+                    }
+                    else
+                    {
+                        Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
+                    }
                 }
-
+                return null;
             }
         }
 
@@ -1917,11 +1951,11 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        async Task EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null)
+        async Task<HttpResponseMessage> EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null)
         {
             try
             {
-                var (data, children, DatabaseId) = FormatData(filteredQueryEditing, Mode:"Edit" ,DbNameInCache: databaseId.FirstOrDefault(kv => Convert.ToString(kv.Value.GetProperty("id").ToString()) == Convert.ToString(searchResults[pageId][2])).Key);
+                var (data, children, DatabaseId) = FormatData(filteredQueryEditing, Mode: "Edit", DbNameInCache: databaseId.FirstOrDefault(kv => Convert.ToString(kv.Value.GetProperty("id").ToString()) == Convert.ToString(searchResults[pageId][2])).Key);
                 using (HttpClient client = new HttpClient())
                 {
                     HttpResponseMessage response = null;
@@ -2002,10 +2036,12 @@ namespace Flow.Launcher.Plugin.Notion
                         // {
                         //     await this._notionDataParser.GetStartCursour(delay: 14000, manuanl_cursour: pageId);
                         // });
+                        return response;
                     }
                     else
                     {
                         Context.API.ShowMsgError($"Error: {response.StatusCode}", response.ReasonPhrase);
+                        return response;
                     }
                 }
             }
@@ -2017,36 +2053,30 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
-
+                    if (_settings.FailedRequests)
+                    {
+                        await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext });
+                        Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
+                    }
+                    else
+                    {
+                        Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
+                    }
                 }
+                return null;
             }
 
 
         }
 
-        void HideItems(List<string> ItemsId)
-        {
-            /*foreach (var item in ItemsId)
-            {
-                if (!HiddenItems.Contains(item))
-                    File.AppendAllLinesAsync(HiddenItemsPath, new string[] {item});
-            }*/
 
-            File.AppendAllLines(HiddenItemsPath, ItemsId);
-
-        }
-        void UnHideItems(List<string> ItemId)
+        public async Task<HttpResponseMessage> EditPropertyFromContext(string PageId, string payload, List<string> fromContext = null)
         {
-            HiddenItems.RemoveAll(_item => ItemId.Contains(_item));
-            File.WriteAllLines(HiddenItemsPath, HiddenItems);
-        }
-        async Task<HttpResponseMessage> EditPropertyFromContext(string PageId, string payload, List<string> fromContext = null)
-        {
-            HttpResponseMessage response = null;
-            payload = _notionDataParser.ConvertVariables(payload);
-            if (IsInternetConnected())
+            HttpResponseMessage response = new HttpResponseMessage();
+            try
             {
+                payload = _notionDataParser.ConvertVariables(payload);
+
                 using (HttpClient client = new HttpClient())
                 {
                     StringContent Payload = new StringContent(JsonConvert.SerializeObject(JsonConvert.DeserializeObject<dynamic>(payload)), Encoding.UTF8, "application/json");
@@ -2057,10 +2087,146 @@ namespace Flow.Launcher.Plugin.Notion
                     return response;
                 }
             }
-            else
+            catch (Newtonsoft.Json.JsonReaderException)
             {
-                Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
+                response.ReasonPhrase = "Bad Request";
                 return response;
+            }
+            catch
+            {
+                if (!IsInternetConnected())
+                {
+                    if (_settings.FailedRequests)
+                    {
+                        await _apiCacheManager.CacheFunction(nameof(EditPropertyFromContext), new List<object> { PageId, payload, fromContext });
+                        Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
+                    }
+                    else
+                    {
+                        Context.API.ShowMsgError($"Internet Connection Error", "Please check your internet connection.");
+
+                    }
+                }
+                return response;
+            }
+        }
+
+
+        private async Task RetryCachedFunctions()
+        {
+            List<CachedFunction> cachedFunctionsCopy = _apiCacheManager.cachedFunctions.ToList();
+
+            foreach (var cachedFunction in cachedFunctionsCopy)
+            {
+                var methodInfo = typeof(Main).GetMethod(cachedFunction.FunctionName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (methodInfo != null)
+                {
+                    try
+                    {
+                        var convertedArguments = cachedFunction.Arguments.Select(arg => ConvertToExpectedType(arg)).ToList();
+                        var task = (Task<HttpResponseMessage>)methodInfo.Invoke(this, convertedArguments.ToArray());
+                        var response = await task;
+
+
+                        if (response.IsSuccessStatusCode || response.ReasonPhrase == "Bad Request")
+                        {
+                            _apiCacheManager.cachedFunctions.Remove(cachedFunction);
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.API.LogException("Main", "An error at retry on failed api requests", ex, "RetryCachedFunctions");
+                    }
+                }
+            }
+            _apiCacheManager.SaveCacheToFile();
+
+        }
+
+        private object ConvertToExpectedType(object arg)
+        {
+            if (arg is JObject jObject)
+            {
+                return jObject.ToObject<Dictionary<string, object>>();
+            }
+
+            return arg;
+        }
+    }
+
+
+
+
+    public class CachedFunction
+    {
+        public string FunctionName { get; set; }
+        public List<object> Arguments { get; set; }
+    }
+
+    public class ApiCacheManager
+    {
+        public List<CachedFunction> cachedFunctions;
+        private PluginInitContext _context;
+
+        public ApiCacheManager(PluginInitContext context)
+        {
+            this._context = context;
+            InitializeCachedFunctions();
+        }
+        async Task InitializeCachedFunctions()
+        {
+            cachedFunctions = await GetCachedFunctions();
+        }
+        public async Task CacheFunction(string functionName, List<object> arguments)
+        {
+            var existingFunction = cachedFunctions.FirstOrDefault(f => f.FunctionName == functionName && ArgumentsMatch(f.Arguments, arguments));
+
+            if (existingFunction == null)
+            {
+                cachedFunctions.Add(new CachedFunction
+                {
+                    FunctionName = functionName,
+                    Arguments = arguments
+                });
+
+                await SaveCacheToFile();
+            }
+        }
+        private bool ArgumentsMatch(List<object> args1, List<object> args2)
+        {
+            if (args1.Count != args2.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < args1.Count; i++)
+            {
+                if (!args1[i].Equals(args2[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public async Task SaveCacheToFile()
+        {
+            string cacheJson = JsonConvert.SerializeObject(new { CachedFunctions = cachedFunctions }, Formatting.Indented);
+            await File.WriteAllTextAsync(Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, "FailedRequests.json"), cacheJson);
+        }
+        public async Task<List<CachedFunction>> GetCachedFunctions()
+        {
+            try
+            {
+                string cacheJson = await File.ReadAllTextAsync(Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, "FailedRequests.json"));
+                var cachedData = JsonConvert.DeserializeObject<dynamic>(cacheJson);
+                return JsonConvert.DeserializeObject<List<CachedFunction>>(cachedData.CachedFunctions.ToString());
+            }
+            catch
+            {
+                return new List<CachedFunction>();
             }
         }
     }

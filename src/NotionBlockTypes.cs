@@ -349,7 +349,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 { "type", "embed" },
                                 { "embed", new Dictionary<string, object>
                                     {
-                                        { "url", $"{Convert.ToString(dataDict)}" }
+                                        // { "url", $"{Convert.ToString(dataDict)}" }
+                                        
+                                        { "url", $"https://embed.notion.co/api/iframe?app=1&url={Convert.ToString(dataDict)}&key=656ac74fac4fff346b811dca7919d483" }
                                     }
                                 }
                };

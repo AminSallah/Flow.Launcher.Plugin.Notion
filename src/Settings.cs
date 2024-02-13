@@ -20,6 +20,7 @@ namespace Flow.Launcher.Plugin.Notion
 		public bool DatabaseIcons { get; set; } = true;
 		public bool PagesIcons { get; set; } = true;
 		public bool UseBrowser { get; set; } = false;
+		public bool FailedRequests { get; set; } = false;
 		public bool Hide { get; set; } = false;
 
 		[JsonIgnore]
@@ -52,18 +53,14 @@ namespace Flow.Launcher.Plugin.Notion
 				Title = "Complete",
 				JsonType = JsonType.Property,
 				Json = """{"properties":{"Status":{"status":{"name":"✅"}}}}""",
-				IcoPath = System.IO.Path.Combine(
-						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_complete.png"),
+				IcoPath = System.IO.Path.Combine(Main.ImagesPath,"item_complete.png"),
 			},
 			new CustomPayload
 			{
 				Title = "Delete",
 				JsonType = JsonType.Property,
 				Json = """{"archived" : true}""",
-				IcoPath = System.IO.Path.Combine(
-						  Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-						  "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images","item_delete.png"),
+				IcoPath = System.IO.Path.Combine(Main.ImagesPath,"item_delete.png"),
 			}
 		};
 
