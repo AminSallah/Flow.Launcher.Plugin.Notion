@@ -224,5 +224,13 @@ Right now, the plugin only supports converting to dates.
 
 
 
+
+# Say Thank You
+If you are enjoying Notion Plugin, then please support my work and enthusiasm by buying me a coffee on [https://ko-fi.com/amin_salah](https://ko-fi.com/amin_salah)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K5OBFG2)
+
+Please also help spread the word by sharing about the Flow launcher Notion Plugin on Twitter, Reddit, or any other social media platform you regularly use.
+
 # Licence
 The source code for this plugin is licensed under MIT.
