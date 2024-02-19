@@ -94,10 +94,4 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             }
         }
     }
-
-    public enum BrowserType
-    {
-        Chromium,
-        Firefox,
-    }
 }
