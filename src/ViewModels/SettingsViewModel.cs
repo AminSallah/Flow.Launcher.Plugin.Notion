@@ -1,4 +1,6 @@
 
+using System.Linq;
+
 namespace Flow.Launcher.Plugin.Notion.ViewModels
 {
     public class SettingsViewModel : BaseModel
@@ -29,5 +31,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 this.OnPropertyChanged();
             }
         }
+
+        
     }
 }

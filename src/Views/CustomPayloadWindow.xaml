@@ -208,16 +208,16 @@
                             FontSize="14"
                             Text="Database" />
 
-                            <ComboBox
-                             Grid.Column="1"
-                             Grid.Row="4"
-                            HorizontalAlignment="Left"
-                            Margin="10"
-                            Width="150"
-                            HorizontalContentAlignment="Center"
-                            ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
-                            IsEnabled = "{Binding FilterSettingsVisibility}"
-                            SelectedItem="{Binding Database}" SelectionChanged="ComboBox_SelectionChanged" />
+
+
+                            <ui:DropDownButton x:Name="dropDownButton" Grid.Row="4" Grid.Column="1" Margin="10" HorizontalAlignment="Left"
+                            VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
+                            <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False">
+                                <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode="{Binding ListBoxSelectionMode}" SelectionChanged="ListBox_SelectionChanged"
+                                SelectedItem="{Binding Databases}">
+                                </ListBox>
+                            </Popup>
+
                         </Grid>
                     </StackPanel>
 

@@ -467,38 +467,43 @@ namespace Flow.Launcher.Plugin.Notion
         {
             string url = $"https://api.notion.com/v1/databases/{DB}/query?";
             filterPayload = !string.IsNullOrEmpty(filterPayload) ? ConvertVariables(filterPayload) : filterPayload;
-            object payload = new ExpandoObject();
+            Dictionary<string, object> _payload =new Dictionary<string, object>
+            {
+                {"page_size" ,100}
+            };
             if (!string.IsNullOrEmpty(filterPayload))
             {
-                payload = new
-                {
-                    filter = JsonConvert.DeserializeObject<dynamic>(filterPayload),
-                    page_size = 100
-                };
+                _payload.Add("filter",JsonConvert.DeserializeObject<dynamic>(filterPayload));
             }
-            else
-            {
+            
 
-                payload = new
-                {
-                    page_size = 100
-                };
-
-            }
 
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
                 client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
-                var jsonPayload = JsonConvert.SerializeObject(payload);
+                var jsonPayload = JsonConvert.SerializeObject(_payload);
                 var response = await client.PostAsync(url, new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json"));
                 Dictionary<string, JsonElement> FilterResults = new Dictionary<string, JsonElement>();
                 string jsonString = string.Empty;
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
+                    JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    JArray allResults = new JArray();
+                    allResults.Merge(jsonObject["results"]);
+
+                    while ((bool)jsonObject["has_more"])
+                    {
+                        _payload["start_cursor"] = jsonObject["next_cursor"].ToString();
+                        response = client.PostAsync(url, new StringContent(JsonConvert.SerializeObject(_payload), System.Text.Encoding.UTF8, "application/json")).Result;
+                        jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                        allResults.Merge(jsonObject["results"]);
+                    }
+
                     JObject pages = JObject.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
-                    var TargetDatabaseMap = Main.databaseId.FirstOrDefault(x => x.Value.GetProperty("id").GetString() == DB).Value;
-                    foreach (var page in pages["results"])
+                    var TargetDatabase = Main.databaseId.FirstOrDefault(x => x.Value.GetProperty("id").GetString() == DB);
+                    var TargetDatabaseMap = TargetDatabase.Value;
+                    foreach (var page in allResults)
                     {
                         string Tags = null;
                         string project_name;
@@ -533,10 +538,10 @@ namespace Flow.Launcher.Plugin.Notion
                         string pageUrl = page["url"].ToString().Replace("https", "notion");
                         string id_page = page["id"].ToString();
                         string icon = IconParse(page["icon"]);
-                        var data = new List<string> { Tags, pageUrl, project_name, id_page, icon };
+                        var data = new List<string> { Name, Tags, pageUrl, project_name, icon, TargetDatabase.Key};
                         JsonDocument document = JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(data));
                         JsonElement element = document.RootElement;
-                        FilterResults[Name] = element;
+                        FilterResults[id_page] = element;
                     }
 
                     if (!string.IsNullOrEmpty(filePath))

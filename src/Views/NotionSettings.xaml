@@ -309,15 +309,15 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="150" Header="Database">
+                            <GridViewColumn Width="200" Header="Database">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Database}" />
+                                        <TextBlock Text="{Binding DatabasesString}" TextWrapping="Wrap"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Width="150" Header="Type">
+                            <GridViewColumn Width="100" Header="Type">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding JsonType}" />

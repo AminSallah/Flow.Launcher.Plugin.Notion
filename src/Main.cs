@@ -161,14 +161,15 @@ namespace Flow.Launcher.Plugin.Notion
         {
             var resultlist = new List<Result>();
             var dict = selected_result.ContextData as Dictionary<string, object>;
-
+            
             if (dict.ContainsKey("PageId"))
             {
                 if (dict["CreateFirst"] is bool)
                 {
                     foreach (var PropertyEdit in _settings.Filters)
                     {
-                        if (PropertyEdit.JsonType == JsonType.Property)
+                        if (PropertyEdit.Enabled && PropertyEdit.JsonType == JsonType.Property &&
+                            (PropertyEdit.Databases.Contains(dict["DBName"].ToString())|| PropertyEdit.Databases.Count == 0))
                         {
                             resultlist.Add(new Result
                             {
@@ -408,7 +409,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         _ = Task.Run(async () =>
                         {
-                            await this._notionDataParser.QueryDB(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{path.Title}.json"), DB: databaseId[path.Database].GetProperty("id").ToString(), filterPayload: path.Json);
+                            await this._notionDataParser.QueryDB(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{path.Title}.json"), DB: databaseId[path.Databases[0]].GetProperty("id").ToString(), filterPayload: path.Json);
                         });
                     }
                 }
@@ -577,7 +578,8 @@ namespace Flow.Launcher.Plugin.Notion
                                     $"notion://www.notion.so/{key.Replace("-", "")}", // Url
                                     searchResults[key][0].GetString(), // Name
                                     searchResults[key][1].GetString(), // Project of the item
-                                    searchResults[key][3].GetString() // Icon_path
+                                    searchResults[key][3].GetString(), // Icon_path
+                                    searchResults[key][2].GetString() // Database
                                 };
                         }
                     }
@@ -594,7 +596,8 @@ namespace Flow.Launcher.Plugin.Notion
                             $"notion://www.notion.so/{key.Replace("-","")}", // Url
                             searchResults[key][0].GetString(), // Name
                             searchResults[key][1].GetString(), // Project of the item
-                            searchResults[key][3].GetString() // Icon_path
+                            searchResults[key][3].GetString(), // Icon_path
+                            searchResults[key][2].GetString() // Database
 
                         };
                     }
@@ -627,7 +630,7 @@ namespace Flow.Launcher.Plugin.Notion
                     if (query.Search.ToLower().StartsWith(filter.Title.ToLower()))
                     {
                         AdvancedFilterMode = true;
-                        Dictionary<string, JsonElement> today_tasks = filter.Cachable ? LoadJsonData(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{filter.Title}.json")) : await this._notionDataParser.QueryDB(DB: databaseId[filter.Database].GetProperty("id").ToString(), filterPayload: filter.Json);
+                        Dictionary<string, JsonElement> today_tasks = filter.Cachable ? LoadJsonData(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{filter.Title}.json")) : await this._notionDataParser.QueryDB(DB: databaseId[filter.Databases[0]].GetProperty("id").ToString(), filterPayload: filter.Json);
                         if (today_tasks.Count > 0)
                         {
                             foreach (var item in today_tasks)
@@ -636,21 +639,23 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     var result = new Result
                                     {
-                                        Title = $"{item.Key}",
-                                        SubTitle = $"{item.Value[0]}",
-                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Value[3]}$",
+                                        Title = $"{item.Value[0]}",
+                                        SubTitle = $"{item.Value[1]}",
+                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Key}$",
                                         ContextData = new Dictionary<string, object>
                                         {
-                                            {"Title", $"{item.Key}" },
-                                            { "PageId", $"{item.Value[3]}" },
-                                            { "Url", $"{item.Value[1]}" },
-                                            { "Project_name", $"{item.Value[2]}" },
-                                            { "Tags", $"{item.Value[0]}" },
-                                            {"CreateFirst", false},
+                                            {"Title", $"{item.Value[0]}" },
+                                            { "PageId", $"{item.Key}" },
+                                            { "Url", $"{item.Value[2]}" },
+                                            { "DBName", $"{item.Value[5]}"},
+                                            { "Project_name", $"{item.Value[3]}" },
+                                            { "Tags", $"{item.Value[1]}" },
+                                            { "CreateFirst", false},
+                                            { "HideAll", today_tasks.Keys.ToList<string>()}
                                         },
                                         Action = c =>
                                         {
-                                            OpenNotionPage(Convert.ToString(item.Value[1]));
+                                            OpenNotionPage(Convert.ToString(item.Value[2]));
                                             return true;
                                         },
                                         IcoPath = item.Value[4].ToString()
@@ -852,6 +857,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {"Title", $"{item.Value[1]}" },
                                 { "PageId", $"{item.Key}" },
                                 { "Url", $"{item.Value[0]}" },
+                                { "DBName", databaseId.FirstOrDefault(_dB => _dB.Value.GetProperty("id").GetString() == item.Value[4].ToString()).Key },
                                 { "Project_name", $"{item.Value[2]}" },
                                 {"CreateFirst", false},
                                 {"HideAll", userInputSearch.Keys.ToList<string>()}

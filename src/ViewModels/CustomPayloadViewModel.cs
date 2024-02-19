@@ -11,16 +11,35 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private readonly PluginInitContext context;
         private string filterTitle;
         private string filterSubTitle;
-        private string database;
+        private List<string> databases;
         private string json;
         private string icoPath;
         private bool cachable;
         private bool status;
         private JsonType jsonType;
 
+
+        private System.Windows.Controls.SelectionMode _listBoxSelectionMode;
+
+        public System.Windows.Controls.ListBox listbox { get; set; }
+        public System.Windows.Controls.SelectionMode ListBoxSelectionMode
+        {
+            get { return _listBoxSelectionMode; }
+            set
+            {
+                if (_listBoxSelectionMode != value)
+                {
+                    _listBoxSelectionMode = value;
+                    OnPropertyChanged(nameof(ListBoxSelectionMode));
+                }
+            }
+        }
+
+
         public string FilterTitle { get => filterTitle; set => SetProperty(ref filterTitle, value); }
         public string FilterSubTitle { get => filterSubTitle; set => SetProperty(ref filterSubTitle, value); }
-        public string Database { get => database; set => SetProperty(ref database, value); }
+        public List<string> Databases { get => databases; set => SetProperty(ref databases, value); }
+
         public string Json { get => json; set => SetProperty(ref json, value); }
         public string IcoPath { get => icoPath; set => SetProperty(ref icoPath, value); }
         public bool Cachable { get => cachable; set => SetProperty(ref cachable, value); }
@@ -51,6 +70,16 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private void UpdateVisibility()
         {
             FilterSettingsVisibility = JsonType == JsonType.Filter;
+            if (FilterSettingsVisibility)
+            {
+                ListBoxSelectionMode = System.Windows.Controls.SelectionMode.Single;
+            }
+            else
+            {
+                ListBoxSelectionMode = System.Windows.Controls.SelectionMode.Multiple;
+            }
+            listbox.SelectionMode = ListBoxSelectionMode;
+
         }
 
         public JsonType JsonType
@@ -76,26 +105,26 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 errorMessage = "The Title cannot be duplicated.";
                 return false;
             }
-            if (FilterSettingsVisibility && string.IsNullOrEmpty(Database))
+            // if (FilterSettingsVisibility && Databases.Count != 1)
+            if (Databases.Count == 0)
             {
                 errorMessage = "The Database cannot be empty.";
                 return false;
             }
 
-            if(!FilterSettingsVisibility) 
-                Database = string.Empty;
+            
 
 
             var Filter = new CustomPayload
             {
                 Title = FilterTitle,
                 SubTitle = FilterSubTitle,
-                Database = Database,
                 JsonType= JsonType,
                 Json = Json,
                 Cachable = Cachable,
                 Enabled = Status,
                 IcoPath = IcoPath,
+                Databases = Databases,
             };
 
             Settings.Filters.Add(Filter);
