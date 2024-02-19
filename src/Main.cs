@@ -492,7 +492,8 @@ namespace Flow.Launcher.Plugin.Notion
             if (editingPatternIdMatch.Success)
             {
                 editingMode = true;
-                filtered_query["databaseId"] = databaseId.FirstOrDefault(_dB => _dB.Value.GetProperty("id").GetString() == searchResults[editingPatternIdMatch.Groups[1].Value][2].GetString()).Key;
+                if (!string.IsNullOrEmpty(searchResults[editingPatternIdMatch.Groups[1].Value][2].GetString()))
+                    filtered_query["databaseId"] = databaseId.FirstOrDefault(_dB => _dB.Value.GetProperty("id").GetString() == searchResults[editingPatternIdMatch.Groups[1].Value][2].GetString()).Key;
             }
             else
             {
@@ -991,7 +992,8 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (!query.Search.ToLower().StartsWith("search") && query.Search != "refresh" && !AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
+            // if (!query.Search.ToLower().StartsWith("search") && query.Search != "refresh" && !AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
+            if (!AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
             {
                 if (!(query.Search.Contains("*") || query.Search.Contains("^")))
                 {
@@ -1058,7 +1060,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 return true;
                             },
                             AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} {query.Search} {editing_title.Replace("Edit ", "")}",
-                            TitleHighlightData = new List<int> { 8, 9, 10, 11, 12 },
                         };
                         resultList.Add(result);
                     }
