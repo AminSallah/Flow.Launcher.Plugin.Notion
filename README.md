@@ -85,7 +85,7 @@
    - Navigate to `Settings > Plugins > Notion`.
    - Choose your relational database and await the success message.
 
-   > ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
+    ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
 
 9. Finally, restart Flow Launcher.
 10. After Flow Launcher opens, if the search cache is provided properly (require internet connection), you will see all shared pages with your token. The create mode is only allowed when there is no match with the query and shared pages.
@@ -93,6 +93,9 @@
     > In case of any error Relod Plugins data or Restart flow lunacher with good internet connection to build a cache.
 
 
+> **Note:**
+> 
+> To enhance the visual appeal and facilitate the display of SVG icons in Flow Launcher, I recommend installing the SVG Explorer Extension for SVG preview. You can find the extension [here](https://github.com/tibold/svg-explorer-extension/releases).
 
 # Demos
 
