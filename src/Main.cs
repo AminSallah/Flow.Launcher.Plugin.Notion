@@ -636,7 +636,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             foreach (var item in today_tasks)
                             {
-                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase), item.Key).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase)))
+                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase).ToLower(), item.Value[0].GetString().ToLower()).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase)))
                                 {
                                     var result = new Result
                                     {
