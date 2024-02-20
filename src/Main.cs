@@ -161,7 +161,7 @@ namespace Flow.Launcher.Plugin.Notion
         {
             var resultlist = new List<Result>();
             var dict = selected_result.ContextData as Dictionary<string, object>;
-            
+
             if (dict.ContainsKey("PageId"))
             {
                 if (dict["CreateFirst"] is bool)
@@ -169,7 +169,7 @@ namespace Flow.Launcher.Plugin.Notion
                     foreach (var PropertyEdit in _settings.Filters)
                     {
                         if (PropertyEdit.Enabled && PropertyEdit.JsonType == JsonType.Property &&
-                            (PropertyEdit.Databases.Contains(dict["DBName"].ToString())|| PropertyEdit.Databases.Count == 0))
+                            (PropertyEdit.Databases.Contains(dict["DBName"].ToString()) || PropertyEdit.Databases.Count == 0))
                         {
                             resultlist.Add(new Result
                             {
@@ -636,7 +636,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             foreach (var item in today_tasks)
                             {
-                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase).ToLower(), item.Value[0].GetString().ToLower()).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty,StringComparison.CurrentCultureIgnoreCase)))
+                                if (Context.API.FuzzySearch(query.Search.Replace(filter.Title, string.Empty, StringComparison.CurrentCultureIgnoreCase).ToLower(), item.Value[0].GetString().ToLower()).Score > 0 || string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty, StringComparison.CurrentCultureIgnoreCase)))
                                 {
                                     var result = new Result
                                     {
@@ -649,7 +649,7 @@ namespace Flow.Launcher.Plugin.Notion
                                             { "PageId", $"{item.Key}" },
                                             { "Url", $"{item.Value[2]}" },
                                             { "DBName", $"{item.Value[5]}"},
-                                            { "Project_name", $"{item.Value[3]}" },
+                                            { "Project_name", $"{item.Value[3]}"},
                                             { "Tags", $"{item.Value[1]}" },
                                             { "CreateFirst", false},
                                             { "HideAll", today_tasks.Keys.ToList<string>()}
@@ -746,22 +746,22 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             foreach (var project in ProjectsId)
                             {
-                                if (Context.API.FuzzySearch(splitQuery[1].ToLower(), project.Key.ToLower()).Score > 1 || string.IsNullOrEmpty(splitQuery[1]))
+                                if (Context.API.FuzzySearch(splitQuery[1].ToLower(), project.Value[0].GetString().ToLower()).Score > 1 || string.IsNullOrEmpty(splitQuery[1]))
                                 {
                                     var result = new Result
                                     {
-                                        Title = project.Key,
+                                        Title = project.Value[0].GetString(),
                                         SubTitle = $"",
-                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project.Key}$",
+                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${project.Value[0]}$",
                                         Score = -1,
                                         Action = c =>
                                         {
                                             if (c.SpecialKeyState.CtrlPressed)
                                             {
-                                                OpenNotionPage(project.Value[1].ToString());
+                                                OpenNotionPage(project.Value[2].ToString());
                                                 return true;
                                             }
-                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!{project.Key} ");
+                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[0].Trim()}{(splitQuery[0].Length > 0 ? " " : "")}!{project.Value[0]} ");
                                             return false;
                                         },
                                         IcoPath = project.Value[4].ToString()
@@ -1012,7 +1012,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     { "PageId", null },
                                     { "Url", null },
                                     { "Project_name", filtered_query.ContainsKey("Project") ? filtered_query["Project"]: "" },
-                                    {"CreateFirst", filtered_query}
+                                    { "CreateFirst", filtered_query}
                                 },
                                 Action = c =>
                                 {
@@ -1046,12 +1046,12 @@ namespace Flow.Launcher.Plugin.Notion
                             ContextData =
                                     new Dictionary<string, object>
                                     {
-                                            { "Title", filtered_query["Name"].ToString().Trim() },
-                                            { "tags", new List<string> { tagSubtitle } },
-                                            { "Project_name", new List<string> { PSubtitle } },
-                                            { "id", editingPatternIdMatch.Groups[1].Value },
-                                            { "edit", true },
-                                            {"CreateFirst", false},
+                                        { "Title", string.IsNullOrEmpty(filtered_query["Name"].ToString().Trim()) ? searchResults[editingPatternIdMatch.Groups[1].Value][0].GetString() : filtered_query["Name"].ToString() },
+                                        { "tags", new List<string> { tagSubtitle } },
+                                        { "Project_name", filtered_query.ContainsKey("Project") ? filtered_query["Project"]: searchResults[editingPatternIdMatch.Groups[1].Value][1].GetString() },
+                                        { "id", editingPatternIdMatch.Groups[1].Value },
+                                        { "edit", true },
+                                        { "CreateFirst", new object()}
                                     },
                             Action = c =>
                             {
@@ -1354,7 +1354,7 @@ namespace Flow.Launcher.Plugin.Notion
                         var userInput = splitQuery[1].Trim();
                         if (splitQuery.Length == 2)
                         {
-                            var filteredItems = ProjectsId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
+                            var filteredItems = ProjectsId.Values.Where(item => item[0].GetString().ToLower().Contains(userInput.ToLower())).ToList();
                             if (filteredItems.Count == 1)
                             {
                                 dataDict["Project"] = string.Join("", filteredItems);
@@ -1447,8 +1447,9 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         var splitQuery = ProjectMatch[0].Value.Split('!');
                         var userInput = splitQuery[1].Trim();
-                        foreach (var item in ProjectsId.Keys)
+                        foreach (var _values in ProjectsId.Values)
                         {
+                            string item = _values[0].GetString();
                             if (Context.API.FuzzySearch(item, userInput).Score > 1)
                             {
                                 dataDict["Project"] = item;
@@ -1796,7 +1797,8 @@ namespace Flow.Launcher.Plugin.Notion
 
                 if (dataDict.ContainsKey("Project"))
                 {
-                    var ProjectRelationID = ProjectsId[Convert.ToString(dataDict["Project"]).Trim()][3];
+                    // var ProjectRelationID = ProjectsId[Convert.ToString(dataDict["Project"]).Trim()][3];
+                    var ProjectRelationID = ProjectsId.FirstOrDefault(_project => _project.Value[0].GetString() == Convert.ToString(dataDict["Project"])).Key;
                     if (!data.ContainsKey("Project"))
                     {
                         data.Add(ProjectName, new Dictionary<string, object>());

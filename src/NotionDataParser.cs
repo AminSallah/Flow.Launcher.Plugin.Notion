@@ -29,8 +29,8 @@ namespace Flow.Launcher.Plugin.Notion
                 try
                 {
                     return Main.ProjectsId.ToDictionary(
-                                        kv => kv.Value[3].ToString(),
-                                        kv => kv.Key
+                                        kv => kv.Key,
+                                        kv => kv.Value[0].GetString()
                                     );
                 }
                 catch

@@ -95,7 +95,7 @@
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests" />
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests (Beta)" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
                 </StackPanel>
                 <ui:ToggleSwitch
