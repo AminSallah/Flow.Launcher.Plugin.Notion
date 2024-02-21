@@ -427,6 +427,7 @@ namespace Flow.Launcher.Plugin.Notion
         public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
         {
             List<Result> resultList = new List<Result>();
+            bool IsWritingBlock = query.Search.Contains("*") || query.Search.Contains("^");
 
             if (string.IsNullOrEmpty(_settings.InernalInegrationToken))
             {
@@ -694,7 +695,7 @@ namespace Flow.Launcher.Plugin.Notion
                 KeyForId = databaseId.FirstOrDefault(pair => pair.Value.GetProperty("id").ToString() == searchResults[editingPatternIdMatch.Groups[1].Value][2].ToString()).Key;
             }
 
-            if (query.Search.Contains("!"))
+            if (query.Search.Contains("!") && !IsWritingBlock)
             {
                 if (ProjectsId.Count == 0)
                 {
@@ -874,7 +875,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (query.Search.Contains("@") && (bool)filtered_query["IsDefaultDB"] == true && !editingMode)
+            if (query.Search.Contains("@") && (bool)filtered_query["IsDefaultDB"] == true && !editingMode && !IsWritingBlock)
             {
                 var splitQuery = query.Search.Split('@');
                 timeForce = true;
@@ -908,7 +909,7 @@ namespace Flow.Launcher.Plugin.Notion
                 return resultList;
             }
 
-            if (query.Search.Contains("[") && filtered_query.ContainsKey("link") && string.IsNullOrEmpty(UrlMap))
+            if (query.Search.Contains("[") && filtered_query.ContainsKey("link") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock)
             {
                 JsonElement.ArrayEnumerator UrlMapOptions = databaseId[filtered_query["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
                 if (UrlMapOptions.Count() > 1)
@@ -941,7 +942,7 @@ namespace Flow.Launcher.Plugin.Notion
                     UrlMap = UrlMapOptions.First().GetString();
                 }
             }
-            else if (!query.Search.Contains("["))
+            else if (!query.Search.Contains("[") && !IsWritingBlock)
             {
                 UrlMap = null;
             }
@@ -995,7 +996,7 @@ namespace Flow.Launcher.Plugin.Notion
             // if (!query.Search.ToLower().StartsWith("search") && query.Search != "refresh" && !AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
             if (!AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
             {
-                if (!(query.Search.Contains("*") || query.Search.Contains("^")))
+                if (!IsWritingBlock)
                 {
                     if (!editingMode)
                     {
@@ -1185,7 +1186,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (query.Search.Contains("#"))
+            if (query.Search.Contains("#") && !IsWritingBlock)
             {
                 var userInput = query.Search.Split('#')[^1].Trim();
                 JsonElement MultiSelectOptions = databaseId[KeyForId].GetProperty("multi_select");
@@ -1919,7 +1920,7 @@ namespace Flow.Launcher.Plugin.Notion
                     else
                     {
                         Context.API.ShowMsgError($"Error: {response.StatusCode}", response.ReasonPhrase);
-                        return null;
+                        return response;
                     }
                 }
             }
@@ -1928,12 +1929,15 @@ namespace Flow.Launcher.Plugin.Notion
                 if (IsInternetConnected())
                 {
                     Context.API.ShowMsgError($"Proccessing Error", "Unexpected Error While Proccesing Propeties.");
+                    HttpResponseMessage FakeRespone = new HttpResponseMessage ();
+                    FakeRespone.ReasonPhrase = "Bad Request";
+                    return FakeRespone;
                 }
                 else
                 {
                     if (_settings.FailedRequests)
                     {
-                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { Datadict, children, DatabaseId, open });
+                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { Datadict, null, DatabaseId, open });
                         Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
                     }
                     else
@@ -2059,6 +2063,9 @@ namespace Flow.Launcher.Plugin.Notion
                 if (IsInternetConnected())
                 {
                     Context.API.ShowMsgError($"Proccessing Error", "Unexpected Error While Proccesing Propeties.");
+                    HttpResponseMessage FakeRespone = new HttpResponseMessage ();
+                    FakeRespone.ReasonPhrase = "Bad Request";
+                    return FakeRespone;
                 }
                 else
                 {
