@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0-windows</TargetFramework>
+		<AssemblyName>Flow.Launcher.Plugin.Notion</AssemblyName>
+		<PackageId>Flow.Launcher.Plugin.Notion</PackageId>
+		<Authors>Amin</Authors>
+		<PackageProjectUrl>https://github.com/AminSallah/Flow.Launcher.Plugin.Notion</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/AminSallah/Flow.Launcher.Plugin.Notion</RepositoryUrl>
+		<PackageTags>flow-launcher flow-plugin</PackageTags>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+
+	<PropertyGroup>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+	</PropertyGroup>
+	
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugSymbols>false</DebugSymbols>
+		<DebugType>None</DebugType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="plugin.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+
+		<None Update="Images\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Icons\**\*">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	
+	
+	<ItemGroup>
+		<PackageReference Include="Flow.Launcher.Plugin" Version="4.1.1" />
+		<PackageReference Include="Microsoft.Recognizers.Text" Version="1.8.8" />
+		<PackageReference Include="Microsoft.Recognizers.Text.DateTime" Version="1.8.8" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="ModernWpfUI" Version="0.9.6" />
+	</ItemGroup>
+
+
+</Project>
