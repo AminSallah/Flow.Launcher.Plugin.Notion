@@ -41,6 +41,7 @@
                         Text="{Binding InernalInegrationToken}"
                         TextWrapping="NoWrap" />
                 </StackPanel>
+                <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -74,7 +75,7 @@
                     </Button>
                     <ui:ToggleSwitch IsOn="{Binding Settings.Hide}" Style="{DynamicResource SideToggleSwitch}" />
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xed1a;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -88,7 +89,7 @@
                     Grid.Column="2"
                     IsOn="{Binding Settings.UseBrowser}"
                     Style="{DynamicResource SideToggleSwitch}" />
-                <ui:FontIcon Glyph="&#xf6fa;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xe774;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 

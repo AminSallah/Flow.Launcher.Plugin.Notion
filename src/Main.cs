@@ -537,20 +537,28 @@ namespace Flow.Launcher.Plugin.Notion
             if (filtered_query.ContainsKey("Project"))
             {
                 PTimer = filtered_query["Project"].ToString();
-                if (DBSubtitle == "" || editingMode)
+                if (DBSubtitle == "")
                 {
                     PSubtitle = $"{filtered_query["Project"]} selected as a Project";
                 }
                 else
                 {
-                    PSubtitle = $", {filtered_query["Project"]} selected as a Project";
+                    DBSubtitle = DBSubtitle.Replace(" selected as a database"," / ");
+                    PSubtitle = $"{filtered_query["Project"]}";
                 }
             }
 
             string tagTimer = string.Empty; string tagSubtitle = string.Empty;
             if (filtered_query.ContainsKey("tags"))
             {
-                tagSubtitle = $" :{filtered_query["tags"]} selected as a Tag";
+                if (filtered_query["tags"].ToString().Split(",").Count() == 1)
+                {
+                    tagSubtitle = $" :{filtered_query["tags"]} selected as a Tag";
+                }
+                else
+                {
+                    tagSubtitle = $" :{filtered_query["tags"]}";
+                }
                 tagTimer = $" :{filtered_query["tags"]}";
             }
 
@@ -1038,10 +1046,11 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             editing_title = $"Renaming {filtered_query["Name"]}";
                         }
+                        string SubTitle = string.IsNullOrEmpty(PSubtitle) ? $"{tagSubtitle}{link}{TimeValue}" : $"{DBSubtitle}{PSubtitle}{tagSubtitle}{link}{TimeValue}";
                         var result = new Result
                         {
                             Title = $"{editing_title}",
-                            SubTitle = $"{PSubtitle}{tagSubtitle}{link}{TimeValue}",
+                            SubTitle = SubTitle,
                             Score = 99,
                             IcoPath = searchResults[editingPatternIdMatch.Groups[1].Value][3].ToString(),
                             ContextData =
