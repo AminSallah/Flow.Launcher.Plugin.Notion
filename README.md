@@ -141,6 +141,7 @@
      Show shared databases with your integration. You can perform the following actions:
      - Select a database to create a page within by pressing `Enter` or use `Mouse Down`
      - Open the database page in Notion by pressing `Ctrl + Enter` or `Ctrl + Mouse Down`
+     - Quickly set the database as default database by pressing `Alt + Enter` or `Alt + Mouse Down`
        
 
     ## `c + !`
