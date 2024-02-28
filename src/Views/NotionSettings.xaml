@@ -96,16 +96,51 @@
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Automatic Open" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, Pages Created Will Automatically Open by Default Upon Creation." />
                 </StackPanel>
                 <ui:ToggleSwitch
                     Grid.Column="2"
-                    IsOn="{Binding Settings.FailedRequests}"
+                    IsOn="{Binding Settings.PopUpPageAfterCreate}"
                     Style="{DynamicResource SideToggleSwitch}" />
+                <ui:FontIcon Glyph="&#xe7c3;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
+            <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button
+                    Width="Auto"
+                    Margin="0,4,15,4"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Click="ClearFailedRequests">
+                        <Label HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding CachedFailedRequests, StringFormat='Clear Failed Requests:  {0}'}" />
+                        </Label>
+                        <Button.Style>
+                            <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CachedFailedRequests}" Value="0">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <ui:ToggleSwitch IsOn="{Binding Settings.FailedRequests}" Style="{DynamicResource SideToggleSwitch}" />
+                </StackPanel>
                 <ui:FontIcon Glyph="&#xecc5;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
+
+
 
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
@@ -326,10 +361,10 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Width="100" Header="Cachable">
+                            <GridViewColumn Width="180" Header="Cachable">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Cachable}" />
+                                        <TextBlock Text="{Binding CacheType}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

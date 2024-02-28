@@ -7,13 +7,13 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
     {
         private string _name = string.Empty;
         private string _subTitle = string.Empty;
+        private int _timeout = 100;
         private List<string> _databases = new List<string>();
         private string _json;
-        private string _icopath = System.IO.Path.Combine(
-                          System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData),
-                          "FlowLauncher", "Plugins", "Flow.Launcher.Plugin.Notion", "Images", "app.png");
-        private bool _cachable = false;
+        private string _icopath = System.IO.Path.Combine(Main.ImagesPath, "app.png");
+        private CacheTypes _cacheType = CacheTypes.Disabled;
         private bool _status = true;
+        private bool _count = true;
         private JsonType _jsonType = JsonType.Filter;
 
         public string Title
@@ -23,6 +23,15 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             {
                 _name = value;
                 OnPropertyChanged(nameof(Title));
+            }
+        }
+        public int Timeout
+        {
+            get => _timeout;
+            set
+            {
+                _timeout = value;
+                OnPropertyChanged(nameof(Timeout));
             }
         }
 
@@ -86,13 +95,13 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             }
         }
 
-        public bool Cachable
+        public CacheTypes CacheType
         {
-            get => _cachable;
+            get => _cacheType;
             set
             {
-                _cachable = value;
-                OnPropertyChanged(nameof(Cachable));
+                _cacheType = value;
+                OnPropertyChanged(nameof(CacheType));
             }
         }
 
@@ -103,6 +112,16 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             {
                 _status = value;
                 OnPropertyChanged(nameof(Enabled));
+            }
+        }
+
+        public bool Count
+        {
+            get => _count;
+            set
+            {
+                _count = value;
+                OnPropertyChanged(nameof(Count));
             }
         }
     }

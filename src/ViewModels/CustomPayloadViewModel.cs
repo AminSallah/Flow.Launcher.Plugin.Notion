@@ -14,8 +14,10 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private List<string> databases;
         private string json;
         private string icoPath;
-        private bool cachable;
+        private int timeout;
+        private CacheTypes cacheType;
         private bool status;
+        private bool count;
         private JsonType jsonType;
 
 
@@ -42,8 +44,54 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
 
         public string Json { get => json; set => SetProperty(ref json, value); }
         public string IcoPath { get => icoPath; set => SetProperty(ref icoPath, value); }
-        public bool Cachable { get => cachable; set => SetProperty(ref cachable, value); }
+        public int Timeout
+        {
+            get => timeout;
+            set
+            {
+                if (value < 500)
+                    SetProperty(ref timeout, 500);
+                else
+                    SetProperty(ref timeout, value);
+            }
+        }
         public bool Status { get => status; set => SetProperty(ref status, value); }
+        public bool Count { get => count; set => SetProperty(ref count, value); }
+        public CacheTypes CacheType
+        {
+            get => cacheType;
+            set
+            {
+
+                SetProperty(ref cacheType, value); ;
+                ShowTimeout();
+                ToggleCountVisibility();
+            }
+        }
+
+        private bool _timeoutVisibility = false;
+
+        public bool TimeoutVisibility
+        {
+            get => _timeoutVisibility;
+            set => SetProperty(ref _timeoutVisibility, value);
+        }
+        void ShowTimeout()
+        {
+            TimeoutVisibility = CacheType == CacheTypes.BuildWithTimeout;
+        }
+
+        private bool _countVisibility = false;
+
+        public bool CountVisibility
+        {
+            get => _countVisibility;
+            set => SetProperty(ref _countVisibility, value);
+        }
+        void ToggleCountVisibility()
+        {
+            CountVisibility = CacheType != CacheTypes.Disabled;
+        }
 
         public Settings Settings { get; init; }
         public CustomPayloadViewModel(Settings settings)
@@ -56,6 +104,13 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         {
             get => _typeOptions;
             set => SetProperty(ref _typeOptions, value);
+        }
+
+        private ObservableCollection<CacheTypes> _cacheOptions = new ObservableCollection<CacheTypes> { CacheTypes.Disabled, CacheTypes.BuildAndWait, CacheTypes.BuildWithoutWaiting, CacheTypes.BuildWithTimeout };
+        public ObservableCollection<CacheTypes> CacheOptions
+        {
+            get => _cacheOptions;
+            set => SetProperty(ref _cacheOptions, value);
         }
 
 
@@ -77,6 +132,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             else
             {
                 ListBoxSelectionMode = System.Windows.Controls.SelectionMode.Multiple;
+                CacheType = CacheTypes.Disabled;
             }
             listbox.SelectionMode = ListBoxSelectionMode;
 
@@ -100,7 +156,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 errorMessage = "The Title cannot be empty.";
                 return false;
             }
-            if (Settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == FilterTitle.ToLower().Trim() ))
+            if (Settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == FilterTitle.ToLower().Trim()))
             {
                 errorMessage = "The Title cannot be duplicated.";
                 return false;
@@ -112,26 +168,28 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 return false;
             }
 
-            
+
 
 
             var Filter = new CustomPayload
             {
                 Title = FilterTitle,
                 SubTitle = FilterSubTitle,
-                JsonType= JsonType,
+                JsonType = JsonType,
                 Json = Json,
-                Cachable = Cachable,
+                CacheType = CacheType,
                 Enabled = Status,
                 IcoPath = IcoPath,
                 Databases = Databases,
+                Timeout = Timeout,
+                Count = Count,
             };
 
             Settings.Filters.Add(Filter);
-           return true;
+            return true;
 
         }
-        
+
     }
 
 }

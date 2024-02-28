@@ -22,6 +22,8 @@ namespace Flow.Launcher.Plugin.Notion
 		public bool UseBrowser { get; set; } = false;
 		public bool FailedRequests { get; set; } = false;
 		public bool Hide { get; set; } = false;
+		public bool RelationSubtitle { get; set; } = true;
+		public bool PopUpPageAfterCreate { get; set; } = false;
 
 		[JsonIgnore]
 		public IEnumerable<string> DatabaseSelectionOptions => Main.databaseId.Keys.ToList();

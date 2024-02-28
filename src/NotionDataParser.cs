@@ -38,8 +38,24 @@ namespace Flow.Launcher.Plugin.Notion
                     return new Dictionary<string, string>();
                 }
             }
+        }
+        static Dictionary<string, string> databaseIdForName
+        {
 
-
+            get
+            {
+                try
+                {
+                    return Main.databaseId.ToDictionary(
+                                        kv => kv.Value.GetProperty("id").GetString(),
+                                        kv => kv.Key
+                                    );
+                }
+                catch
+                {
+                    return new Dictionary<string, string>();
+                }
+            }
         }
         private static string _defaultIconPath = "Images\\app.png";
         private static string _emojiIconPath = "Icons\\emojis";
@@ -54,7 +70,7 @@ namespace Flow.Launcher.Plugin.Notion
             _iconPath = Path.Combine("Icons", "icons");
         }
 
-        internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 100, bool Force = false, string Value = "page")
+        internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 10, bool Force = false, string Value = "page")
         {
 
             if (oldDatabaseId == null)
@@ -149,24 +165,44 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     extractedTitle = string.Empty;
                                 }
-                                string idDatabase;
+                                string DBName;
+                                string Chain = string.Empty;
 
-                                // Try to Extract the Database Id from the response if it's exist
                                 try
                                 {
-                                    idDatabase = result["parent"]["database_id"].ToString();
+                                    DBName = databaseIdForName[result["parent"]["database_id"].ToString()];
                                 }
                                 catch
                                 {
-                                    idDatabase = string.Empty;
+                                    DBName = string.Empty;
                                 }
+                                
+                                try
+                                {
+                                    if (result["parent"]["type"].ToString() == "block_id")
+                                    {
+                                        var page_id = GetPageIdByBlock(result["parent"]["block_id"].ToString());
+                                        Chain = page_id;
+                                    }
+                                    else if (result["parent"]["type"].ToString() == "page_id")
+                                        Chain = result["parent"]["page_id"].ToString();
+                                    
+                                }
+                                catch (Exception ex)
+                                {
+
+                                    Chain = string.Empty;
+                                    _context.API.LogException("BuildCache", "BuildChainError", ex , "GetPageByBlockId");
+                                }
+
+
                                 string idPage = result.Value<string>("id");
 
                                 // Try to Extract the Relation Value from the response if it's exist
                                 string relatedProject;
                                 try
                                 {
-                                    var TargetDatabaseMap = Main.databaseId.FirstOrDefault(x => x.Value.GetProperty("id").GetString() == idDatabase).Value;
+                                    var TargetDatabaseMap = Main.databaseId[DBName];
                                     var projectRelation = result["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateArray().First().GetString()]["relation"][0];
                                     if (projectRelation != null && projectRelation["id"] != null)
                                     {
@@ -186,8 +222,9 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     extractedTitle,
                                     relatedProject,
-                                    idDatabase,
-                                    icon
+                                    DBName,
+                                    icon,
+                                    Chain
                                 };
 
                                 resultDataDictionary[idPage] = resultDataList;
@@ -228,8 +265,32 @@ namespace Flow.Launcher.Plugin.Notion
                 else
                 {
                     _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase, MethodBase.GetCurrentMethod().Name);
+                    // Try To recache the whole shared pages in case of page deleted on notion by Notion UI
+                    if (!string.IsNullOrEmpty(startCursor))
+                        await CallApiForSearch(oldDatabaseId:null, startCursor:null , numPage:100);
                 }
                 return new JArray();
+            }
+        }
+
+        string GetPageIdByBlock(string BlockId)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
+                client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+                string url = "https://api.notion.com/v1/blocks/";
+                var response = client.GetAsync(url + BlockId).Result;
+                
+                JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                while ( jsonObject["parent"]["type"].ToString() != "page_id")
+                {
+                    response = client.GetAsync(url + jsonObject["parent"][jsonObject["parent"]["type"].ToString()].ToString()).Result;
+                    jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                }
+
+                return jsonObject["parent"]["page_id"].ToString();
+
             }
         }
 

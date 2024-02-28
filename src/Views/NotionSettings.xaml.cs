@@ -45,7 +45,15 @@ namespace Flow.Launcher.Plugin.Notion.Views
         }
 
 
-        
+        private async void ClearFailedRequests(object sender, RoutedEventArgs e)
+        {
+            var input = (UIElement)sender;
+            var temp = input.IsEnabled;
+            input.IsEnabled = false;
+            Main._apiCacheManager.cachedFunctions.Clear();
+            await Main._apiCacheManager.SaveCacheToFile();
+            _viewModel.CachedFailedRequests = Main._apiCacheManager.cachedFunctions.Count;
+        }
 
         private async void ClearHiddenItems(object sender, RoutedEventArgs e)
         {
@@ -80,7 +88,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         {
             if (CustomPayloadListView.SelectedItem is CustomPayload selectedCustomBrowser)
             {
-                if (selectedCustomBrowser.Cachable)
+                if (selectedCustomBrowser.CacheType != 0)
                 {
                     File.Delete(Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{selectedCustomBrowser.Title}.json"));
                 }

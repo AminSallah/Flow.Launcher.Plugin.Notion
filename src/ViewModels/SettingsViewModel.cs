@@ -21,6 +21,14 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 OnPropertyChanged(nameof(HiddenItemsCount));
             }
         }
+        public int CachedFailedRequests
+        {
+            get => Main._apiCacheManager.cachedFunctions.Count;
+            set
+            {
+                OnPropertyChanged(nameof(CachedFailedRequests));
+            }
+        }
 
         public string InernalInegrationToken
         {

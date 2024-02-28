@@ -43,9 +43,11 @@ namespace Flow.Launcher.Plugin.Notion.Views
             viewModel.Databases = customPayload.Databases;
             viewModel.Json = customPayload.Json;
             viewModel.JsonType = customPayload.JsonType;
-            viewModel.Cachable = customPayload.Cachable;
+            viewModel.CacheType = customPayload.CacheType;
             viewModel.Status = customPayload.Enabled;
             viewModel.IcoPath = customPayload.IcoPath;
+            viewModel.Timeout = customPayload.Timeout;
+            viewModel.Count = customPayload.Count;
             DatabaseReserve = viewModel.Databases.ToList();
             _action = action;
 
@@ -211,11 +213,13 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     currentCustomBrowser.SubTitle = viewModel.FilterSubTitle;
                     currentCustomBrowser.Json = viewModel.Json;
                     currentCustomBrowser.JsonType = viewModel.JsonType;
-                    currentCustomBrowser.Cachable = viewModel.Cachable;
+                    currentCustomBrowser.CacheType = viewModel.CacheType;
                     currentCustomBrowser.Enabled = viewModel.Status;
                     currentCustomBrowser.IcoPath = viewModel.IcoPath;
                     currentCustomBrowser.Databases = viewModel.Databases;
-                    Close();
+                    currentCustomBrowser.Timeout = viewModel.Timeout;
+                    currentCustomBrowser.Count = viewModel.Count;
+                        Close();
                     }
                     else
                     {
@@ -247,5 +251,12 @@ namespace Flow.Launcher.Plugin.Notion.Views
     {
         Filter,
         Property
+    }
+    public enum CacheTypes
+    {
+        Disabled,
+        BuildAndWait,
+        BuildWithTimeout,
+        BuildWithoutWaiting
     }
 }
