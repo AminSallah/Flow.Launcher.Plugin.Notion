@@ -112,7 +112,84 @@
 ![View tracked time reports](assets/demos/CustomPayload.gif)
 
 # Command Reference
-> UNDER CONSTRUCTION
+
+- [Keywords](#keywords)
+- [Context Menu](#context-menu-of-pages)
+- [Escape Plugin Keywords](#how-to-escape-plugin-keywords)
+
+
+  ## Keywords
+
+   - [c + no input](#c--no-input)
+   - [c + word](#c--word)
+   - [c + @](#c--)
+   - [c + !](#c--)
+   - [c + page details + #](#c--page-details--)
+   - [c + page details + * or ^](#c--page-details--*or^)
+   - [c + page details + Humanized time](#c--page-details--humanized-time)
+  
+  ## `c + no input`
+  Trigger the plugin with an empty query to activate search mode. List of results would contain all shared pages with your integration
+  ***Tip:*** Press Arrow Up to display recently added or edited pages.
+
+  ## `c + word`
+  Initiate a search for the specified word within page titles. Navigate through the pages using the following commands:
+   - Press `Enter` or use `Mouse Down` to open the page in your browser (default and configurable).
+   - Press `Shift + Enter` or use `Left Arrow` to reveal the (Context menu for pages)(#context-menu-for-pages).
+ 
+  ## `c + @`
+     Show shared databases with your integration. You can perform the following actions:
+     - Select a database to create a page within by pressing `Enter` or use `Mouse Down`
+     - Open the database page in Notion by pressing `Ctrl + Enter` or `Ctrl + Mouse Down`
+       
+
+    ## `c + !`
+     Show selected relation database pages if it's selected in settings panel. You can perform the following actions:
+     - Select a page to link a created page to it by pressing `Enter` or use `Mouse Down`
+     - Open the page in Notion by pressing `Ctrl + Enter` or `Ctrl + Mouse Down`
+
+    ## `c + page details + #`
+   
+   If the database has more than one multi-selection property, the result list would contain names of these properties to choose from. In the case where the database has only one multi-select property, the plugin would automatically choose it and display all available tags (non-clickable). You can choose options by using `# + optionName`:
+   
+   ![multiselect](assets/gif/tags1.gif)
+   
+   ## `c + page details + * or ^`
+   
+   **What is the difference between `*` and `^`?**
+   - `*` will show you supported block types for you to choose from before entering the desired block text.
+   - `^` will skip the previous step and automatically choose the default block type, which is `paragraph`.
+   
+   **Is the default block type configurable?**
+   - Yes, it is. Hold the ctrl key before choosing the block type, and it will set the selected block type as default. However, it will revert to the paragraph if the query is cleared.
+   
+   ![Block Type](assets/gif/defaultBlockType.gif)
+   
+   In case the selected block type requires more arguments, such as specifying the language for a code block, there is a next step where the result list will display Notion options to choose from.
+   
+   ***Tip:*** To paste the clipboard content as it was copied, utilize `Alt + Enter`. This is recommended because the `ctrl + v` process may alter the content and remove multiple lines.
+   
+   
+     ![CodeType](assets/gif/codeType.gif)
+
+
+  ### BlockType Mode Limitations
+   Notion supports only a [Limited number of characters](https://developers.notion.com/reference/request-limits#limits-for-property-values) for each block type. If the character limit is exceeded, you will receive a **Bad Request** error.
+   
+
+    ## `c + page details + Humanized time`
+    The plugin recognizes humanized time, eliminating the need to input it in a specific format.
+
+     ![Current Date Variables](assets/gif/Variables.gif)
+  
+
+## Context menu of pages
+
+> Under construction
+
+
+## How to escape plugin keywords?
+> Under construction
 
 # Custom Payload
 
@@ -136,8 +213,8 @@
    > Titles cannot be duplicated.
    
 5. Keep the type as a filter.
-6. Choose the database to query.
-7. Create a new payload (JSON) or use this filter.
+6. Choose the database to query (required).
+7. Create a new payload `JSON` (if left empty, the entire database will be queried) or use this filter.
    > For more information about how you can create more advanced filters, navigate to [notion](https://developers.notion.com/reference/post-database-query-filter#the-filter-object).
 ```
 {
@@ -178,6 +255,7 @@
 - Similar to a filter, but the key difference is that
      1. Property payloads query in the context menu (Shift + Enter {or right arrow}) on the page in the query.
      2. Property payloads JSON differs from Filter payloads.
+     3. It is possible to select multiple databases. If a page does not belong to the payload databases, the custom payload will not appear on its context menu.
            
 - Paste your own Payload (JSON) or edit these to match your needs.
      ```
