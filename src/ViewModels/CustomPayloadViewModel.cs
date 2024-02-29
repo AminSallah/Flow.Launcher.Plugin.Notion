@@ -162,7 +162,8 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 return false;
             }
             // if (FilterSettingsVisibility && Databases.Count != 1)
-            if (Databases.Count == 0)
+            if (Databases.Count == 0 &&
+                Json != """{"archived" : true}""")
             {
                 errorMessage = "The Database cannot be empty.";
                 return false;

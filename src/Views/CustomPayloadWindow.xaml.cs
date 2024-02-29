@@ -207,18 +207,19 @@ namespace Flow.Launcher.Plugin.Notion.Views
             {
                 if (!_settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == viewModel.FilterTitle.ToLower().Trim()) || currentCustomBrowser.Title == viewModel.FilterTitle || !viewModel.FilterSettingsVisibility)
                 {
-                    if (viewModel.Databases.Count != 0 && !string.IsNullOrEmpty(viewModel.Databases[0]))
+                    if (viewModel.Databases.Count != 0 && !string.IsNullOrEmpty(viewModel.Databases[0])
+                        || viewModel.Json == """{"archived" : true}""")
                     {
-                    currentCustomBrowser.Title = viewModel.FilterTitle;
-                    currentCustomBrowser.SubTitle = viewModel.FilterSubTitle;
-                    currentCustomBrowser.Json = viewModel.Json;
-                    currentCustomBrowser.JsonType = viewModel.JsonType;
-                    currentCustomBrowser.CacheType = viewModel.CacheType;
-                    currentCustomBrowser.Enabled = viewModel.Status;
-                    currentCustomBrowser.IcoPath = viewModel.IcoPath;
-                    currentCustomBrowser.Databases = viewModel.Databases;
-                    currentCustomBrowser.Timeout = viewModel.Timeout;
-                    currentCustomBrowser.Count = viewModel.Count;
+                        currentCustomBrowser.Title = viewModel.FilterTitle;
+                        currentCustomBrowser.SubTitle = viewModel.FilterSubTitle;
+                        currentCustomBrowser.Json = viewModel.Json;
+                        currentCustomBrowser.JsonType = viewModel.JsonType;
+                        currentCustomBrowser.CacheType = viewModel.CacheType;
+                        currentCustomBrowser.Enabled = viewModel.Status;
+                        currentCustomBrowser.IcoPath = viewModel.IcoPath;
+                        currentCustomBrowser.Databases = viewModel.Databases;
+                        currentCustomBrowser.Timeout = viewModel.Timeout;
+                        currentCustomBrowser.Count = viewModel.Count;
                         Close();
                     }
                     else

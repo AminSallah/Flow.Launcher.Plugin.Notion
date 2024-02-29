@@ -40,6 +40,19 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             }
         }
 
+        public bool _notSelected = false;
+        
+        public bool NotSelected 
+        {get
+        {
+            return _notSelected;
+        }
+        set{
+            _notSelected = value;
+            OnPropertyChanged();
+        }
+        }
+
         
     }
 }

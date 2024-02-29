@@ -14,9 +14,9 @@ using System.ComponentModel;
 
 namespace Flow.Launcher.Plugin.Notion.Views
 {
-	
-	public partial class NotionSettings : UserControl
-	{
+
+    public partial class NotionSettings : UserControl
+    {
         public CustomPayload SelectedCustomBrowser;
         PluginInitContext Context;
         SettingsViewModel _viewModel;
@@ -25,8 +25,8 @@ namespace Flow.Launcher.Plugin.Notion.Views
         private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         public NotionSettings(PluginInitContext context, SettingsViewModel viewModel)
-		{
-			this.InitializeComponent();
+        {
+            this.InitializeComponent();
             Context = context;
             _viewModel = viewModel;
             _settings = viewModel.Settings;
@@ -93,7 +93,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     File.Delete(Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{selectedCustomBrowser.Title}.json"));
                 }
                 _settings.Filters.Remove(selectedCustomBrowser);
-                
+
 
             }
         }
@@ -108,7 +108,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void ListView_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            
+
         }
 
 
@@ -127,18 +127,18 @@ namespace Flow.Launcher.Plugin.Notion.Views
                 {
                     try
                     {
-                    Context.API.ShowMsg("Relation database", $"{_settings.RelationDatabase} successfully set as relation database please wait while querying it for you.");
-                    _settings.RelationDatabaseId = Main.databaseId[_settings.RelationDatabase].GetProperty("id").GetString();
-                    Main.databaseId = await _dataParser.DatabaseCache();
-                    Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
-                    Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
+                        Context.API.ShowMsg("Relation database", $"{_settings.RelationDatabase} successfully set as relation database please wait while querying it for you.");
+                        _settings.RelationDatabaseId = Main.databaseId[_settings.RelationDatabase].GetProperty("id").GetString();
+                        Main.databaseId = await _dataParser.DatabaseCache();
+                        Main.ProjectsId = await _dataParser.QueryDB(_settings.RelationDatabaseId, null, _settings.RelationCachePath);
+                        Context.API.ShowMsg("Query Relation database", $"{_settings.RelationDatabase} successfully queryied, now you can use its pages for relation properties");
                     }
                     finally
                     {
                         semaphoreSlim.Release();
                     }
                 });
-                
+
             }
             catch (Exception ex)
             {
@@ -158,8 +158,20 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void Database_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-           
 
+
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CustomPayloadListView.SelectedItem != null)
+            {
+                _viewModel.NotSelected = true;
+            }
+            else
+            {
+                _viewModel.NotSelected = false;
+            }
         }
     }
 

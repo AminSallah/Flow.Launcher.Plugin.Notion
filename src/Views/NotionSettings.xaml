@@ -253,6 +253,7 @@
                             HorizontalAlignment="Right"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
+                            IsEnabled = "{Binding NotSelected}"
                             Click="EditButton_Click">
                                 <Button.Style>
                                     <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
@@ -281,6 +282,7 @@
                             HorizontalAlignment="Right"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
+                            IsEnabled = "{Binding NotSelected}"
                             Click="DeleteButton_Click">
                                 <Button.Style>
                                     <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
@@ -316,6 +318,7 @@
                     ItemsSource="{Binding Settings.Filters}"
                     MouseDoubleClick="ListView_MouseDoubleClick"
                     MouseUp="ListView_MouseUp"
+                    SelectionChanged = "ListView_SelectionChanged"
                     SelectedItem="{Binding Settings.SelectedPayload}"
                     Style="{StaticResource {x:Static GridView.GridViewStyleKey}}">
                     <ListView.View>
