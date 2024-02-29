@@ -153,7 +153,7 @@
                     <CheckBox Content="Databases"  Margin="7"  IsChecked="{Binding Settings.DatabaseIcons}"/>
                     <CheckBox Content="Relations"  Margin="7,7,25,7"  IsChecked="{Binding Settings.RelationsIcons}"/>
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xe8b9;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xeb9f;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -382,5 +382,6 @@
                 </ListView>
             </Expander>
         </Border>
+
     </StackPanel>
 </UserControl>

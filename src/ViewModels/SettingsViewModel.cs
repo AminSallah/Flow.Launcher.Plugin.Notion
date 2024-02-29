@@ -11,7 +11,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             Settings = settings;
         }
 
-        public Settings Settings { get; }
+        public Settings Settings { get; set; }
 
         public int HiddenItemsCount
         {
