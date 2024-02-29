@@ -1646,11 +1646,11 @@ namespace Flow.Launcher.Plugin.Notion
                 if (!dataDict.ContainsKey("Project") && inputString.Contains("!") && !string.IsNullOrEmpty(ProjectName))
                 {
                     // string ProjectPattern = @"(!\s?.+)";
-                    string ProjectPattern = @".*((?<!\\)![^\\]*)";
+                    string ProjectPattern = @"((?<!\\)![^\\]*)";
                     var ProjectMatch = Regex.Match(inputString, ProjectPattern);
                     if (ProjectMatch.Success)
                     {
-                        var splitQuery = ProjectMatch.Groups[1].Value.Split('!');
+                        var splitQuery = ProjectMatch.Groups[0].Value.Split('!');
                         var userInput = splitQuery[1].Trim();
                         foreach (var _values in ProjectsId.Values)
                         {
@@ -1682,11 +1682,11 @@ namespace Flow.Launcher.Plugin.Notion
                 if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
                 {
                     // string Pattern = @"(@\s?.+)";
-                    string Pattern = @".*((?<!\\)@[^\\]*)";
+                    string Pattern = @"((?<!\\)@[^\\]*)";
                     var DatabaseMatch = Regex.Match(inputString, Pattern);
                     if (DatabaseMatch.Success)
                     {
-                        var splitQuery = DatabaseMatch.Groups[1].Value.Split('@');
+                        var splitQuery = DatabaseMatch.Groups[0].Value.Split('@');
                         var userInput = splitQuery[1].Trim();
                         foreach (var item in databaseId.Keys)
                         {
