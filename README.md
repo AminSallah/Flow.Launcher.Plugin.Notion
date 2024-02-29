@@ -352,9 +352,5 @@ Please also help spread the word by sharing about the Flow launcher Notion Plugi
 1. You can't change the database after selecting the multi-select option. If so, the plugin will neglect the specified page title, and you'll need to start typing it again from the beginning.
 
 
-
-
-
-
 # Licence
 The source code for this plugin is licensed under MIT.
