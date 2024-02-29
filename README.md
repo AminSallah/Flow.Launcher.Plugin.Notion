@@ -338,7 +338,9 @@ Right now, the plugin only supports converting to dates.
 > UNDER CONSTRUCTION
 
 
+# Known Issues
 
+1. You can't change the database after selecting the multi-select option. If so, the plugin will neglect the specified page title, and you'll need to start typing it again from the beginning.
 
 # Say Thank You
 If you are enjoying Notion Plugin, then please support my work and enthusiasm by buying me a coffee on [https://ko-fi.com/amin_salah](https://ko-fi.com/amin_salah)
@@ -346,11 +348,6 @@ If you are enjoying Notion Plugin, then please support my work and enthusiasm by
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K5OBFG2)
 
 Please also help spread the word by sharing about the Flow launcher Notion Plugin on Twitter, Reddit, or any other social media platform you regularly use.
-
-# Known Issues
-
-1. You can't change the database after selecting the multi-select option. If so, the plugin will neglect the specified page title, and you'll need to start typing it again from the beginning.
-
 
 # Licence
 The source code for this plugin is licensed under MIT.
