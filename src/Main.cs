@@ -1812,7 +1812,9 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 foreach (ModelResult result in results)
                 {
-                    if (!IsItFilter && (input.StartsWith(result.Text) || input.Substring(result.Start - 1, 1) != "\\"))
+                    if (!IsItFilter && 
+                    (input.StartsWith(result.Text) || input.Substring(result.Start - 1, 1) != "\\") && 
+                    !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^") ))
                     {
                         methodResult = result;
                         returnedName = returnedName.Remove(result.Start, result.End - result.Start + 1);
