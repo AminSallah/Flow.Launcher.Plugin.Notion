@@ -687,7 +687,7 @@ namespace Flow.Launcher.Plugin.Notion
                         resultList.Add(new Result
                         {
                             Title = filter.Title,
-                            SubTitle = filter.SubTitle + (filter.Count ? $" ({LoadJsonData(Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{filter.Title}.json")).Count})" : ""),
+                            SubTitle = filter.SubTitle + (filter.CacheType != CacheTypes.Disabled && filter.Count ? $" ({LoadJsonData(Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{filter.Title}.json")).Count})" : ""),
                             IcoPath = filter.IcoPath,
                             Score = 100,
                             AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} {filter.Title}",
