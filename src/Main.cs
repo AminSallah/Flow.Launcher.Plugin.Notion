@@ -459,6 +459,36 @@ namespace Flow.Launcher.Plugin.Notion
                 RequestNewCache = false;
             }
 
+            if (databaseId.Count() == 0)
+            {
+                await this._notionDataParser.DatabaseCache();
+                databaseId = LoadJsonData(DatabaseCachePath);
+            }
+
+            if (string.IsNullOrEmpty(_settings.DefaultDatabase) || databaseId.Count() == 0)
+            {
+                resultList.Add(new Result
+                {
+                    Title = "No databases linked with Internal Inegration token.",
+                    SubTitle = "Please ensure at least one database is shared with token.",
+                    IcoPath = "Images/error.png"
+                });
+                return resultList;
+            }
+            
+            searchResults = LoadJsonData(FullCachePath);
+            
+            if (searchResults == null || searchResults.Count() == 0)
+            {
+                resultList.Add(new Result
+                {
+                    Title = "No pages linked with Internal Inegration token.",
+                    SubTitle = "Please ensure at least two pages are shared with token.",
+                    IcoPath = "Images/error.png"
+                });
+                return resultList;
+            }
+
             if (string.IsNullOrEmpty(query.Search))
             {
                 this._notionBlockTypes._enabled = new Dictionary<int, Func<string, int?, Dictionary<string, object>>>();
@@ -467,9 +497,7 @@ namespace Flow.Launcher.Plugin.Notion
                 DateName = string.Empty;
             }
 
-            searchResults = LoadJsonData(FullCachePath);
             HiddenItems = File.ReadAllLines(HiddenItemsPath).ToList<string>();
-
 
             Dictionary<string, object> filtered_query = GetData(query.Search, defaultDB: _settings.DefaultDatabase);
 
@@ -726,12 +754,46 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         var splitQuery = query.Search.Split('!');
                         var userInput = splitQuery[^1].Trim();
+                        JsonElement MultiRelationOptions;
+                        try
+                        {
+                            MultiRelationOptions = databaseId[KeyForId].GetProperty("relation");
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            var ErrorResult = new Result
+                            {
+                                Title = "Relation property can not be assigned to pages",
+                                SubTitle = "Notion only support assign relation properties to database items.",
+                                Action = c =>
+                                {
+                                    return true;
+                                },
+                                IcoPath = "Images/error.png"
+                            };
+                            resultList.Add(ErrorResult);
+                            return resultList;
+                        }
 
-                        JsonElement MultiRelationOptions = databaseId[KeyForId].GetProperty("relation");
-
-                        if (!(MultiRelationOptions.EnumerateArray().Count() > 1))
+                        if (MultiRelationOptions.EnumerateArray().Count() == 1)
                         {
                             ProjectName = MultiRelationOptions.EnumerateArray().FirstOrDefault().ToString();
+                        }
+                        else if (MultiRelationOptions.EnumerateArray().Count() == 0)
+                        {
+                            var ErrorResult = new Result
+                            {
+                                Title = "Database does not contain any relation properties",
+                                SubTitle = "click to open database page to create a relation property",
+                                Action = c =>
+                                {
+                                    OpenNotionPage(databaseId[KeyForId].GetProperty("url").GetString());
+                                    return true;
+                                },
+                                IcoPath = "Images/error.png"
+                            };
+                            resultList.Add(ErrorResult);
+                            return resultList;
                         }
 
                         if (string.IsNullOrEmpty(ProjectName))
@@ -880,12 +942,47 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 var splitQuery = query.Search.Split('#');
                 var userInput = splitQuery[^1].Trim();
-                JsonElement MultiSelectOptions = databaseId[KeyForId].GetProperty("multi_select");
+                JsonElement MultiSelectOptions;
                 try
                 {
-                    if (!(MultiSelectOptions.EnumerateObject().Count() > 1))
+                    MultiSelectOptions = databaseId[KeyForId].GetProperty("multi_select");
+                }
+                catch (KeyNotFoundException)
+                {
+                    var ErrorResult = new Result
+                    {
+                        Title = "multi-selection property can not be assigned to pages",
+                        SubTitle = "Notion only support assign multi-selection properties to database items.",
+                        Action = c =>
+                        {
+                            return true;
+                        },
+                        IcoPath = "Images/error.png"
+                    };
+                    resultList.Add(ErrorResult);
+                    return resultList;
+                }
+                try
+                {
+                    if (MultiSelectOptions.EnumerateObject().Count() == 1)
                     {
                         TagName = MultiSelectOptions.EnumerateObject().First().Name;
+                    }
+                    else if (MultiSelectOptions.EnumerateObject().Count() == 0)
+                    {
+                        var ErrorResult = new Result
+                        {
+                            Title = "Database does not contain any multi-selection properties",
+                            SubTitle = "click to open database page to create a multi-selection property",
+                            Action = c =>
+                            {
+                                OpenNotionPage(databaseId[KeyForId].GetProperty("url").GetString());
+                                return true;
+                            },
+                            IcoPath = "Images/error.png"
+                        };
+                        resultList.Add(ErrorResult);
+                        return resultList;
                     }
                     // True of this Indicate user is backspaced the # charachter
                     if (ShowTags && filtered_query.TryGetValue("tags", out object _tags) && _tags is List<string> Tags)
@@ -999,7 +1096,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     DateName = _dateName.ToString();
                                     timeForce = false;
-                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery,filtered_query["TimeText"] as string)  + filtered_query["TimeText"].ToString().Trim() + " ");
+                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery, filtered_query["TimeText"] as string) + filtered_query["TimeText"].ToString().Trim() + " ");
                                     // Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + " " +
                                     // (string.IsNullOrEmpty(splitQuery[^2].Trim().Replace(filtered_query["TimeText"].ToString(), "",
                                     //  culture: null, ignoreCase: true)) ? ""
@@ -1087,7 +1184,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     if (c.SpecialKeyState.AltPressed)
                                     {
                                         _settings.DefaultDatabase = kv.Key;
-                                        Context.API.ShowMsg("Changing Default Database",$"The database ({kv.Key}) has been successfully set as the default database.");
+                                        Context.API.ShowMsg("Changing Default Database", $"The database ({kv.Key}) has been successfully set as the default database.");
                                     }
                                     Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword}{ConcatSplitedQuery(splitQuery, "@")}@{kv.Key} ");
                                     return false;
@@ -1508,10 +1605,10 @@ namespace Flow.Launcher.Plugin.Notion
             if (!string.IsNullOrEmpty(searchResults[pageId][2].GetString())) // Database
                 Chain = searchResults[pageId][2].GetString();
 
-            
+
             if (_settings.RelationSubtitle && !string.IsNullOrEmpty(searchResults[pageId][1].GetString())) // project
                 Chain = (string.IsNullOrEmpty(Chain) ? "" : Chain + " / ") + searchResults[pageId][1].GetString();
-            
+
             if (!string.IsNullOrEmpty(Chain))
                 return Chain;
 
@@ -1560,32 +1657,32 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 if (autoSelect)
                 {
-                    if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
-                    {
-                        var splitQuery = type.Split('!', 2);
-                        var userInput = splitQuery[1].Trim();
-                        if (splitQuery.Length == 2)
-                        {
-                            var filteredItems = ProjectsId.Values.Where(item => item[0].GetString().ToLower().Contains(userInput.ToLower())).ToList();
-                            if (filteredItems.Count == 1)
-                            {
-                                dataDict["Project"] = string.Join("", filteredItems);
-                            }
-                        }
-                    }
-                    if (type.StartsWith("@"))
-                    {
-                        var splitQuery = type.Split('@', 2);
-                        var userInput = splitQuery[1].Trim();
-                        if (splitQuery.Length == 2)
-                        {
-                            var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
-                            if (filteredItems.Count == 1)
-                            {
-                                dataDict["databaseId"] = string.Join("", filteredItems);
-                            }
-                        }
-                    }
+                    // if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
+                    // {
+                    //     var splitQuery = type.Split('!', 2);
+                    //     var userInput = splitQuery[1].Trim();
+                    //     if (splitQuery.Length == 2)
+                    //     {
+                    //         var filteredItems = ProjectsId.Values.Where(item => item[0].GetString().ToLower().Contains(userInput.ToLower())).ToList();
+                    //         if (filteredItems.Count == 1)
+                    //         {
+                    //             dataDict["Project"] = string.Join("", filteredItems);
+                    //         }
+                    //     }
+                    // }
+                    // if (type.StartsWith("@"))
+                    // {
+                    //     var splitQuery = type.Split('@', 2);
+                    //     var userInput = splitQuery[1].Trim();
+                    //     if (splitQuery.Length == 2)
+                    //     {
+                    //         var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
+                    //         if (filteredItems.Count == 1)
+                    //         {
+                    //             dataDict["databaseId"] = string.Join("", filteredItems);
+                    //         }
+                    //     }
+                    // }
                 }
 
                 // Condition for 'in '
@@ -1617,7 +1714,7 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                 }
 
-                if (!(type.StartsWith("!") || type.StartsWith("@") || type.StartsWith("in") || type.StartsWith("on") || type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || type.StartsWith("[") || (type.StartsWith("$") && type.EndsWith("$"))))
+                if (!(type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || type.StartsWith("[") || (type.StartsWith("$") && type.EndsWith("$"))))
                 {
                     if (!type.Contains($"$ {type}") && !type.Contains($"{type}$"))
                     {
@@ -1790,7 +1887,7 @@ namespace Flow.Launcher.Plugin.Notion
                 string daySuffix = GetDaySuffix(parsedclock.Day);
                 HumanizedDate = $"{HumanizedDate} | {parsedclock.Day + daySuffix} {parsedclock.ToString("MMM yyyy", CultureInfo.InvariantCulture)}";
             }
-            
+
             return HumanizedDate;
         }
 
@@ -1812,9 +1909,9 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 foreach (ModelResult result in results)
                 {
-                    if (!IsItFilter && 
-                    (input.StartsWith(result.Text) || input.Substring(result.Start - 1, 1) != "\\") && 
-                    !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^") ))
+                    if (!IsItFilter &&
+                    (input.StartsWith(result.Text) || input.Substring(result.Start - 1, 1) != "\\") &&
+                    !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                     {
                         methodResult = result;
                         returnedName = returnedName.Remove(result.Start, result.End - result.Start + 1);
