@@ -132,16 +132,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             TextBox_Title.Focus();
-            try
-            {
-                BitmapImage bitmapImage = new BitmapImage(new Uri(viewModel.IcoPath));
-                imgPreviewIcon.Source = bitmapImage;
-            }
-            catch
-            {
-                BitmapImage bitmapImage = new BitmapImage(new Uri(context.CurrentPluginMetadata.IcoPath));
-                imgPreviewIcon.Source = bitmapImage;
-            }
         }
 
         private void CloseWindow(object sender, RoutedEventArgs e)
@@ -160,8 +150,6 @@ namespace Flow.Launcher.Plugin.Notion.Views
                 if (!string.IsNullOrEmpty(selectedNewIconImageFullPath))
                 {
                     viewModel.IcoPath = CopyNewImageToUserDataDirectoryIfRequired(fullpathToSelectedImage: selectedNewIconImageFullPath);
-                    BitmapImage bitmapImage = new BitmapImage(new Uri(selectedNewIconImageFullPath));
-                    imgPreviewIcon.Source = bitmapImage;
                 }
             }
         }
