@@ -1914,7 +1914,16 @@ namespace Flow.Launcher.Plugin.Notion
                     !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                     {
                         methodResult = result;
-                        returnedName = returnedName.Remove(result.Start, result.End - result.Start + 1);
+                        if (!input.StartsWith(result.Text) && (input.Substring(result.Start - 3, 3) == "on " ||
+                            input.Substring(result.Start - 3, 3) == "On "))
+                        {
+                            returnedName = returnedName.Remove(result.Start -3, result.End - result.Start + 4);
+
+                        }
+                        else
+                        {
+                            returnedName = returnedName.Remove(result.Start, result.End - result.Start + 1);
+                        }
                         returnedName = returnedName.Replace("  ", " ");
                         return returnedName;
                     }
