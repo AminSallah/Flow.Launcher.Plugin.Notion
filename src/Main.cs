@@ -809,7 +809,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         SubTitle = $"",
                                         Action = c =>
                                         {
-                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {splitQuery[^2].Trim()}{(splitQuery[^2].Length > 0 ? " " : "")}!", true);
+                                            Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword}{ConcatSplitedQuery(splitQuery, "!")}!", true);
                                             ProjectName = _projectName.ToString();
                                             return false;
                                         },
@@ -1910,12 +1910,13 @@ namespace Flow.Launcher.Plugin.Notion
                 foreach (ModelResult result in results)
                 {
                     if (!IsItFilter &&
-                    (input.StartsWith(result.Text) || input.Substring(result.Start - 1, 1) != "\\") &&
+                    (input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) ||
+                    input.Substring(result.Start - 1, 1) != "\\") &&
                     !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                     {
                         methodResult = result;
-                        if (!input.StartsWith(result.Text) && (input.Substring(result.Start - 3, 3) == "on " ||
-                            input.Substring(result.Start - 3, 3) == "On "))
+                        if (!input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) &&
+                            (input.Substring(result.Start - 3, 3) == "on " || input.Substring(result.Start - 3, 3) == "On "))
                         {
                             returnedName = returnedName.Remove(result.Start -3, result.End - result.Start + 4);
 
