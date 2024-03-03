@@ -1127,37 +1127,6 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (userInputSearch.Count() > 0 && !AdvancedFilterMode)
-            {
-                foreach (var item in userInputSearch)
-                {
-                    var result = new Result
-                    {
-                        Title = $"{(string.IsNullOrWhiteSpace(item.Value[1]) ? "Untitled" : item.Value[1])}",
-                        SubTitle = $"{item.Value[4]}",
-                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Key}$",
-                        Score = 50,
-                        ContextData = new Dictionary<string, object>
-                            {
-                                {"Title", $"{item.Value[1]}" },
-                                { "PageId", $"{item.Key}" },
-                                { "Url", $"{item.Value[0]}" },
-                                { "DBName", item.Value[4]},
-                                { "Project_name", $"{item.Value[2]}" },
-                                { "CreateFirst", false},
-                                { "HideAll", userInputSearch.Keys.ToList<string>()}
-                            },
-                        Action = c =>
-                        {
-                            OpenNotionPage(Convert.ToString(item.Value[0]));
-                            return true;
-                        },
-                        IcoPath = item.Value[3]
-                    };
-                    resultList.Add(result);
-                }
-            }
-
             if (query.Search.Contains("@") && (bool)filtered_query["IsDefaultDB"] == true && !editingMode && !IsWritingBlock && !Escaped(query.Search, "@"))
             {
                 var splitQuery = query.Search.Split('@');
@@ -1198,7 +1167,7 @@ namespace Flow.Launcher.Plugin.Notion
                 return resultList;
             }
 
-            if (query.Search.Contains("[") && filtered_query.ContainsKey("link") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock)
+            if (query.Search.Contains("[") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search,"\\["))
             {
                 JsonElement.ArrayEnumerator UrlMapOptions = databaseId[filtered_query["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
                 if (UrlMapOptions.Count() > 1)
@@ -1207,7 +1176,7 @@ namespace Flow.Launcher.Plugin.Notion
 
                     foreach (var _urlOption in UrlMapOptions)
                     {
-                        if (Context.API.FuzzySearch(splitQuery[^1].ToLower().Trim(), _urlOption.GetString().ToLower().Trim()).Score > 1 || string.IsNullOrEmpty(splitQuery[1]))
+                        if (Context.API.FuzzySearch(splitQuery[^1].ToLower().Trim(), _urlOption.GetString().ToLower().Trim()).Score > 1 || string.IsNullOrEmpty(splitQuery[^1]))
                         {
                             var result = new Result
                             {
@@ -1216,7 +1185,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 Action = c =>
                                 {
                                     UrlMap = _urlOption.GetString();
-                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + " " + query.Search.Split("[")[0] + "[", true);
+                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery,"[") + "[", true);
                                     return false;
                                 }
                             };
@@ -1231,11 +1200,41 @@ namespace Flow.Launcher.Plugin.Notion
                     UrlMap = UrlMapOptions.First().GetString();
                 }
             }
-            else if (!query.Search.Contains("[") && !IsWritingBlock)
+            else if (!IsWritingBlock && Escaped(query.Search,"\\["))
             {
                 UrlMap = null;
             }
 
+            if (userInputSearch.Count() > 0 && !AdvancedFilterMode)
+            {
+                foreach (var item in userInputSearch)
+                {
+                    var result = new Result
+                    {
+                        Title = $"{(string.IsNullOrWhiteSpace(item.Value[1]) ? "Untitled" : item.Value[1])}",
+                        SubTitle = $"{item.Value[4]}",
+                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Key}$",
+                        Score = 50,
+                        ContextData = new Dictionary<string, object>
+                            {
+                                {"Title", $"{item.Value[1]}" },
+                                { "PageId", $"{item.Key}" },
+                                { "Url", $"{item.Value[0]}" },
+                                { "DBName", item.Value[4]},
+                                { "Project_name", $"{item.Value[2]}" },
+                                { "CreateFirst", false},
+                                { "HideAll", userInputSearch.Keys.ToList<string>()}
+                            },
+                        Action = c =>
+                        {
+                            OpenNotionPage(Convert.ToString(item.Value[0]));
+                            return true;
+                        },
+                        IcoPath = item.Value[3]
+                    };
+                    resultList.Add(result);
+                }
+            }
 
             // if (!query.Search.ToLower().StartsWith("search") && query.Search != "refresh" && !AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
             if (!AdvancedFilterMode && (!query.Search.Contains("$") || editingMode) && CreateMode)
@@ -1644,7 +1643,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([^*^$\[\]]+)";
+            string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([^*^$]+)";
             var match = Regex.Matches(inputString, pattern);
             var dataList = match.Cast<Match>().SelectMany(m => m.Groups.Cast<Group>().Skip(1)).Select(g => g.Value.Trim()).Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             bool autoSelect = false;
@@ -1697,28 +1696,22 @@ namespace Flow.Launcher.Plugin.Notion
                     dataDict["Name_dir"] = type;
                 }
 
-                if (type.StartsWith("["))
-                {
-                    var splitQuery = type.Split('[', StringSplitOptions.None);
-
-                    if (type.Contains("]"))
-                    {
-                        splitQuery = splitQuery[1].Split(']', StringSplitOptions.None);
-                        var userInput = splitQuery[0].Trim();
-                        dataDict["link"] = userInput;
-                    }
-                    else
-                    {
-                        var userInput = splitQuery[1].Trim();
-                        dataDict["link"] = userInput;
-                    }
-                }
-
-                if (!(type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || type.StartsWith("[") || (type.StartsWith("$") && type.EndsWith("$"))))
+                if (!(type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || (type.StartsWith("$") && type.EndsWith("$"))))
                 {
                     if (!type.Contains($"$ {type}") && !type.Contains($"{type}$"))
                     {
-                        dataDict["Name"] = RefineQueryText(inputString, type).Trim();
+                        string unRefinedName = type;
+                        Match UrlMatch = Regex.Match(type,@"(?<!\\)\[([^\]]+)");
+                        if (UrlMatch.Success && UrlMatch.Groups.Count == 2)
+                        {
+                            dataDict["link"] = UrlMatch.Groups[1].Value;
+                            try 
+                                {unRefinedName = Regex.Replace(unRefinedName,$@"\s?\{UrlMatch.Groups[0].Value}\]?","").Trim();}
+                            catch (RegexParseException) {}
+                        }
+                        unRefinedName = RefineQueryText(inputString, unRefinedName).Trim();
+                        if (!string.IsNullOrEmpty(unRefinedName))
+                            dataDict["Name"] = unRefinedName;
                     }
                 }
 
@@ -2212,11 +2205,12 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 if (IsInternetConnected())
                 {
                     Context.API.ShowMsgError($"Proccessing Error", "Unexpected Error While Proccesing Propeties.");
+                    Context.API.LogException(nameof(Main), $"Internet available ==>{IsInternetConnected()}",ex, MethodBase.GetCurrentMethod().Name);
                     HttpResponseMessage FakeRespone = new HttpResponseMessage();
                     FakeRespone.ReasonPhrase = "Bad Request";
                     return FakeRespone;
