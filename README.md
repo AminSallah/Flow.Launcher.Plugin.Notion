@@ -203,8 +203,9 @@ To escape any keyword simply add backslah before it `\`
 1. `@`
 2. `!`
 3. `#`
-4. Custom Filter titles
-5. Dates by choosing cancel after they are recognized or backslah.
+4. `[`
+5. Custom Filter titles
+6. Dates by choosing cancel after they are recognized or backslah.
 
 
 **Unsupported Keywords:**
