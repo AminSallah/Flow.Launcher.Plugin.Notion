@@ -1,4 +1,6 @@
 
+using System.Linq;
+
 namespace Flow.Launcher.Plugin.Notion.ViewModels
 {
     public class SettingsViewModel : BaseModel
@@ -9,7 +11,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             Settings = settings;
         }
 
-        public Settings Settings { get; }
+        public Settings Settings { get; set; }
 
         public int HiddenItemsCount
         {
@@ -17,6 +19,14 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             set
             {
                 OnPropertyChanged(nameof(HiddenItemsCount));
+            }
+        }
+        public int CachedFailedRequests
+        {
+            get => Main._apiCacheManager.cachedFunctions.Count;
+            set
+            {
+                OnPropertyChanged(nameof(CachedFailedRequests));
             }
         }
 
@@ -29,5 +39,20 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 this.OnPropertyChanged();
             }
         }
+
+        public bool _notSelected = false;
+        
+        public bool NotSelected 
+        {get
+        {
+            return _notSelected;
+        }
+        set{
+            _notSelected = value;
+            OnPropertyChanged();
+        }
+        }
+
+        
     }
 }

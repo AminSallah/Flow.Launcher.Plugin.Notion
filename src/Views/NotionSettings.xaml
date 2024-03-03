@@ -41,6 +41,7 @@
                         Text="{Binding InernalInegrationToken}"
                         TextWrapping="NoWrap" />
                 </StackPanel>
+                <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -74,7 +75,7 @@
                     </Button>
                     <ui:ToggleSwitch IsOn="{Binding Settings.Hide}" Style="{DynamicResource SideToggleSwitch}" />
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xed1a;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -88,23 +89,58 @@
                     Grid.Column="2"
                     IsOn="{Binding Settings.UseBrowser}"
                     Style="{DynamicResource SideToggleSwitch}" />
-                <ui:FontIcon Glyph="&#xf6fa;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xe774;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests (Beta)" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Automatic Open" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, Pages Created Will Automatically Open by Default Upon Creation." />
                 </StackPanel>
                 <ui:ToggleSwitch
                     Grid.Column="2"
-                    IsOn="{Binding Settings.FailedRequests}"
+                    IsOn="{Binding Settings.PopUpPageAfterCreate}"
                     Style="{DynamicResource SideToggleSwitch}" />
+                <ui:FontIcon Glyph="&#xe7c3;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
+            <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Save failed requests" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, store failed requests due to internet connection errors for subsequent retry attempts." />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button
+                    Width="Auto"
+                    Margin="0,4,15,4"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Click="ClearFailedRequests">
+                        <Label HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding CachedFailedRequests, StringFormat='Clear Failed Requests:  {0}'}" />
+                        </Label>
+                        <Button.Style>
+                            <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CachedFailedRequests}" Value="0">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <ui:ToggleSwitch IsOn="{Binding Settings.FailedRequests}" Style="{DynamicResource SideToggleSwitch}" />
+                </StackPanel>
                 <ui:FontIcon Glyph="&#xecc5;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
+
+
 
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
@@ -117,7 +153,7 @@
                     <CheckBox Content="Databases"  Margin="7"  IsChecked="{Binding Settings.DatabaseIcons}"/>
                     <CheckBox Content="Relations"  Margin="7,7,25,7"  IsChecked="{Binding Settings.RelationsIcons}"/>
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xe8b9;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon Glyph="&#xeb9f;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -217,6 +253,7 @@
                             HorizontalAlignment="Right"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
+                            IsEnabled = "{Binding NotSelected}"
                             Click="EditButton_Click">
                                 <Button.Style>
                                     <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
@@ -245,6 +282,7 @@
                             HorizontalAlignment="Right"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
+                            IsEnabled = "{Binding NotSelected}"
                             Click="DeleteButton_Click">
                                 <Button.Style>
                                     <Style BasedOn="{StaticResource SettingButton}" TargetType="Button">
@@ -280,6 +318,7 @@
                     ItemsSource="{Binding Settings.Filters}"
                     MouseDoubleClick="ListView_MouseDoubleClick"
                     MouseUp="ListView_MouseUp"
+                    SelectionChanged = "ListView_SelectionChanged"
                     SelectedItem="{Binding Settings.SelectedPayload}"
                     Style="{StaticResource {x:Static GridView.GridViewStyleKey}}">
                     <ListView.View>
@@ -309,15 +348,15 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Width="150" Header="Database">
+                            <GridViewColumn Width="200" Header="Database">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Database}" />
+                                        <TextBlock Text="{Binding DatabasesString}" TextWrapping="Wrap"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Width="150" Header="Type">
+                            <GridViewColumn Width="100" Header="Type">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding JsonType}" />
@@ -325,10 +364,10 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Width="100" Header="Cachable">
+                            <GridViewColumn Width="180" Header="Cachable">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Cachable}" />
+                                        <TextBlock Text="{Binding CacheType}" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -346,5 +385,6 @@
                 </ListView>
             </Expander>
         </Border>
+
     </StackPanel>
 </UserControl>

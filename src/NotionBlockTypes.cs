@@ -20,7 +20,7 @@ namespace Flow.Launcher.Plugin.Notion
 
         internal List<Result> SetBlockChild(string query, string result_string, int block)
         {
-            string fuzzyQuery = query.Replace($"*{query.Split("*")[^1]}", "^");
+            string fuzzyQuery = query.Replace($"*{query.Split("*")[^1]}", "^",StringComparison.CurrentCultureIgnoreCase);
 
             Result CreateResult(string title, string blockType, Func<string, int?, Dictionary<string, object>> serialize_fn, string updatedQuery)
             {
