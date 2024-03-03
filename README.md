@@ -151,6 +151,10 @@
      - Select a page to link a created page to it by pressing `Enter` or use `Mouse Down`
      - Open the page in Notion by pressing `Ctrl + Enter` or `Ctrl + Mouse Down`
 
+    ## `c + [link]`
+    If the database has more than one url or media files property, the result list would contain names of these properties to choose from. In the case where the database has only one url or media files property, the plugin would automatically choose it.
+     Use character `[` to start typing a link you can close the square brackets to continue typing the page name or keep it opened, captured link should be appear under the page name.
+
     ## `c + page details + #`
    
    If the database has more than one multi-selection property, the result list would contain names of these properties to choose from. In the case where the database has only one multi-select property, the plugin would automatically choose it and display all available tags (non-clickable). You can choose options by using `# + optionName`:
