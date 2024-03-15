@@ -1654,60 +1654,22 @@ namespace Flow.Launcher.Plugin.Notion
                     dataDict["filter"] = type.Trim();
                     break;
                 }
-                if (autoSelect)
-                {
-                    // if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
-                    // {
-                    //     var splitQuery = type.Split('!', 2);
-                    //     var userInput = splitQuery[1].Trim();
-                    //     if (splitQuery.Length == 2)
-                    //     {
-                    //         var filteredItems = ProjectsId.Values.Where(item => item[0].GetString().ToLower().Contains(userInput.ToLower())).ToList();
-                    //         if (filteredItems.Count == 1)
-                    //         {
-                    //             dataDict["Project"] = string.Join("", filteredItems);
-                    //         }
-                    //     }
-                    // }
-                    // if (type.StartsWith("@"))
-                    // {
-                    //     var splitQuery = type.Split('@', 2);
-                    //     var userInput = splitQuery[1].Trim();
-                    //     if (splitQuery.Length == 2)
-                    //     {
-                    //         var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
-                    //         if (filteredItems.Count == 1)
-                    //         {
-                    //             dataDict["databaseId"] = string.Join("", filteredItems);
-                    //         }
-                    //     }
-                    // }
-                }
-
-                // Condition for 'in '
-                if (type.StartsWith("in ", ignoreCase: true, culture: null))
-                {
-                    dataDict["Name_dir"] = type;
-                }
-
-                // Condition for 'on '
-                if (type.StartsWith("on ", ignoreCase: true, culture: null))
-                {
-                    dataDict["Name_dir"] = type;
-                }
 
                 if (!(type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || (type.StartsWith("$") && type.EndsWith("$"))))
                 {
                     if (!type.Contains($"$ {type}") && !type.Contains($"{type}$"))
                     {
                         string unRefinedName = type;
-                        Match UrlMatch = Regex.Match(type,@"(?<!\\)\[([^\]]+)");
+                        Match UrlMatch = Regex.Match(type, @"(?<!\\)\[([^\]]+)");
                         if (UrlMatch.Success && UrlMatch.Groups.Count == 2)
                         {
                             dataDict["link"] = UrlMatch.Groups[1].Value;
-                            try 
-                                {unRefinedName = Regex.Replace(unRefinedName,$@"\s?\{UrlMatch.Groups[0].Value}\]?","").Trim();}
-                            catch (RegexParseException) {}
+                            try
+                            {
+                                string escapedReplacement = Regex.Escape(UrlMatch.Groups[0].Value);
+                                unRefinedName = Regex.Replace(unRefinedName, $@"\s?{escapedReplacement}\]?", "").Trim();
+                            }
+                            catch (RegexParseException) { }
                         }
                         unRefinedName = RefineQueryText(inputString, unRefinedName).Trim();
                         if (!string.IsNullOrEmpty(unRefinedName))
@@ -1745,9 +1707,10 @@ namespace Flow.Launcher.Plugin.Notion
                         foreach (var _values in ProjectsId.Values)
                         {
                             string item = _values[0].GetString();
-                            if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                            if (userInput.Contains(item))
                             {
                                 dataDict["Project"] = item;
+                                item = Regex.Escape(item);
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
                                 string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?!\s?{item}", "", RegexOptions.IgnoreCase).Trim();
                                 if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualProjectRunning: true).TryGetValue("Name", out object Name))
@@ -1771,20 +1734,22 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
                 {
-                    // string Pattern = @"(@\s?.+)";
                     string Pattern = @"((?<!\\)@[^\\]*)";
                     var DatabaseMatch = Regex.Match(inputString, Pattern);
                     if (DatabaseMatch.Success)
                     {
                         var splitQuery = DatabaseMatch.Groups[0].Value.Split('@');
                         var userInput = splitQuery[1].Trim();
-                        foreach (var item in databaseId.Keys)
+                        foreach (var _item in databaseId.Keys)
                         {
-                            if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                            if (userInput.Contains(_item))
                             {
-                                dataDict["databaseId"] = item;
+                                dataDict["databaseId"] = _item;
+                                string item = Regex.Escape(_item);
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
-                                if (GetData(Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
+                                string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim();
+                                inputString = unRawInputString;
+                                if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
                                 {
                                     dataDict["Name"] = Name.ToString();
                                 }
