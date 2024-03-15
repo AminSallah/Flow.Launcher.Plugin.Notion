@@ -155,11 +155,21 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
 
 
+                                string GetFullTitle(JToken titleList)
+                                {
+                                    string extractedTitle = string.Empty;
+                                    foreach (var titleType in titleList)
+                                    {
+                                        extractedTitle += titleType["plain_text"].ToString();
+                                    }
+
+                                    return extractedTitle;
+                                }
                                 // Extract the title from the response
                                 string extractedTitle;
                                 try
                                 {
-                                    extractedTitle = result["properties"][title]["title"][0]["text"]["content"].ToString();
+                                    extractedTitle = GetFullTitle(result["properties"][title]["title"]);
                                 }
                                 catch (ArgumentOutOfRangeException)
                                 {
