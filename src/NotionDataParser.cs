@@ -531,7 +531,7 @@ namespace Flow.Launcher.Plugin.Notion
                 lastCursorKey = null;
             }
 
-            _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: manuanl_cursour != null ? true : false);
+            _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: true);
         }
 
         public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null)
