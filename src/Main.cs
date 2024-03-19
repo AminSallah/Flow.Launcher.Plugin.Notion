@@ -475,18 +475,23 @@ namespace Flow.Launcher.Plugin.Notion
                 });
                 return resultList;
             }
-            
+
             searchResults = LoadJsonData(FullCachePath);
-            
+
             if (searchResults == null || searchResults.Count() == 0)
             {
-                resultList.Add(new Result
+                await this._notionDataParser.CallApiForSearch();
+                searchResults = LoadJsonData(FullCachePath);
+                if (searchResults == null || searchResults.Count() == 0)
                 {
-                    Title = "No pages linked with Internal Inegration token.",
-                    SubTitle = "Please ensure at least two pages are shared with token.",
-                    IcoPath = "Images/error.png"
-                });
-                return resultList;
+                    resultList.Add(new Result
+                    {
+                        Title = "No pages linked with Internal Inegration token.",
+                        SubTitle = "Please ensure at least two pages are shared with token.",
+                        IcoPath = "Images/error.png"
+                    });
+                    return resultList;
+                }
             }
 
             if (string.IsNullOrEmpty(query.Search))
@@ -1167,7 +1172,7 @@ namespace Flow.Launcher.Plugin.Notion
                 return resultList;
             }
 
-            if (query.Search.Contains("[") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search,"\\["))
+            if (query.Search.Contains("[") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search, "\\["))
             {
                 JsonElement.ArrayEnumerator UrlMapOptions = databaseId[filtered_query["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
                 if (UrlMapOptions.Count() > 1)
@@ -1185,7 +1190,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 Action = c =>
                                 {
                                     UrlMap = _urlOption.GetString();
-                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery,"[") + "[", true);
+                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery, "[") + "[", true);
                                     return false;
                                 }
                             };
@@ -1200,7 +1205,7 @@ namespace Flow.Launcher.Plugin.Notion
                     UrlMap = UrlMapOptions.First().GetString();
                 }
             }
-            else if (!IsWritingBlock && Escaped(query.Search,"\\["))
+            else if (!IsWritingBlock && Escaped(query.Search, "\\["))
             {
                 UrlMap = null;
             }
@@ -1868,15 +1873,15 @@ namespace Flow.Launcher.Plugin.Notion
                 foreach (ModelResult result in results)
                 {
                     if (!IsItFilter &&
-                    (input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) ||
+                    (input.StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) ||
                     input.Substring(result.Start - 1, 1) != "\\") &&
                     !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                     {
                         methodResult = result;
-                        if (!input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) &&
+                        if (!input.StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) &&
                             (input.Substring(result.Start - 3, 3) == "on " || input.Substring(result.Start - 3, 3) == "On "))
                         {
-                            returnedName = returnedName.Remove(result.Start -3, result.End - result.Start + 4);
+                            returnedName = returnedName.Remove(result.Start - 3, result.End - result.Start + 4);
 
                         }
                         else
@@ -2175,7 +2180,7 @@ namespace Flow.Launcher.Plugin.Notion
                 if (IsInternetConnected())
                 {
                     Context.API.ShowMsgError($"Proccessing Error", "Unexpected Error While Proccesing Propeties.");
-                    Context.API.LogException(nameof(Main), $"Internet available ==>{IsInternetConnected()}",ex, MethodBase.GetCurrentMethod().Name);
+                    Context.API.LogException(nameof(Main), $"Internet available ==>{IsInternetConnected()}", ex, MethodBase.GetCurrentMethod().Name);
                     HttpResponseMessage FakeRespone = new HttpResponseMessage();
                     FakeRespone.ReasonPhrase = "Bad Request";
                     return FakeRespone;
