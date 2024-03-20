@@ -155,11 +155,21 @@ namespace Flow.Launcher.Plugin.Notion
                                 }
 
 
+                                string GetFullTitle(JToken titleList)
+                                {
+                                    string extractedTitle = string.Empty;
+                                    foreach (var titleType in titleList)
+                                    {
+                                        extractedTitle += titleType["plain_text"].ToString();
+                                    }
+
+                                    return extractedTitle;
+                                }
                                 // Extract the title from the response
                                 string extractedTitle;
                                 try
                                 {
-                                    extractedTitle = result["properties"][title]["title"][0]["text"]["content"].ToString();
+                                    extractedTitle = GetFullTitle(result["properties"][title]["title"]);
                                 }
                                 catch (ArgumentOutOfRangeException)
                                 {
@@ -521,7 +531,7 @@ namespace Flow.Launcher.Plugin.Notion
                 lastCursorKey = null;
             }
 
-            _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: manuanl_cursour != null ? true : false);
+            _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: true);
         }
 
         public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null)

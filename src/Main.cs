@@ -475,18 +475,23 @@ namespace Flow.Launcher.Plugin.Notion
                 });
                 return resultList;
             }
-            
+
             searchResults = LoadJsonData(FullCachePath);
-            
+
             if (searchResults == null || searchResults.Count() == 0)
             {
-                resultList.Add(new Result
+                await this._notionDataParser.CallApiForSearch();
+                searchResults = LoadJsonData(FullCachePath);
+                if (searchResults == null || searchResults.Count() == 0)
                 {
-                    Title = "No pages linked with Internal Inegration token.",
-                    SubTitle = "Please ensure at least two pages are shared with token.",
-                    IcoPath = "Images/error.png"
-                });
-                return resultList;
+                    resultList.Add(new Result
+                    {
+                        Title = "No pages linked with Internal Inegration token.",
+                        SubTitle = "Please ensure at least two pages are shared with token.",
+                        IcoPath = "Images/error.png"
+                    });
+                    return resultList;
+                }
             }
 
             if (string.IsNullOrEmpty(query.Search))
@@ -1167,7 +1172,7 @@ namespace Flow.Launcher.Plugin.Notion
                 return resultList;
             }
 
-            if (query.Search.Contains("[") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search,"\\["))
+            if (query.Search.Contains("[") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search, "\\["))
             {
                 JsonElement.ArrayEnumerator UrlMapOptions = databaseId[filtered_query["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
                 if (UrlMapOptions.Count() > 1)
@@ -1185,7 +1190,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 Action = c =>
                                 {
                                     UrlMap = _urlOption.GetString();
-                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery,"[") + "[", true);
+                                    Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + ConcatSplitedQuery(splitQuery, "[") + "[", true);
                                     return false;
                                 }
                             };
@@ -1200,7 +1205,7 @@ namespace Flow.Launcher.Plugin.Notion
                     UrlMap = UrlMapOptions.First().GetString();
                 }
             }
-            else if (!IsWritingBlock && Escaped(query.Search,"\\["))
+            else if (!IsWritingBlock && Escaped(query.Search, "\\["))
             {
                 UrlMap = null;
             }
@@ -1654,60 +1659,22 @@ namespace Flow.Launcher.Plugin.Notion
                     dataDict["filter"] = type.Trim();
                     break;
                 }
-                if (autoSelect)
-                {
-                    // if (type.StartsWith("!") && !string.IsNullOrEmpty(ProjectName))
-                    // {
-                    //     var splitQuery = type.Split('!', 2);
-                    //     var userInput = splitQuery[1].Trim();
-                    //     if (splitQuery.Length == 2)
-                    //     {
-                    //         var filteredItems = ProjectsId.Values.Where(item => item[0].GetString().ToLower().Contains(userInput.ToLower())).ToList();
-                    //         if (filteredItems.Count == 1)
-                    //         {
-                    //             dataDict["Project"] = string.Join("", filteredItems);
-                    //         }
-                    //     }
-                    // }
-                    // if (type.StartsWith("@"))
-                    // {
-                    //     var splitQuery = type.Split('@', 2);
-                    //     var userInput = splitQuery[1].Trim();
-                    //     if (splitQuery.Length == 2)
-                    //     {
-                    //         var filteredItems = databaseId.Keys.Where(item => item.ToLower().Contains(userInput.ToLower())).ToList();
-                    //         if (filteredItems.Count == 1)
-                    //         {
-                    //             dataDict["databaseId"] = string.Join("", filteredItems);
-                    //         }
-                    //     }
-                    // }
-                }
-
-                // Condition for 'in '
-                if (type.StartsWith("in ", ignoreCase: true, culture: null))
-                {
-                    dataDict["Name_dir"] = type;
-                }
-
-                // Condition for 'on '
-                if (type.StartsWith("on ", ignoreCase: true, culture: null))
-                {
-                    dataDict["Name_dir"] = type;
-                }
 
                 if (!(type.StartsWith("#") || type.StartsWith("*") || type.StartsWith("^") || (type.StartsWith("$") && type.EndsWith("$"))))
                 {
                     if (!type.Contains($"$ {type}") && !type.Contains($"{type}$"))
                     {
                         string unRefinedName = type;
-                        Match UrlMatch = Regex.Match(type,@"(?<!\\)\[([^\]]+)");
+                        Match UrlMatch = Regex.Match(type, @"(?<!\\)\[([^\]]+)");
                         if (UrlMatch.Success && UrlMatch.Groups.Count == 2)
                         {
                             dataDict["link"] = UrlMatch.Groups[1].Value;
-                            try 
-                                {unRefinedName = Regex.Replace(unRefinedName,$@"\s?\{UrlMatch.Groups[0].Value}\]?","").Trim();}
-                            catch (RegexParseException) {}
+                            try
+                            {
+                                string escapedReplacement = Regex.Escape(UrlMatch.Groups[0].Value);
+                                unRefinedName = Regex.Replace(unRefinedName, $@"\s?{escapedReplacement}\]?", "").Trim();
+                            }
+                            catch (RegexParseException) { }
                         }
                         unRefinedName = RefineQueryText(inputString, unRefinedName).Trim();
                         if (!string.IsNullOrEmpty(unRefinedName))
@@ -1745,9 +1712,10 @@ namespace Flow.Launcher.Plugin.Notion
                         foreach (var _values in ProjectsId.Values)
                         {
                             string item = _values[0].GetString();
-                            if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                            if (userInput.Contains(item))
                             {
                                 dataDict["Project"] = item;
+                                item = Regex.Escape(item);
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
                                 string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?!\s?{item}", "", RegexOptions.IgnoreCase).Trim();
                                 if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualProjectRunning: true).TryGetValue("Name", out object Name))
@@ -1771,20 +1739,22 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
                 {
-                    // string Pattern = @"(@\s?.+)";
                     string Pattern = @"((?<!\\)@[^\\]*)";
                     var DatabaseMatch = Regex.Match(inputString, Pattern);
                     if (DatabaseMatch.Success)
                     {
                         var splitQuery = DatabaseMatch.Groups[0].Value.Split('@');
                         var userInput = splitQuery[1].Trim();
-                        foreach (var item in databaseId.Keys)
+                        foreach (var _item in databaseId.Keys)
                         {
-                            if (Context.API.FuzzySearch(item, userInput).Score > 0)
+                            if (userInput.Contains(_item))
                             {
-                                dataDict["databaseId"] = item;
+                                dataDict["databaseId"] = _item;
+                                string item = Regex.Escape(_item);
                                 string TransformName = Regex.Replace(userInput, item, "", RegexOptions.IgnoreCase).Trim();
-                                if (GetData(Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim(), defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
+                                string unRawInputString = Regex.Replace(inputString.Trim(), $@"\s?\@\s?{item}", "", RegexOptions.IgnoreCase).Trim();
+                                inputString = unRawInputString;
+                                if (GetData(unRawInputString, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualDBRunning: true).TryGetValue("Name", out object Name))
                                 {
                                     dataDict["Name"] = Name.ToString();
                                 }
@@ -1903,15 +1873,15 @@ namespace Flow.Launcher.Plugin.Notion
                 foreach (ModelResult result in results)
                 {
                     if (!IsItFilter &&
-                    (input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) ||
+                    (input.StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) ||
                     input.Substring(result.Start - 1, 1) != "\\") &&
                     !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                     {
                         methodResult = result;
-                        if (!input.StartsWith(result.Text,StringComparison.OrdinalIgnoreCase) &&
+                        if (!input.StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) &&
                             (input.Substring(result.Start - 3, 3) == "on " || input.Substring(result.Start - 3, 3) == "On "))
                         {
-                            returnedName = returnedName.Remove(result.Start -3, result.End - result.Start + 4);
+                            returnedName = returnedName.Remove(result.Start - 3, result.End - result.Start + 4);
 
                         }
                         else
@@ -2210,7 +2180,7 @@ namespace Flow.Launcher.Plugin.Notion
                 if (IsInternetConnected())
                 {
                     Context.API.ShowMsgError($"Proccessing Error", "Unexpected Error While Proccesing Propeties.");
-                    Context.API.LogException(nameof(Main), $"Internet available ==>{IsInternetConnected()}",ex, MethodBase.GetCurrentMethod().Name);
+                    Context.API.LogException(nameof(Main), $"Internet available ==>{IsInternetConnected()}", ex, MethodBase.GetCurrentMethod().Name);
                     HttpResponseMessage FakeRespone = new HttpResponseMessage();
                     FakeRespone.ReasonPhrase = "Bad Request";
                     return FakeRespone;
