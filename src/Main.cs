@@ -1648,7 +1648,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            string pattern = @"(\$[a-zA-Z\s\.\-\#\|\(\)ا-ي]*\$)|(@\s?[a-zA-Z0-9]*)|(!\s?[a-zA-Z0:9\._-]*)|((?:\*|\^)+\s?[\\""\{\}\<\>\!\[\]\@\`\(\)\#\%\+\-\,\?=/\\\da-zA-Z\s\'_.ا-ي\,\&\;\:]*)|(\[\s?[/\#\-\:a-zA-Z0-9/.&=_?]*]?)|\s?([^*^$]+)";
+            string pattern = @"(\$.*\$)|((?:\*|\^)+\s?[^\*\^]*)|\s?([^*^]+)";
             var match = Regex.Matches(inputString, pattern);
             var dataList = match.Cast<Match>().SelectMany(m => m.Groups.Cast<Group>().Skip(1)).Select(g => g.Value.Trim()).Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             bool autoSelect = false;
