@@ -84,7 +84,7 @@
 
 8. **Select Relation Database:**
    - Navigate to `Settings > Plugins > Notion`.
-   - Choose your relational database and await the success message.
+   - Choose your relation database and wait the success message.
 
     ![Choose Relation Database Image](assets/screenshots/RelationSelection.png)
 
