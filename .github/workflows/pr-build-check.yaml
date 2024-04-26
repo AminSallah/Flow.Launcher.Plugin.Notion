@@ -23,4 +23,11 @@ jobs:
       run: dotnet restore ./src/Flow.Launcher.Plugin.Notion.csproj
 
     - name: Build
-      run: dotnet build --configuration Release ./src/Flow.Launcher.Plugin.Notion.csproj
+      run: dotnet publish -c Release -r win-x64 --no-self-contained ./src/Flow.Launcher.Plugin.Notion.csproj
+
+      # Attach the zip file to the pull request
+    - name: Upload DLL zip artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Flow.Launcher.Plugin.Notion.dll
+        path: "./src/bin/Release/win-x64/publish/Flow.Launcher.Plugin.Notion.dll"
