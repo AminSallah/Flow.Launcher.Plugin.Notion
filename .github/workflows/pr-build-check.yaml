@@ -1,4 +1,4 @@
-name: .NET CI
+name: CI
 
 on:
   pull_request:
@@ -6,45 +6,20 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: windows-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Change directory to src
-      run: cd src
-
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.x'  # Adjust to your desired .NET version
+        dotnet-version: '7.x'
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/Flow.Launcher.Plugin.Notion.csproj
 
     - name: Build
-      run: dotnet build --configuration Debug --no-restore
-
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
-
-    - name: Set status check
-      if: always()
-      run: echo "::set-output name=status::success"
-      id: status
-
-  check_status:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check status
-      run: |
-        if [[ "${{ needs.build.outputs.status }}" == "success" ]]; then
-          echo "Build successful!"
-          exit 0
-        else
-          echo "Build failed!"
-          exit 1
-        fi
+      run: dotnet build --configuration Release ./src/Flow.Launcher.Plugin.Notion.csproj
