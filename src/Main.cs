@@ -50,7 +50,7 @@ namespace Flow.Launcher.Plugin.Notion
         public static List<string> HiddenItems = new List<string>();
         public static Dictionary<string, JsonElement> databaseId = LoadJsonData(DatabaseCachePath);
         public static Dictionary<string, JsonElement> ProjectsId = LoadJsonData(RelationCachePath);
-        public Dictionary<string, JsonElement> searchResults = LoadJsonData(FullCachePath);
+        public Dictionary<string, JsonElement> searchResults = new Dictionary<string, JsonElement>();
 
         public async Task InitAsync(PluginInitContext context)
         {
@@ -63,6 +63,7 @@ namespace Flow.Launcher.Plugin.Notion
             _settings.DatabaseCachePath = DatabaseCachePath;
             HiddenItemsPath = System.IO.Path.Combine(cacheDirectory, "HiddenItems.txt");
             FullCachePath = System.IO.Path.Combine(cacheDirectory, "search.json");
+            searchResults = LoadJsonData(FullCachePath);
             _settings.FullCachePath = FullCachePath;
             CustomImagesDirectory = System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "Icons", "CustomIcons");
             CreatePathsIfNeeded();
