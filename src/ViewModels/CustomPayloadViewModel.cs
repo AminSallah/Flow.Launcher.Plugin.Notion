@@ -156,7 +156,8 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 errorMessage = "The Title cannot be empty.";
                 return false;
             }
-            if (Settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == FilterTitle.ToLower().Trim()))
+            if (Settings.Filters.Any(Filter => Filter.JsonType == JsonType.Filter && JsonType == JsonType.Filter &&
+                Filter.Title.ToLower().Trim() == FilterTitle.ToLower().Trim()))
             {
                 errorMessage = "The Title cannot be duplicated.";
                 return false;

@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Flow.Launcher.Plugin.Notion.ViewModels
@@ -41,18 +42,39 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         }
 
         public bool _notSelected = false;
-        
-        public bool NotSelected 
-        {get
+
+        public bool NotSelected
         {
-            return _notSelected;
-        }
-        set{
-            _notSelected = value;
-            OnPropertyChanged();
-        }
+            get
+            {
+                return _notSelected;
+            }
+            set
+            {
+                _notSelected = value;
+                OnPropertyChanged();
+            }
         }
 
-        
+        public List<string> Databases
+        {
+            get => Settings.RelationDatabases;
+            set
+            {
+                Settings.RelationDatabases = value;
+                OnPropertyChanged();
+
+
+            }
+        }
+
+        public List<string> DatabasesIds
+        {
+            get => Settings.RelationDatabasesIds;
+            set => Settings.RelationDatabasesIds = value;
+        }
+
+
+
     }
 }

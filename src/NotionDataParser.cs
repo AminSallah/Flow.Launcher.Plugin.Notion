@@ -13,32 +13,14 @@ using System.Text;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
 using System.Reflection;
-
 namespace Flow.Launcher.Plugin.Notion
 {
 
-    internal class NotionDataParser
+    public class NotionDataParser
 
     {
 
-        static Dictionary<string, string> projectIdForName
-        {
-
-            get
-            {
-                try
-                {
-                    return Main.ProjectsId.ToDictionary(
-                                        kv => kv.Key,
-                                        kv => kv.Value[0].GetString()
-                                    );
-                }
-                catch
-                {
-                    return new Dictionary<string, string>();
-                }
-            }
-        }
+        static Dictionary<string, string> projectIdForName { get; set; }
         static Dictionary<string, string> databaseIdForName
         {
 
@@ -67,11 +49,129 @@ namespace Flow.Launcher.Plugin.Notion
         {
             this._context = context;
             this._settings = settings;
+            UpdateProjectsMap();
             _iconPath = Path.Combine("Icons", "icons");
+        }
+
+        void UpdateProjectsMap()
+        {
+            try
+            {
+                projectIdForName = Main.LoadJsonData(Path.Combine(Main.cacheDirectory, _settings.RelationDatabasesIds[0] + ".json"))
+                                                .ToDictionary(
+                                                        kv => kv.Key,
+                                                        kv => kv.Value[0].GetString()
+                                                    );
+            }
+            catch
+            {
+                projectIdForName = new Dictionary<string, string>();
+            }
+
+        }
+
+
+        static string GetHumanDateFormat(DateTime date)
+        {
+            DateTime today = DateTime.Today;
+            DateTime tomorrow = today.AddDays(1);
+            DateTime yesterday = today.AddDays(-1);
+
+            if (date.Date == today)
+            {
+                return "Today";
+            }
+            else if (date.Date == tomorrow)
+            {
+                return "Tomorrow";
+            }
+            else if (date.Date == yesterday)
+            {
+                return "Yesterday";
+            }
+            else
+            {
+
+                if (IsPast(date, today))
+                {
+                    DateTime lastMonday = GetLastWeekday(today, DayOfWeek.Monday);
+                    Console.WriteLine("Last Monday was: " + lastMonday.ToString("yyyy-MM-dd"));
+                    Console.WriteLine("Last thursday was: " + GetLastWeekday(today, DayOfWeek.Friday).ToString("yyyy-MM-dd"));
+
+                    if (date.Date < lastMonday && date.Date >= GetLastWeekday(today, DayOfWeek.Friday))
+                    {
+                        return "Last " + date.DayOfWeek.ToString();
+                    }
+                    else if (date.Date >= lastMonday)
+                    {
+                        return date.DayOfWeek.ToString();
+                    }
+
+                    return date.ToString("MMMM d, yyyy");
+                }
+                Console.WriteLine(GetNextWeekday(today, DayOfWeek.Monday));
+                Console.WriteLine(date.Date);
+                if (GetNextWeekday(today, DayOfWeek.Monday) <= date.Date && date.Date <= GetNextWeekday(today, DayOfWeek.Thursday))
+                {
+                    return (IsPast(date, today) ? "Last " : "Next ") + date.DayOfWeek.ToString();
+                }
+                else if (GetNextWeekday(today, DayOfWeek.Monday) >= date.Date)
+                {
+                    return date.DayOfWeek.ToString();
+                }
+                else
+                {
+                    return date.ToString("MMMM d, yyyy");
+
+                }
+
+            }
+            static DateTime GetNextWeekday(DateTime start, DayOfWeek day)
+            {
+                int daysToAdd = ((int)day - (int)start.DayOfWeek + 7) % (start.DayOfWeek == day ? 14 : 7);
+                return start.AddDays(daysToAdd);
+            }
+            static DateTime GetLastWeekday(DateTime start, DayOfWeek day)
+            {
+                int daysToAdd = ((int)day - (int)start.DayOfWeek + 6) % (start.AddDays(+1).DayOfWeek == day ? 14 : 7);
+                return start.AddDays(-daysToAdd);
+            }
+            static bool IsPast(DateTime date, DateTime now)
+            {
+                if (date < now)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+        }
+
+        public string GetFullTitle(JToken titleList)
+        {
+            string extractedTitle = string.Empty;
+            foreach (var titleType in titleList)
+            {
+                if ((string)titleType["type"] == "mention" && (string)titleType["mention"]["type"] == "date")
+                {
+                    DateTime dateFromString = DateTime.Parse((string)titleType["plain_text"]);
+                    extractedTitle += GetHumanDateFormat(dateFromString);
+                }
+                else
+                {
+                    extractedTitle += titleType["plain_text"].ToString();
+                }
+            }
+
+            return extractedTitle;
         }
 
         internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 10, bool Force = false, string Value = "page")
         {
+            UpdateProjectsMap();
 
             if (oldDatabaseId == null)
             {
@@ -154,17 +254,6 @@ namespace Flow.Launcher.Plugin.Notion
                                     }
                                 }
 
-
-                                string GetFullTitle(JToken titleList)
-                                {
-                                    string extractedTitle = string.Empty;
-                                    foreach (var titleType in titleList)
-                                    {
-                                        extractedTitle += titleType["plain_text"].ToString();
-                                    }
-
-                                    return extractedTitle;
-                                }
                                 // Extract the title from the response
                                 string extractedTitle;
                                 try
@@ -186,7 +275,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     DBName = string.Empty;
                                 }
-                                
+
                                 try
                                 {
                                     if (result["parent"]["type"].ToString() == "block_id")
@@ -196,13 +285,13 @@ namespace Flow.Launcher.Plugin.Notion
                                     }
                                     else if (result["parent"]["type"].ToString() == "page_id")
                                         Chain = result["parent"]["page_id"].ToString();
-                                    
+
                                 }
                                 catch (Exception ex)
                                 {
 
                                     Chain = string.Empty;
-                                    _context.API.LogException("BuildCache", "BuildChainError", ex , "GetPageByBlockId");
+                                    _context.API.LogException("BuildCache", "BuildChainError", ex, "GetPageByBlockId");
                                 }
 
 
@@ -213,7 +302,8 @@ namespace Flow.Launcher.Plugin.Notion
                                 try
                                 {
                                     var TargetDatabaseMap = Main.databaseId[DBName];
-                                    var projectRelation = result["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateArray().First().GetString()]["relation"][0];
+                                    // var projectRelation = result["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateArray().First().GetString()]["relation"][0];
+                                    var projectRelation = result["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateObject().FirstOrDefault(x => x.Value.GetString() == _settings.RelationDatabasesIds[0]).Name]["relation"][0];
                                     if (projectRelation != null && projectRelation["id"] != null)
                                     {
                                         relatedProject = projectIdForName[projectRelation["id"].ToString()];
@@ -277,7 +367,7 @@ namespace Flow.Launcher.Plugin.Notion
                     _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase, MethodBase.GetCurrentMethod().Name);
                     // Try To recache the whole shared pages in case of page deleted on notion by Notion UI
                     if (!string.IsNullOrEmpty(startCursor))
-                        await CallApiForSearch(oldDatabaseId:null, startCursor:null , numPage:100);
+                        await CallApiForSearch(oldDatabaseId: null, startCursor: null, numPage: 100);
                 }
                 return new JArray();
             }
@@ -291,9 +381,9 @@ namespace Flow.Launcher.Plugin.Notion
                 client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
                 string url = "https://api.notion.com/v1/blocks/";
                 var response = client.GetAsync(url + BlockId).Result;
-                
+
                 JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                while ( jsonObject["parent"]["type"].ToString() != "page_id")
+                while (jsonObject["parent"]["type"].ToString() != "page_id")
                 {
                     response = client.GetAsync(url + jsonObject["parent"][jsonObject["parent"]["type"].ToString()].ToString()).Result;
                     jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
@@ -303,7 +393,6 @@ namespace Flow.Launcher.Plugin.Notion
 
             }
         }
-
 
         public async Task<Dictionary<string, JsonElement>> DatabaseCache()
         {
@@ -316,9 +405,12 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     JObject properties = (JObject)DB["properties"];
                     string title = null;
-                    List<string> Relation = new List<string>();
+                    Dictionary<string, string> Relation = new Dictionary<string, string>();
                     Dictionary<string, List<string>> MultiSelect = new Dictionary<string, List<string>>();
+                    Dictionary<string, List<string>> SingleSelect = new Dictionary<string, List<string>>();
+                    Dictionary<string, List<string>> Status = new Dictionary<string, List<string>>();
                     List<string> Date = new List<string>();
+                    List<string> CheckBox = new List<string>();
                     List<string> urlMap = new List<string>();
 
                     string Icon = _context.CurrentPluginMetadata.IcoPath;
@@ -349,9 +441,16 @@ namespace Flow.Launcher.Plugin.Notion
                                 urlMap.Add(kvp.Key);
                                 continue;
                             }
-                            else if (values["type"].ToString().Contains("relation") && values["relation"]["database_id"].ToString() == _settings.RelationDatabaseId)
+                            if (values["type"].ToString() == "checkbox")
                             {
-                                Relation.Add(kvp.Key.ToString());
+                                CheckBox.Add(kvp.Key);
+                                continue;
+                            }
+                            else if (values["type"].ToString().Contains("relation") &&
+                                // values["relation"]["database_id"].ToString() == _settings.RelationDatabaseId)
+                                _settings.RelationDatabasesIds.Contains(values["relation"]["database_id"].ToString()))
+                            {
+                                Relation[kvp.Key.ToString()] = values["relation"]["database_id"].ToString();
                                 continue;
                             }
                             else if (values["type"].ToString().Contains("multi_select"))
@@ -363,6 +462,32 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         string optionName = option["name"].ToString();
                                         MultiSelect[kvp.Key.ToString()].Add(optionName);
+                                    }
+                                }
+                                continue;
+                            }
+                            else if (values["type"].ToString().Contains("select"))
+                            {
+                                SingleSelect[kvp.Key.ToString()] = new List<string>();
+                                if (properties[kvp.Key.ToString()]["select"]["options"] is JArray optionsArray && optionsArray.Count > 0)
+                                {
+                                    foreach (var option in optionsArray)
+                                    {
+                                        string optionName = option["name"].ToString();
+                                        SingleSelect[kvp.Key.ToString()].Add(optionName);
+                                    }
+                                }
+                                continue;
+                            }
+                            else if (values["type"].ToString().Contains("status"))
+                            {
+                                Status[kvp.Key.ToString()] = new List<string>();
+                                if (properties[kvp.Key.ToString()]["status"]["options"] is JArray optionsArray && optionsArray.Count > 0)
+                                {
+                                    foreach (var option in optionsArray)
+                                    {
+                                        string optionName = option["name"].ToString();
+                                        Status[kvp.Key.ToString()].Add(optionName);
                                     }
                                 }
                                 continue;
@@ -381,12 +506,15 @@ namespace Flow.Launcher.Plugin.Notion
                         icon = Icon,
                         date = Date,
                         multi_select = MultiSelect,
+                        select = SingleSelect,
                         relation = Relation,
                         urlMap = urlMap,
+                        status = Status,
+                        check_box = CheckBox,
                         url = DB["url"].ToString().Replace("https://", "notion://")
                     }));
 
-                    Databases[DB["title"][0]["text"]["content"].ToString()] = jsonElement;
+                    Databases[GetFullTitle(DB["title"])] = jsonElement;
                     string jsonString = System.Text.Json.JsonSerializer.Serialize(Databases, new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(_settings.DatabaseCachePath, jsonString);
                 }
@@ -536,17 +664,18 @@ namespace Flow.Launcher.Plugin.Notion
 
         public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null)
         {
+            UpdateProjectsMap();
             string url = $"https://api.notion.com/v1/databases/{DB}/query?";
             filterPayload = !string.IsNullOrEmpty(filterPayload) ? ConvertVariables(filterPayload) : filterPayload;
-            Dictionary<string, object> _payload =new Dictionary<string, object>
+            Dictionary<string, object> _payload = new Dictionary<string, object>
             {
                 {"page_size" ,100}
             };
             if (!string.IsNullOrEmpty(filterPayload))
             {
-                _payload.Add("filter",JsonConvert.DeserializeObject<dynamic>(filterPayload));
+                _payload.Add("filter", JsonConvert.DeserializeObject<dynamic>(filterPayload));
             }
-            
+
 
 
             using (HttpClient client = new HttpClient())
@@ -578,13 +707,12 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         string Tags = null;
                         string project_name;
+                        string title = GetFullTitle(page["properties"][TargetDatabaseMap.GetProperty("title").GetString()]["title"]);
 
-                        string Name = page["properties"][TargetDatabaseMap.GetProperty("title").GetString()]["title"][0]["text"]["content"].ToString();
-                        
                         // Trim In case of Relation DB query to prevent any errors while parsing using GetData method
                         if (string.IsNullOrEmpty(filterPayload) && DB == _settings.RelationDatabaseId)
                         {
-                            Name = Name.Trim();
+                            title = title.Trim();
                         }
 
                         try
@@ -598,8 +726,7 @@ namespace Flow.Launcher.Plugin.Notion
 
                         try
                         {
-                            project_name = projectIdForName[page["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateArray().First().GetString()]["relation"][0]["id"].ToString()];
-
+                            project_name = projectIdForName[page["properties"][TargetDatabaseMap.GetProperty("relation").EnumerateObject().FirstOrDefault(x => x.Value.GetString() == _settings.RelationDatabasesIds[0]).Name]["relation"][0]["id"].ToString()];
                         }
                         catch
                         {
@@ -609,7 +736,7 @@ namespace Flow.Launcher.Plugin.Notion
                         string pageUrl = page["url"].ToString().Replace("https", "notion");
                         string id_page = page["id"].ToString();
                         string icon = IconParse(page["icon"]);
-                        var data = new List<string> { Name, Tags, pageUrl, project_name, icon, TargetDatabase.Key};
+                        var data = new List<string> { title, Tags, pageUrl, project_name, icon, TargetDatabase.Key };
                         JsonDocument document = JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(data));
                         JsonElement element = document.RootElement;
                         FilterResults[id_page] = element;
@@ -650,7 +777,7 @@ namespace Flow.Launcher.Plugin.Notion
                 string IsContainDate = DayToDate(textInsideBrackets);
                 if (!string.IsNullOrEmpty(IsContainDate))
                 {
-                    var replacementText = Convert.ToDateTime(DayToDate(textInsideBrackets)).ToString("yyyy-MM-ddTHH:mm:ssZ");
+                    var replacementText = Convert.ToDateTime(DayToDate(textInsideBrackets)).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
                     string newText = curlyBracesRegex.Replace(input, replacementText, 1);
                     input = newText;
                 }

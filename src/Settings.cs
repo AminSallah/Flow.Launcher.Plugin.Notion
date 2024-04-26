@@ -13,7 +13,6 @@ namespace Flow.Launcher.Plugin.Notion
 	{
 		public string InernalInegrationToken { get; set; } = string.Empty;
 		public string DatabaseCachePath { get; set; } = string.Empty;
-		public string RelationCachePath { get; set; } = string.Empty;
 		public string FullCachePath { get; set; } = string.Empty;
 		public string SearchResultSubtitle { get; set; } = "DB / Relation / Chain";
         public bool Cachable { get; set; } = false;
@@ -47,6 +46,8 @@ namespace Flow.Launcher.Plugin.Notion
 		}
 		
 		public string RelationDatabase { get; set; } = string.Empty;
+		public List<string> RelationDatabases { get; set; } = new List<string>();
+		public List<string> RelationDatabasesIds { get; set; } = new List<string>();
 		public string RelationDatabaseId { get; set; } = string.Empty;
 
 		public ObservableCollection<CustomPayload> Filters { get; set; } = new ObservableCollection<CustomPayload>
