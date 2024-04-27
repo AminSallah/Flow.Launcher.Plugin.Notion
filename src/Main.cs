@@ -476,6 +476,7 @@ namespace Flow.Launcher.Plugin.Notion
                         BGTasks[path.Title] = Task.Run(async () =>
                         {
                             await this._notionDataParser.QueryDB(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{path.Title}.json"), DB: databaseId[path.Databases[0]].GetProperty("id").ToString(), filterPayload: path.Json);
+                            Context.API.ReQuery(false);
                         });
                     }
                 }
