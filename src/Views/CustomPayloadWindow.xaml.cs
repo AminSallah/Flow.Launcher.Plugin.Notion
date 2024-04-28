@@ -193,7 +193,10 @@ namespace Flow.Launcher.Plugin.Notion.Views
             }
             else
             {
-                if (!_settings.Filters.Any(Filter => Filter.Title.ToLower().Trim() == viewModel.FilterTitle.ToLower().Trim()) || currentCustomBrowser.Title == viewModel.FilterTitle || !viewModel.FilterSettingsVisibility)
+                if (!_settings.Filters.Any(Filter => Filter.JsonType ==  JsonType.Filter && viewModel.JsonType == JsonType.Filter &&
+                    Filter.Title.ToLower().Trim() == viewModel.FilterTitle.ToLower().Trim()) ||
+                    currentCustomBrowser.Title == viewModel.FilterTitle && currentCustomBrowser.JsonType == viewModel.JsonType ||
+                    !viewModel.FilterSettingsVisibility)
                 {
                     if (viewModel.Databases.Count != 0 && !string.IsNullOrEmpty(viewModel.Databases[0])
                         || viewModel.Json == """{"archived" : true}""")

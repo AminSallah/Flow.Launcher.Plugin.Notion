@@ -9,8 +9,7 @@
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
     d:DesignHeight="700"
     d:DesignWidth="900"
-    mc:Ignorable="d"
-    Unloaded="UserControl_Unloaded">
+    mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -181,16 +180,17 @@
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Relation Database" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="The entire DB will be cached, and you can select one of them when creating a page (e.g., Workout !Health)." />
                 </StackPanel>
-                <ComboBox
-                    x:Name="RelationComboBox" 
-            Grid.Column="2"
-            Width="150"
-            Margin="10,0,18,0"
-            HorizontalContentAlignment="Center"
-            ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
-            SelectedItem="{Binding Settings.RelationDatabase}" 
-                    Loaded="RelationComboBox_Loaded"
-            />
+
+                <ui:DropDownButton x:Name="dropDownButton" Grid.Column="2" Margin="10,0,18,0" HorizontalAlignment="Left"
+                VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
+                <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False" >
+                    <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode= "Single" SelectionChanged="ListBox_SelectionChanged"
+                    ItemsSource = "{Binding Settings.DatabaseSelectionOptions}"
+                    LostFocus = "ListBox_LostFocus"
+                    >
+                    </ListBox>
+                </Popup>
+
                 <ui:FontIcon  Glyph="&#xE946;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
