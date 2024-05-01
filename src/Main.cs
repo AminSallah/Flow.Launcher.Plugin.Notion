@@ -2425,7 +2425,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         dataDict["tags"] = selectedTags;
                                         string refinedName = Regex.Replace(rawInputstring.Trim(), $@"\s?(?<!\\)#\s?({string.Join("|", selectedTagsRegex)})", "", RegexOptions.IgnoreCase).Trim();
-                                        var filteredQueryForTags = GetData(refinedName, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualProjectRunning: true);
+                                        var filteredQueryForTags = GetData(refinedName, defaultDB: _settings.DefaultDatabase, TimeSkip: true, ManualTagsRunning: true);
                                         if (filteredQueryForTags.TryGetValue("Name", out object Name))
                                         {
                                             dataDict["Name"] = Name.ToString();
