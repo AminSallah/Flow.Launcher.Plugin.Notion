@@ -1,5 +1,5 @@
 # Flow launcher Plugin Notion
-
+![FreePalestine](https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/StandWithPalestine.svg)
 
 - [Features](#features)
 - [Commands](#commands)
