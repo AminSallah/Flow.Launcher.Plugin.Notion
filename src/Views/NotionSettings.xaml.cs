@@ -34,6 +34,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             Context = context;
             _viewModel = viewModel;
             _settings = viewModel.Settings;
+            _settings.UpdateSearchFiltersOptions();
             DataContext = viewModel;
 
             if (viewModel.Databases != null && viewModel.Databases.Count != 0)
@@ -169,6 +170,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     File.Delete(Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{selectedCustomBrowser.Title}.json"));
                 }
                 _settings.Filters.Remove(selectedCustomBrowser);
+                _settings.UpdateSearchFiltersOptions();
 
 
             }

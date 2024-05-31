@@ -7,6 +7,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
     {
         private string _name = string.Empty;
         private string _subTitle = string.Empty;
+        private string _itemSubTitle = "relation";
         private int _timeout = 100;
         private List<string> _databases = new List<string>();
         private string _json;
@@ -42,6 +43,16 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             {
                 _subTitle = value;
                 OnPropertyChanged(nameof(SubTitle));
+            }
+        }
+
+        public string ItemSubTitle
+        {
+            get => _itemSubTitle;
+            set
+            {
+                _itemSubTitle = value;
+                OnPropertyChanged(nameof(ItemSubTitle));
             }
         }
 

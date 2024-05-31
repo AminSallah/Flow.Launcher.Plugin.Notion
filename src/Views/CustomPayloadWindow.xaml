@@ -115,6 +115,7 @@
                                 <RowDefinition />
                                 <RowDefinition />
                                 <RowDefinition />
+                                <RowDefinition />
                                     <RowDefinition />
                                     <RowDefinition />
                                     <RowDefinition />
@@ -154,14 +155,32 @@
                             <TextBlock
                             Grid.Row="2"
                             Grid.Column="0"
-                                
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="Item Subtitle" />
+
+                            <ComboBox
+                            x:Name="ItemSubtitleComboBox"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="10"
+                            Width="150"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding ItemSubtitleOptions}"
+                            SelectedItem="{Binding FilterItemSubTitle}"
+                            />
+
+                            <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             FontSize="14"
                             Text="Icon" />
 
                             <StackPanel
-                                    Grid.Row="2"
+                                    Grid.Row="3"
                                     Grid.Column="1"
                                     Orientation="Horizontal">
                                 <Button
@@ -183,7 +202,7 @@
 
 
                             <TextBlock
-                             Grid.Row="3"
+                             Grid.Row="4"
                              Grid.Column="0"
                              HorizontalAlignment="Left"
                              VerticalAlignment="Center"
@@ -191,9 +210,9 @@
                              Text="Type" />
                             <ComboBox
                             x:Name="TypeComboBox"
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Grid.Column="1"
-                                Margin="10"
+                            Margin="10"
                             Width="150"
                             HorizontalAlignment="Left"
                             ItemsSource="{Binding TypeOptions}"
@@ -201,7 +220,7 @@
                             />
 
                             <TextBlock
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Grid.Column="0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
@@ -210,7 +229,7 @@
 
 
 
-                            <ui:DropDownButton x:Name="dropDownButton" Grid.Row="4" Grid.Column="1" Margin="10" HorizontalAlignment="Left"
+                            <ui:DropDownButton x:Name="dropDownButton" Grid.Row="5" Grid.Column="1" Margin="10" HorizontalAlignment="Left"
                             VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
                             <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False">
                                 <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode="{Binding ListBoxSelectionMode}" SelectionChanged="ListBox_SelectionChanged"
@@ -219,14 +238,14 @@
                             </Popup>
 
                                 <TextBlock
-                                    Grid.Row="5"
+                                    Grid.Row="6"
                                     Grid.Column="0"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Margin = "0,0,20,0"
                                     FontSize="14"
                                     Text="Cache" />
-                                <Grid Grid.Column="1" Grid.Row="5" HorizontalAlignment="Left">
+                                <Grid Grid.Column="1" Grid.Row="6" HorizontalAlignment="Left">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="200" />
                                         <ColumnDefinition Width="70" />
@@ -271,24 +290,24 @@
                                 </Grid>
 
                                 <TextBlock
-                                 Grid.Row="6"
-                                 Grid.Column="0"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Center"
-                                 Margin = "0,5,5,0"
-                                 FontSize="14"
-                                 Text="Show Count"/>
-                                <ui:ToggleSwitch Grid.Row = "6" Grid.Column = "1" IsEnabled = "{Binding CountVisibility}" IsOn="{Binding Count}" Margin = "10,5,0,0"/>
-
-                                <TextBlock
                                  Grid.Row="7"
                                  Grid.Column="0"
                                  HorizontalAlignment="Left"
                                  VerticalAlignment="Center"
                                  Margin = "0,5,5,0"
                                  FontSize="14"
+                                 Text="Show Count"/>
+                                <ui:ToggleSwitch Grid.Row = "7" Grid.Column = "1" IsEnabled = "{Binding CountVisibility}" IsOn="{Binding Count}" Margin = "10,5,0,0"/>
+
+                                <TextBlock
+                                 Grid.Row="8"
+                                 Grid.Column="0"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Center"
+                                 Margin = "0,5,5,0"
+                                 FontSize="14"
                                  Text="Enabled"/>
-                                <ui:ToggleSwitch Grid.Row = "7" Grid.Column = "1" IsOn="{Binding Status}" Margin = "10,5,0,0"/>
+                                <ui:ToggleSwitch Grid.Row = "8" Grid.Column = "1" IsOn="{Binding Status}" Margin = "10,5,0,0"/>
 
                             </Grid>
 
@@ -297,7 +316,7 @@
                                     x:Name="TextBox_Json"
                                     Width="410"
                                     Height= "Auto"
-                                    MaxHeight= "380"
+                                    MaxHeight= "400"
                                     Margin="20,0,5,0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Stretch" 

@@ -1,4 +1,5 @@
 
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -73,8 +74,5 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             get => Settings.RelationDatabasesIds;
             set => Settings.RelationDatabasesIds = value;
         }
-
-
-
     }
 }

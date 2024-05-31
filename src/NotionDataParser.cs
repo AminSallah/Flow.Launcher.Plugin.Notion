@@ -13,6 +13,8 @@ using System.Text;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
 using System.Reflection;
+using Microsoft.Recognizers.Text.InternalCache;
+using System.DirectoryServices.ActiveDirectory;
 namespace Flow.Launcher.Plugin.Notion
 {
 
@@ -662,7 +664,7 @@ namespace Flow.Launcher.Plugin.Notion
             _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: true);
         }
 
-        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null)
+        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null, string itemSubtitle = "relation")
         {
             UpdateProjectsMap();
             string url = $"https://api.notion.com/v1/databases/{DB}/query?";
@@ -733,10 +735,35 @@ namespace Flow.Launcher.Plugin.Notion
                             project_name = "";
                         }
 
+                        string subtitle = string.Empty;
+
+                        if (!string.IsNullOrEmpty(Tags))
+                        {
+                            if (itemSubtitle.Contains("| tag"))
+                                subtitle = " | " + Tags;
+                            else if (itemSubtitle.Contains("tag |"))
+                                subtitle = Tags + " | ";
+                            else if (itemSubtitle.Contains("tag"))
+                                subtitle = Tags;
+
+                        }
+
+
+                        if (!string.IsNullOrEmpty(project_name))
+                        {
+                            if (itemSubtitle.Contains("| relation"))
+                                subtitle = subtitle + project_name;
+                            else if (itemSubtitle.Contains("relation |"))
+                                subtitle = project_name + subtitle;
+                            else if (itemSubtitle.Contains("relation"))
+                                subtitle = project_name;
+                        }
+
+
                         string pageUrl = page["url"].ToString().Replace("https", "notion");
                         string id_page = page["id"].ToString();
                         string icon = IconParse(page["icon"]);
-                        var data = new List<string> { title, Tags, pageUrl, project_name, icon, TargetDatabase.Key };
+                        var data = new List<string> { title, subtitle, pageUrl, icon, project_name, TargetDatabase.Key };
                         JsonDocument document = JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(data));
                         JsonElement element = document.RootElement;
                         FilterResults[id_page] = element;
@@ -805,6 +832,123 @@ namespace Flow.Launcher.Plugin.Notion
             }
 
         }
+
+        public JObject RetrievePageJsonObjectById(string id)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
+                    client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+                    string url = "https://api.notion.com/v1/pages/";
+                    var response = client.GetAsync(url + id).Result;
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    }
+
+                    return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+        }
+
+        public List<Result> PropertiesIntoResults(string query, JObject properties)
+        {
+            var propertiesResults = new List<Result>();
+            foreach (var prop in properties)
+            {
+                var propType = prop.Value["type"].ToString();
+                if (propType == "url")
+                {
+                    var _result = UrlResult(query, prop.Key, prop.Value["url"].ToString());
+                    if (_result is not null)
+                        propertiesResults.Add(_result);
+                }
+                else if (propType == "relation")
+                {
+                    var relations = prop.Value["relation"] as JArray;
+                    if (relations is not null && relations.Count() > 0)
+                    {
+
+                        var _result = RelationResult(query, prop.Key, relations);
+                        if (_result is not null)
+                            propertiesResults.AddRange(_result);
+                    }
+
+                }
+            }
+            return propertiesResults;
+        }
+        public Result UrlResult(string query, string title, string link)
+        {
+            if (!String.IsNullOrEmpty(link.ToString()))
+            {
+                if (IsQueryMatchProp(query, title, link))
+                {
+                    return new Result
+                    {
+                        Title = title,
+                        SubTitle = $"Click to open {link} in your browser",
+                        IcoPath = "Images//embed.png",
+                        Action = c =>
+                        {
+                            _context.API.OpenUrl(link);
+                            return true;
+                        }
+                    };
+                }
+
+            }
+            return null;
+        }
+
+        public List<Result> RelationResult(string query, string propTitle, JArray relations)
+        {
+            List<Result> relationResults = new List<Result>();
+            foreach (var id in relations)
+            {
+                var IdString = id["id"].ToString();
+                if (IsQueryMatchProp(query, propTitle,Main.searchResults[IdString][0].GetString()))
+                // if (_context.API.FuzzySearch(query, Main.searchResults[IdString][0].GetString()).Score > 1 ||
+                //     _context.API.FuzzySearch(query, propTitle).Score > 1 ||
+                //     String.IsNullOrEmpty(query))
+                {
+                    relationResults.Add(new Result
+                    {
+                        Title = propTitle,
+                        SubTitle = "Show properties of " + Main.searchResults[IdString][0].GetString(),
+                        IcoPath = Main.searchResults[IdString][3].GetString(),
+                        Action = c =>
+                        {
+                            Main.currPageProperties = null;
+                            _context.API.ChangeQuery(_context.CurrentPluginMetadata.ActionKeyword + " $" + IdString + "$ ", true);
+                            return false;
+                        }
+                    });
+                }
+            }
+
+
+            return relationResults;
+        }
+
+        bool IsQueryMatchProp(string query, string propTitle, string propContent)
+        {
+            if (_context.API.FuzzySearch(query, propContent).Score > 1 ||
+                    _context.API.FuzzySearch(query, propTitle).Score > 1 ||
+                    String.IsNullOrEmpty(query))
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 }
 

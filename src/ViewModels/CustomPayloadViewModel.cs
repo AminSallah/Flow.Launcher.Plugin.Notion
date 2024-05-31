@@ -11,6 +11,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private readonly PluginInitContext context;
         private string filterTitle;
         private string filterSubTitle;
+        private string filterItemSubTitle;
         private List<string> databases;
         private string json;
         private string icoPath;
@@ -40,6 +41,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
 
         public string FilterTitle { get => filterTitle; set => SetProperty(ref filterTitle, value); }
         public string FilterSubTitle { get => filterSubTitle; set => SetProperty(ref filterSubTitle, value); }
+        public string FilterItemSubTitle { get => filterItemSubTitle; set => SetProperty(ref filterItemSubTitle, value); }
         public List<string> Databases { get => databases; set => SetProperty(ref databases, value); }
 
         public string Json { get => json; set => SetProperty(ref json, value); }
@@ -113,6 +115,13 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             set => SetProperty(ref _cacheOptions, value);
         }
 
+        private ObservableCollection<string> _itemSubtitleOptions = new ObservableCollection<string> { "relation", "tag", "relation | tag", "tag | relation" };
+        public ObservableCollection<string> ItemSubtitleOptions
+        {
+            get => _itemSubtitleOptions;
+            set => SetProperty(ref _itemSubtitleOptions, value);
+        }
+
 
         private bool _filterSettingsVisibility = true;
         public bool FilterSettingsVisibility
@@ -177,6 +186,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             {
                 Title = FilterTitle,
                 SubTitle = FilterSubTitle,
+                ItemSubTitle = FilterItemSubTitle,
                 JsonType = JsonType,
                 Json = Json,
                 CacheType = CacheType,
@@ -188,6 +198,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
             };
 
             Settings.Filters.Add(Filter);
+            Settings.UpdateSearchFiltersOptions();
             return true;
 
         }

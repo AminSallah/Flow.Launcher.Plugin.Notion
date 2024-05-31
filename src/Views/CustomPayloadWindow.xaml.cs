@@ -40,6 +40,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             viewModel.listbox = listBox;
             viewModel.FilterTitle = customPayload.Title;
             viewModel.FilterSubTitle = customPayload.SubTitle;
+            viewModel.FilterItemSubTitle = customPayload.ItemSubTitle;
             viewModel.Databases = customPayload.Databases;
             viewModel.Json = customPayload.Json;
             viewModel.JsonType = customPayload.JsonType;
@@ -203,6 +204,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                     {
                         currentCustomBrowser.Title = viewModel.FilterTitle;
                         currentCustomBrowser.SubTitle = viewModel.FilterSubTitle;
+                        currentCustomBrowser.ItemSubTitle = viewModel.FilterItemSubTitle;
                         currentCustomBrowser.Json = viewModel.Json;
                         currentCustomBrowser.JsonType = viewModel.JsonType;
                         currentCustomBrowser.CacheType = viewModel.CacheType;
@@ -211,6 +213,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                         currentCustomBrowser.Databases = viewModel.Databases;
                         currentCustomBrowser.Timeout = viewModel.Timeout;
                         currentCustomBrowser.Count = viewModel.Count;
+                        _settings.UpdateSearchFiltersOptions();
                         Close();
                     }
                     else

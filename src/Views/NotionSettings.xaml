@@ -195,6 +195,24 @@
             </ItemsControl>
         </Border>
 
+        <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Default Search Filter" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When disabled, plugin init in create mode if no custom filters available to display." />
+                </StackPanel>
+                <ComboBox
+            Grid.Column="2"
+            Width="150"
+            Margin="10,0,18,0"
+            HorizontalContentAlignment="Center"
+            ItemsSource="{Binding Settings.SearchFiltersOptions}"
+            SelectedItem="{Binding Settings.SearchBase}" 
+            />
+                <ui:FontIcon  Glyph="&#xe71d;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
         <Border CornerRadius="0,0,9,9" Style="{DynamicResource SettingGroupBox}">
             <Expander
                 Margin="-18,0,0,0"
