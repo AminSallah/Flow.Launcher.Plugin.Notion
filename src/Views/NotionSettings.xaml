@@ -96,7 +96,7 @@
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Automatic Open" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, Pages Created Will Automatically Open by Default Upon Creation." />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, pages created will automatically open by default upon creation." />
                 </StackPanel>
                 <ui:ToggleSwitch
                     Grid.Column="2"
@@ -198,8 +198,8 @@
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
-                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Default Search Filter" />
-                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When disabled, plugin init in create mode if no custom filters available to display." />
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Default Search Anchor" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When disabled, the plugin starts in create mode if no custom filters available to display." />
                 </StackPanel>
                 <ComboBox
             Grid.Column="2"
@@ -209,7 +209,7 @@
             ItemsSource="{Binding Settings.SearchFiltersOptions}"
             SelectedItem="{Binding Settings.SearchBase}" 
             />
-                <ui:FontIcon  Glyph="&#xe71d;" Style="{StaticResource Glyph}" />
+                <ui:FontIcon  Glyph="&#xe773;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
