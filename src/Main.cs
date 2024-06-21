@@ -24,6 +24,7 @@ using Microsoft.Recognizers.Text;
 using Flow.Launcher.Plugin.SharedModels;
 using System.Windows.Documents;
 using System.Windows.Data;
+using System.Windows;
 
 namespace Flow.Launcher.Plugin.Notion
 {
@@ -48,6 +49,7 @@ namespace Flow.Launcher.Plugin.Notion
         private bool RequestNewCache = false;
         private bool ShowTags = false;
         private bool pluginInit = false;
+        private bool BatchDeleting = false;
         public static List<string> HiddenItems = new List<string>();
         public static Dictionary<string, JsonElement> databaseId = LoadJsonData(DatabaseCachePath);
         public static Dictionary<string, JsonElement> ProjectsId = LoadJsonData(RelationCachePath);
@@ -228,31 +230,31 @@ namespace Flow.Launcher.Plugin.Notion
                             return true;
                         }
                     });
-                
-                
-                resultlist.Add(new Result
-                {
-                    Title = $"Set " + filter.Title + " as Primary Search Anchor.",
-                    Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\xe773"),
-                    Action = c =>
+
+
+                    resultlist.Add(new Result
                     {
-                        _settings.SearchBase = filter.Title;
-                        return true;
-                    }
-                });
+                        Title = $"Set " + filter.Title + " as Primary Search Anchor.",
+                        Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\xe773"),
+                        Action = c =>
+                        {
+                            _settings.SearchBase = filter.Title;
+                            return true;
+                        }
+                    });
                 }
                 else
                 {
-                resultlist.Add(new Result
-                {
-                    Title = $"Set " + "All pages" + " as Primary Search Anchor.",
-                    Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\xe773"),
-                    Action = c =>
+                    resultlist.Add(new Result
                     {
-                        _settings.SearchBase = "All pages";
-                        return true;
-                    }
-                });
+                        Title = $"Set " + "All pages" + " as Primary Search Anchor.",
+                        Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\xe773"),
+                        Action = c =>
+                        {
+                            _settings.SearchBase = "All pages";
+                            return true;
+                        }
+                    });
                 }
                 return resultlist;
             }
@@ -465,6 +467,57 @@ namespace Flow.Launcher.Plugin.Notion
                             };
                             resultlist.Add(HideAll);
                         }
+
+                        async void BatchDelete(List<string> CurrentQueryItems)
+                        {
+                            BatchDeleting = true;
+                            searchResults = LoadJsonData(FullCachePath);
+                            int Success = CurrentQueryItems.Count;
+                            foreach (string Id in CurrentQueryItems)
+                            {
+                                var response = await EditPropertyFromContext(PageId: Id, payload: """{"archived" : true}""");
+                                if (!response.IsSuccessStatusCode)
+                                {
+                                    Success--;
+                                }
+                                else
+                                {
+                                    searchResults.Remove(Id);
+                                }
+
+                                string jsonString = System.Text.Json.JsonSerializer.Serialize(searchResults, new JsonSerializerOptions { WriteIndented = true });
+                                File.WriteAllText(_settings.FullCachePath, jsonString);
+
+                                BatchDeleting = false;
+
+                            }
+                            if (Success > 0)
+                                Context.API.ShowMsg("Batch Page Deletion", Success.ToString() + (Success > 1 ? " Pages have " : " Page has ") + "been deleted successfully");
+                        }
+
+                        var DeleteAll = new Result
+                        {
+                            Title = $"Delete All Current Query ({CurrentQueryItems.Count})",
+                            IcoPath = "Images//database_default.png",
+                            Action = c =>
+                            {
+                                var result = System.Windows.MessageBox.Show(
+                                    "Are you sure you want to delete " + CurrentQueryItems.Count + (CurrentQueryItems.Count > 1 ? " pages?" : " page?"),
+                                    "Batch pages deletion",
+                                    MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                                if (result == MessageBoxResult.Yes)
+                                {
+                                    Task.Run(async delegate
+                                    {
+                                        BatchDelete(CurrentQueryItems);
+                                    });
+                                }
+
+                                return true;
+
+                            },
+                        };
+                        resultlist.Add(DeleteAll);
                     }
                 }
             }
@@ -476,51 +529,53 @@ namespace Flow.Launcher.Plugin.Notion
         Dictionary<string, Task> BGTasks = new Dictionary<string, Task>();
         public async void OnVisibilityChanged(object _, VisibilityChangedEventArgs e)
         {
-            if (!e.IsVisible)
+            if (!BatchDeleting)
             {
-                pluginInit = false;
-            }
-            if (e.IsVisible)
-            {
-                if (_settings.FailedRequests && IsInternetConnected())
+                if (!e.IsVisible)
                 {
-                    if (searchResults.Count() == 0)
-                    {
-                        searchResults = LoadJsonData(FullCachePath);
-                    }
-                    _ = Task.Run(async () =>
-                    {
-                        await RetryCachedFunctions();
-                    });
+                    pluginInit = false;
                 }
-                DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
-                double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
-                if (minutesDifference > secondsThreshold)
+                if (e.IsVisible)
                 {
-                    fileInfo = DateTime.Now;
-                    _ = Task.Run(async () =>
+                    if (_settings.FailedRequests && IsInternetConnected())
                     {
-                        // await this._notionDataParser.CallApiForSearch();
-                        await this._notionDataParser.GetStartCursour();
-                    });
-                }
-
-                foreach (var path in _settings.Filters)
-                {
-                    if (path.JsonType == JsonType.Filter && path.Enabled && path.CacheType != 0)
-                    {
-                        BGTasks[path.Title] = Task.Run(async () =>
+                        if (searchResults.Count() == 0)
                         {
-                            await this._notionDataParser.QueryDB(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{path.Title}.json"), DB: databaseId[path.Databases[0]].GetProperty("id").ToString(), filterPayload: path.Json, itemSubtitle: path.ItemSubTitle);
-                            if (pluginInit)
-                            {
-                                Context.API.ReQuery(false);
-                            }
+                            searchResults = LoadJsonData(FullCachePath);
+                        }
+                        _ = Task.Run(async () =>
+                        {
+                            await RetryCachedFunctions();
                         });
                     }
+                    DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
+                    double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
+                    if (minutesDifference > secondsThreshold)
+                    {
+                        fileInfo = DateTime.Now;
+                        _ = Task.Run(async () =>
+                        {
+                            // await this._notionDataParser.CallApiForSearch();
+                            await this._notionDataParser.GetStartCursour();
+                        });
+                    }
+
+                    foreach (var path in _settings.Filters)
+                    {
+                        if (path.JsonType == JsonType.Filter && path.Enabled && path.CacheType != 0)
+                        {
+                            BGTasks[path.Title] = Task.Run(async () =>
+                            {
+                                await this._notionDataParser.QueryDB(filePath: System.IO.Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, "cache", $"{path.Title}.json"), DB: databaseId[path.Databases[0]].GetProperty("id").ToString(), filterPayload: path.Json, itemSubtitle: path.ItemSubTitle, propNames: path.PropertiesNames);
+                                if (pluginInit)
+                                {
+                                    Context.API.ReQuery(false);
+                                }
+                            });
+                        }
+                    }
                 }
             }
-            
         }
 
 
@@ -565,6 +620,17 @@ namespace Flow.Launcher.Plugin.Notion
         public async Task<List<Result>> QueryAsync(Query query, CancellationToken token)
         {
             List<Result> resultList = new List<Result>();
+            if (BatchDeleting)
+            {
+                resultList.Add(new Result
+                {
+                    Title = "Plugin is deleting some pages",
+                    SubTitle = "Please wait while the plugin finishes deleting pages",
+                    Glyph = new GlyphInfo(FontFamily: "/Resources/#Segoe Fluent Icons", Glyph: "\ue946"),
+
+                });
+                return resultList;
+            }
             if (!pluginInit)
             {
                 pluginInit = true;
@@ -798,7 +864,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         TargetBase = searchResults;
                     }
-                    
+
                 }
                 else
                 {
@@ -870,6 +936,7 @@ namespace Flow.Launcher.Plugin.Notion
                             FilterData = await this._notionDataParser.QueryDB(DB: databaseId[filter.Databases[0]].GetProperty("id").ToString(), filterPayload: filter.Json);
                         }
 
+                        Dictionary<string, JsonElement> FilterDataForQuery = new Dictionary<string, JsonElement>();
                         if (FilterData.Count > 0)
                         {
                             foreach (var item in FilterData.Reverse())
@@ -878,12 +945,17 @@ namespace Flow.Launcher.Plugin.Notion
                                     item.Value[0].GetString().ToLower()).Score > 0 ||
                                         string.IsNullOrEmpty(query.Search.Replace(filter.Title, string.Empty, StringComparison.CurrentCultureIgnoreCase)))
                                 {
-                                    var result = new Result
-                                    {
-                                        Title = $"{item.Value[0]}",
-                                        SubTitle = $"{item.Value[1]}",
-                                        AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Key}$ ",
-                                        ContextData = new Dictionary<string, object>
+                                    FilterDataForQuery[item.Key] = item.Value;
+                                }
+                            }
+                            foreach (var item in FilterDataForQuery)
+                            {
+                                var result = new Result
+                                {
+                                    Title = $"{item.Value[0]}",
+                                    SubTitle = $"{item.Value[1]}",
+                                    AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} ${item.Key}$ ",
+                                    ContextData = new Dictionary<string, object>
                                         {
                                             {"Title", $"{item.Value[0]}" },
                                             { "PageId", $"{item.Key}" },
@@ -892,17 +964,17 @@ namespace Flow.Launcher.Plugin.Notion
                                             { "Project_name", $"{item.Value[4]}"},
                                             { "Tags", $"{item.Value[1]}" },
                                             { "CreateFirst", false},
-                                            { "HideAll", FilterData.Keys.ToList<string>()}
+                                            { "HideAll", FilterDataForQuery.Keys.ToList<string>()}
                                         },
-                                        Action = c =>
-                                        {
-                                            OpenNotionPage(Convert.ToString(item.Value[2]));
-                                            return true;
-                                        },
-                                        IcoPath = item.Value[3].ToString()
-                                    };
-                                    resultList.Add(result);
-                                }
+                                    Action = c =>
+                                    {
+                                        OpenNotionPage(Convert.ToString(item.Value[2]));
+                                        return true;
+                                    },
+                                    IcoPath = item.Value[3].ToString()
+                                };
+                                resultList.Add(result);
+
                             }
 
                             return resultList;
@@ -951,9 +1023,9 @@ namespace Flow.Launcher.Plugin.Notion
                         }
 
 
-                        
+
                         CreateMode = false;
-                        
+
                     }
                 }
             }
@@ -1834,7 +1906,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
 
             // if (!query.Search.ToLower().StartsWith("search") && query.Search != "refresh" && !AdvancedFilterMode && (!query.Search.Contains("$") || editingMode))
-            
+
             if (!editingMode)
                 currPageProperties = null;
 
@@ -1861,14 +1933,20 @@ namespace Flow.Launcher.Plugin.Notion
                                 },
                                 Action = c =>
                                 {
-                                    Context.API.HideMainWindow();
                                     if (c.SpecialKeyState.ShiftPressed)
                                     {
                                         ToggleDefaultAfterCreateAction();
                                     }
                                     _ = subProcess(create: true, dict_arg: filteredQuery, open: c.SpecialKeyState.CtrlPressed != _settings.PopUpPageAfterCreate);
                                     refresh_search = DateTime.Now;
-                                    return true;
+                                    if (c.SpecialKeyState.AltPressed)
+                                    {
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        return true;
+                                    }
                                 },
                                 IcoPath = "Images/app.png"
                             };
@@ -1912,21 +1990,23 @@ namespace Flow.Launcher.Plugin.Notion
                             AutoCompleteText = $"{Context.CurrentPluginMetadata.ActionKeyword} {query.Search} {editing_title.Replace("Edit ", "")}",
                         };
 
-                        
+
                         resultList.Add(result);
                         if (currPageProperties is null)
                         {
                             _ = Task.Run(async () =>
                             {
                                 currPageProperties = _notionDataParser.RetrievePageJsonObjectById(editingPatternIdMatch.Groups[1].Value)["properties"];
-                                
+
                                 if (currPageProperties is not null)
                                     Context.API.ReQuery(false);
                             });
                         }
                         else
                         {
-                            resultList.AddRange(_notionDataParser.PropertiesIntoResults(filteredQuery["Name"].ToString(),currPageProperties as JObject));
+                            try {
+                            resultList.AddRange(_notionDataParser.PropertiesIntoResults(filteredQuery["Name"].ToString(), currPageProperties as JObject)); }
+                            catch { }
                         }
 
                     }
@@ -1995,7 +2075,6 @@ namespace Flow.Launcher.Plugin.Notion
                                         Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword + " " + query.Search}" + "{clipboard}", true);
                                         return false;
                                     }
-                                    Context.API.HideMainWindow();
 
                                     if (c.SpecialKeyState.ShiftPressed)
                                     {
@@ -2004,7 +2083,14 @@ namespace Flow.Launcher.Plugin.Notion
 
                                     _ = subProcess(create: true, dict_arg: filteredQuery, open: c.SpecialKeyState.CtrlPressed != _settings.PopUpPageAfterCreate);
                                     refresh_search = DateTime.Now;
-                                    return true;
+                                    if (c.SpecialKeyState.AltPressed)
+                                    {
+                                        return false;
+                                    }
+                                    else
+                                    {
+                                        return true;
+                                    }
                                 },
                                 IcoPath = "Images/app.png"
                             };
@@ -2265,7 +2351,7 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
                 {
-                    string Pattern = @"(?<!\\)@([^\\]*)";
+                    string Pattern = @"(?<!\\)@([^\\!]*)";
 
                     var DatabaseMatch = Regex.Match(inputString, Pattern);
                     if (DatabaseMatch.Success)
@@ -2310,7 +2396,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     dataDict["ContainUrlKeyword"] = true;
                                 }
-                                
+
                             }
                         }
                     }
@@ -2700,7 +2786,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        (Dictionary<string, Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>, string) FormatData(Dictionary<string, object> filteredQueryEditing, string Mode = "Create", string DbNameInCache = "",string datePropName = null)
+        (Dictionary<string, Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>, string) FormatData(Dictionary<string, object> filteredQueryEditing, string Mode = "Create", string DbNameInCache = "", string datePropName = null)
         {
             string DATABASE_ID = null;
             // Context.API.ShowMsg(ProjectName.First().Key.ToString(), ProjectName.First().Value.ToString());
@@ -2922,7 +3008,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        public async Task<HttpResponseMessage> CreatePage(Dictionary<string, object> filteredDataDict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false, bool retryFailedRequest = false,string datePropName = null,string urlPropName = null, Dictionary<int, string> relationPropName = null)
+        public async Task<HttpResponseMessage> CreatePage(Dictionary<string, object> filteredDataDict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null)
         {
             try
             {
@@ -3058,7 +3144,7 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     if (_settings.FailedRequests)
                     {
-                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { filteredDataDict, null, DatabaseId, open, true, (retryFailedRequest ? datePropName : DateName ), (retryFailedRequest ? urlPropName : UrlMap ), (retryFailedRequest ? relationPropName : ProjectName ) });
+                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { filteredDataDict, null, DatabaseId, open, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName) });
                         Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
                     }
                     else
@@ -3085,7 +3171,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        async Task<HttpResponseMessage> EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null, bool retryFailedRequest = false,string datePropName = null,string urlPropName = null, Dictionary<int, string> relationPropName = null)
+        async Task<HttpResponseMessage> EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null)
         {
             try
             {
@@ -3097,7 +3183,7 @@ namespace Flow.Launcher.Plugin.Notion
                     //SelectionTypeMap = selectionPropType;
                     //SelectionNameMap = selectionPropName;
                 }
-                
+
                 var (data, children, DatabaseId) = FormatData(filteredQueryEditing, Mode: "Edit", DbNameInCache: searchResults[pageId][2].GetString());
                 using (HttpClient client = new HttpClient())
                 {
@@ -3226,7 +3312,7 @@ namespace Flow.Launcher.Plugin.Notion
                     if (_settings.FailedRequests)
                     {
                         // await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName ), (retryFailedRequest ? selectionPropType : SelectionTypeMap ), (retryFailedRequest ? selectionPropName : SelectionNameMap ) });
-                        await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName ), (retryFailedRequest ? urlPropName : UrlMap ), (retryFailedRequest ? relationPropName : ProjectName ) });
+                        await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName) });
                         Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
                     }
                     else
@@ -3333,7 +3419,7 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     return jObject.ToObject<Dictionary<int, string>>();
                 }
-                
+
                 return jObject.ToObject<Dictionary<string, object>>();
             }
 

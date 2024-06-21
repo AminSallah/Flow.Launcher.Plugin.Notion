@@ -13,6 +13,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private string filterSubTitle;
         private string filterItemSubTitle;
         private List<string> databases;
+        private List<string> propertiesNames;
         private string json;
         private string icoPath;
         private int timeout;
@@ -43,6 +44,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         public string FilterSubTitle { get => filterSubTitle; set => SetProperty(ref filterSubTitle, value); }
         public string FilterItemSubTitle { get => filterItemSubTitle; set => SetProperty(ref filterItemSubTitle, value); }
         public List<string> Databases { get => databases; set => SetProperty(ref databases, value); }
+        public List<string> PropertiesNames { get => propertiesNames; set => SetProperty(ref propertiesNames, value); }
 
         public string Json { get => json; set => SetProperty(ref json, value); }
         public string IcoPath { get => icoPath; set => SetProperty(ref icoPath, value); }
@@ -193,6 +195,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 Enabled = Status,
                 IcoPath = IcoPath,
                 Databases = Databases,
+                PropertiesNames = PropertiesNames,
                 Timeout = Timeout,
                 Count = Count,
             };
