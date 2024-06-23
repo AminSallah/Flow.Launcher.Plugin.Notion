@@ -42,10 +42,10 @@ namespace Flow.Launcher.Plugin.Notion.Views
                 List<string> TempDatababaseList = viewModel.Databases.ToList();
 
                 // Uncomment to assign multiple relation pages simultaneously + change listbox SelectionMode to multiple
-                // foreach (var database in TempDatababaseList)
-                // {
-                //     listBox.SelectedItems.Add(database);
-                // }
+                foreach (var database in TempDatababaseList)
+                {
+                    listBox.SelectedItems.Add(database);
+                }
 
                 listBox.SelectedItem = TempDatababaseList[0];
             }

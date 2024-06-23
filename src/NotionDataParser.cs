@@ -664,7 +664,7 @@ namespace Flow.Launcher.Plugin.Notion
             _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: true);
         }
 
-        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null, string itemSubtitle = "relation")
+        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null, string itemSubtitle = "relation", List<string> propNames = null)
         {
             UpdateProjectsMap();
             string url = $"https://api.notion.com/v1/databases/{DB}/query?";
@@ -707,7 +707,7 @@ namespace Flow.Launcher.Plugin.Notion
                     var TargetDatabaseMap = TargetDatabase.Value;
                     foreach (var page in allResults)
                     {
-                        string Tags = null;
+                        string Tags = string.Empty;
                         string project_name;
                         string title = GetFullTitle(page["properties"][TargetDatabaseMap.GetProperty("title").GetString()]["title"]);
 
@@ -719,7 +719,47 @@ namespace Flow.Launcher.Plugin.Notion
 
                         try
                         {
-                            Tags = page["properties"][TargetDatabaseMap.GetProperty("multi_select").EnumerateObject().First().Name.ToString()]["multi_select"][0]["name"].ToString();
+                            // Tags = page["properties"][TargetDatabaseMap.GetProperty("multi_select").EnumerateObject().First().Name.ToString()]["multi_select"][0]["name"].ToString();
+                            if (propNames != null) {
+                            foreach (var selectProp in TargetDatabaseMap.GetProperty("select").EnumerateObject())
+                            {
+                                if (!propNames.Contains(selectProp.Name.ToString())) {
+                                    continue;
+                                }
+                                try {
+                                    string selectPropValue = page["properties"][selectProp.Name.ToString()]["select"]["name"].ToString();
+
+                                    if (!String.IsNullOrEmpty(selectPropValue))
+                                    {
+                                        Tags = String.IsNullOrEmpty(Tags) ? selectPropValue : Tags + ", " + selectPropValue;
+                                    }
+                                    
+                                } 
+                                catch {
+                                    continue;
+                                }
+                            }
+
+                            foreach (var multi_selectProp in TargetDatabaseMap.GetProperty("multi_select").EnumerateObject())
+                            {
+                                if (!propNames.Contains(multi_selectProp.Name.ToString())) {
+                                    continue;
+                                }
+                                try {
+                                    string multi_selectPropValue = page["properties"][multi_selectProp.Name.ToString()]["multi_select"][0]["name"].ToString();
+
+                                    if (!String.IsNullOrEmpty(multi_selectPropValue))
+                                    {
+                                        Tags = String.IsNullOrEmpty(Tags) ? multi_selectPropValue : Tags + ", " + multi_selectPropValue;
+                                    }
+                                    
+                                } 
+                                catch {
+                                    continue;
+                                }
+                            }
+                            }
+                            //Tags = page["properties"][TargetDatabaseMap.GetProperty("select").EnumerateObject().First().Name.ToString()]["select"]["name"].ToString();
                         }
                         catch
                         {
@@ -951,7 +991,6 @@ namespace Flow.Launcher.Plugin.Notion
 
     }
 }
-
 
 
 

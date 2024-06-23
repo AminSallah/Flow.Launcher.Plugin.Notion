@@ -160,16 +160,28 @@
                             FontSize="14"
                             Text="Item Subtitle" />
 
-                            <ComboBox
-                            x:Name="ItemSubtitleComboBox"
-                            Grid.Row="2"
-                            Grid.Column="1"
+                            <StackPanel
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Orientation="Horizontal">
+                                <ComboBox
+                            x:Name="IitemSubtitleComboBox"
                             Margin="10"
-                            Width="150"
-                            HorizontalAlignment="Left"
+                            Width="125"
+                            VerticalAlignment="Center"
                             ItemsSource="{Binding ItemSubtitleOptions}"
                             SelectedItem="{Binding FilterItemSubTitle}"
                             />
+                                <ui:DropDownButton x:Name="dropDownButtonTags" Margin="4" VerticalAlignment="Center"
+                            Width="125" Content="" Click="DropDownButtonTags_Click"/>
+                            <Popup x:Name="popupTags" Width="125" PlacementTarget="{Binding ElementName=dropDownButtonTags}" StaysOpen="False">
+                                <ListBox x:Name="listBoxTags" Width="125" MaxHeight="200" SelectionMode="Multiple" SelectionChanged="ListBoxTags_SelectionChanged"
+                                SelectedItem="{Binding PropertiesNames}">
+                                </ListBox>
+                            </Popup>
+                            </StackPanel>
+
+                            
 
                             <TextBlock
                             Grid.Row="3"

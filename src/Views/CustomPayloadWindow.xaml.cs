@@ -29,6 +29,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         private CustomPayload currentCustomBrowser;
 
         List<string> DatabaseReserve;
+        List<string> PropertiesNamesReserve;
 
         public CustomPayloadWindow(Settings settings, CustomPayload customPayload, Action action, PluginInitContext _context)
         {
@@ -42,6 +43,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             viewModel.FilterSubTitle = customPayload.SubTitle;
             viewModel.FilterItemSubTitle = customPayload.ItemSubTitle;
             viewModel.Databases = customPayload.Databases;
+            viewModel.PropertiesNames = customPayload.PropertiesNames;
             viewModel.Json = customPayload.Json;
             viewModel.JsonType = customPayload.JsonType;
             viewModel.CacheType = customPayload.CacheType;
@@ -50,11 +52,20 @@ namespace Flow.Launcher.Plugin.Notion.Views
             viewModel.Timeout = customPayload.Timeout;
             viewModel.Count = customPayload.Count;
             DatabaseReserve = viewModel.Databases.ToList();
+            PropertiesNamesReserve = viewModel.PropertiesNames.ToList();
             _action = action;
 
 
             DataContext = viewModel;
             listBox.ItemsSource = _settings.DatabaseSelectionOptions;
+
+            if (viewModel.PropertiesNames != null && viewModel.PropertiesNames.Count != 0) {
+                List<string> TempPropertiesNamesList = viewModel.PropertiesNames.ToList();
+                foreach (var name in TempPropertiesNamesList)
+                {
+                    listBoxTags.SelectedItems.Add(name);
+                }
+            }
             if (viewModel.Databases != null && viewModel.Databases.Count != 0)
             {
                 List<string> TempDatababaseList = viewModel.Databases.ToList();
@@ -75,16 +86,56 @@ namespace Flow.Launcher.Plugin.Notion.Views
 
         private void DropDownButton_Click(object sender, RoutedEventArgs e)
         {
-            if (popup.IsOpen)
-            {
-                popup.IsOpen = false;
-            }
-            else
-            {
-                popup.IsOpen = true;
+             popup.IsOpen = !popup.IsOpen;
+        }
+
+        private void DropDownButtonTags_Click(object sender, RoutedEventArgs e)
+        {
+            if (listBoxTags.ItemsSource != null && listBoxTags.ItemsSource.Cast<object>().Count() != 0) {
+             popupTags.IsOpen = !popupTags.IsOpen;
             }
         }
 
+        private void ListBoxTags_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            int selectedItemCount = listBoxTags.SelectedItems.Count;
+            if (selectedItemCount == 1)
+            {
+                dropDownButtonTags.Content = listBoxTags.SelectedItems[0];
+            }
+            else if (selectedItemCount == 0)
+            {
+                dropDownButtonTags.Content = string.Empty;
+            }
+            else
+            {
+                dropDownButtonTags.Content = $"{selectedItemCount} properties";
+            }
+
+            if (listBoxTags.SelectedItems is IList selectedItems)
+            {
+                if (viewModel.PropertiesNames == null)
+                {
+                    viewModel.PropertiesNames = new List<string>();
+                }
+
+                List<string> itemsToAdd = new List<string>();
+                foreach (var selectedItem in selectedItems)
+                {
+                    if (selectedItem is string propNameSelected)
+                    {
+                        itemsToAdd.Add(propNameSelected);
+                    }
+                }
+                PropertiesNamesReserve.Clear();
+                PropertiesNamesReserve.AddRange(itemsToAdd);
+            }
+
+            if (listBoxTags.ItemsSource.Cast<object>().Count() == selectedItemCount ) {
+                popupTags.IsOpen = false;
+                return;
+            }
+        }
 
         private void ListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
@@ -123,6 +174,10 @@ namespace Flow.Launcher.Plugin.Notion.Views
             }
             if (viewModel.ListBoxSelectionMode == System.Windows.Controls.SelectionMode.Single)
             {
+                List<string> propertyNamesOptions = new List<string>();
+                propertyNamesOptions.AddRange(Main.databaseId[DatabaseReserve[0]].GetProperty("multi_select").EnumerateObject().Select(n => n.Name.ToString()).ToList());
+                propertyNamesOptions.AddRange(Main.databaseId[DatabaseReserve[0]].GetProperty("select").EnumerateObject().Select(n => n.Name.ToString()).ToList());
+                listBoxTags.ItemsSource = propertyNamesOptions;
                 popup.IsOpen = false;
                 return;
             }
@@ -181,6 +236,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         private void Button_ChangeKeyword(object sender, RoutedEventArgs e)
         {
             viewModel.Databases = DatabaseReserve.ToList();
+            viewModel.PropertiesNames = PropertiesNamesReserve.ToList();
             if (_action == Action.Add)
             {
                 if (viewModel.NewCustomPayload(out string errorMessage))
@@ -211,6 +267,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                         currentCustomBrowser.Enabled = viewModel.Status;
                         currentCustomBrowser.IcoPath = viewModel.IcoPath;
                         currentCustomBrowser.Databases = viewModel.Databases;
+                        currentCustomBrowser.PropertiesNames = viewModel.PropertiesNames;
                         currentCustomBrowser.Timeout = viewModel.Timeout;
                         currentCustomBrowser.Count = viewModel.Count;
                         _settings.UpdateSearchFiltersOptions();
