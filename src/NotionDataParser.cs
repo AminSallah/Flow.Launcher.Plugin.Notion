@@ -964,6 +964,7 @@ namespace Flow.Launcher.Plugin.Notion
                         Title = propTitle,
                         SubTitle = "Show properties of " + Main.searchResults[IdString][0].GetString(),
                         IcoPath = Main.searchResults[IdString][3].GetString(),
+                        AutoCompleteText = _context.CurrentPluginMetadata.ActionKeyword + " $" + IdString + "$ ",
                         Action = c =>
                         {
                             Main.currPageProperties = null;
