@@ -2317,29 +2317,32 @@ namespace Flow.Launcher.Plugin.Notion
         string BuildPathChain(string pageId)
         {
             string Chain = string.Empty;
-
-            if (!string.IsNullOrEmpty(searchResults[pageId][2].GetString())) // Database
-                Chain = searchResults[pageId][2].GetString();
-
-
-            if (_settings.RelationSubtitle && !string.IsNullOrEmpty(searchResults[pageId][1].GetString())) // project
-                Chain = (string.IsNullOrEmpty(Chain) ? "" : Chain + " / ") + searchResults[pageId][1].GetString();
-
-            if (!string.IsNullOrEmpty(Chain))
+            try {
+                if (!string.IsNullOrEmpty(searchResults[pageId][2].GetString())) // Database
+                    Chain = searchResults[pageId][2].GetString();
+       
+                if (_settings.RelationSubtitle && !string.IsNullOrEmpty(searchResults[pageId][1].GetString())) // project
+                    Chain = (string.IsNullOrEmpty(Chain) ? "" : Chain + " / ") + searchResults[pageId][1].GetString();
+    
+                if (!string.IsNullOrEmpty(Chain))
+                    return Chain;
+    
+                while (!string.IsNullOrEmpty(searchResults[pageId][4].GetString()))
+                {
+                    Chain = (string.IsNullOrEmpty(Chain) ? "" : Chain + " / ") + searchResults[searchResults[pageId][4].GetString()][0].GetString();
+                    pageId = searchResults[pageId][4].GetString();
+                }
+    
+                if (!string.IsNullOrEmpty(searchResults[pageId][1].GetString())) // Is this another page has a relation property?
+                    Chain = searchResults[pageId][1].GetString() + (string.IsNullOrEmpty(Chain) ? "" : " / " + Chain);
+                if (!string.IsNullOrEmpty(searchResults[pageId][2].GetString())) // Is this another page has a database?
+                    Chain = searchResults[pageId][2].GetString() + (string.IsNullOrEmpty(Chain) ? "" : " / " + Chain);
+    
                 return Chain;
-
-            while (!string.IsNullOrEmpty(searchResults[pageId][4].GetString()))
-            {
-                Chain = (string.IsNullOrEmpty(Chain) ? "" : Chain + " / ") + searchResults[searchResults[pageId][4].GetString()][0].GetString();
-                pageId = searchResults[pageId][4].GetString();
+                
+            } catch {
+                return string.Empty;
             }
-
-            if (!string.IsNullOrEmpty(searchResults[pageId][1].GetString())) // Is this another page has a relation property?
-                Chain = searchResults[pageId][1].GetString() + (string.IsNullOrEmpty(Chain) ? "" : " / " + Chain);
-            if (!string.IsNullOrEmpty(searchResults[pageId][2].GetString())) // Is this another page has a database?
-                Chain = searchResults[pageId][2].GetString() + (string.IsNullOrEmpty(Chain) ? "" : " / " + Chain);
-
-            return Chain;
         }
 
         Dictionary<string, object> GetData(string rawInputstring, string defaultDB = "", bool TimeSkip = false, bool ManualTagsRunning = false, bool ManualDBRunning = false, bool ManualProjectRunning = false)
