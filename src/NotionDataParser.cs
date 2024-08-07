@@ -366,7 +366,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase, MethodBase.GetCurrentMethod().Name);
+                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase + " | (" + _settings.InernalInegrationToken + ")", MethodBase.GetCurrentMethod().Name);
                     // Try To recache the whole shared pages in case of page deleted on notion by Notion UI
                     if (!string.IsNullOrEmpty(startCursor))
                         await CallApiForSearch(oldDatabaseId: null, startCursor: null, numPage: 100);
