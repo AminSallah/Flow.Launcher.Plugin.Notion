@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Text;
@@ -171,6 +172,16 @@ namespace Flow.Launcher.Plugin.Notion
             return extractedTitle;
         }
 
+        private HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.InernalInegrationToken.Trim());
+            client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        
+            return client;
+        }
+
         internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 10, bool Force = false, string Value = "page")
         {
             UpdateProjectsMap();
@@ -205,10 +216,8 @@ namespace Flow.Launcher.Plugin.Notion
 
 
             // Send the POST request
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = CreateHttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
-                client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
                 var response = client.PostAsync("https://api.notion.com/v1/search", new StringContent(System.Text.Json.JsonSerializer.Serialize(data), System.Text.Encoding.UTF8, "application/json")).Result;
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -243,7 +252,6 @@ namespace Flow.Launcher.Plugin.Notion
                                 if (_settings.PagesIcons)
                                 {
                                     icon = IconParse(result["icon"]);
-
                                 }
 
 
@@ -366,7 +374,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase + " | (" + _settings.InernalInegrationToken + ")", MethodBase.GetCurrentMethod().Name);
+                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase + "\n"  + response.Content.ReadAsStringAsync().Result + " \n (" + _settings.InernalInegrationToken + ")", MethodBase.GetCurrentMethod().Name);
                     // Try To recache the whole shared pages in case of page deleted on notion by Notion UI
                     if (!string.IsNullOrEmpty(startCursor))
                         await CallApiForSearch(oldDatabaseId: null, startCursor: null, numPage: 100);
