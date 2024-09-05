@@ -43,7 +43,6 @@ namespace Flow.Launcher.Plugin.Notion
         private PluginInitContext Context;
         internal NotionBlockTypes? _notionBlockTypes;
         internal NotionDataParser? _notionDataParser;
-        internal Toggl? _toggl;
         private static SettingsViewModel? _viewModel;
         private Settings? _settings;
         internal static string CustomImagesDirectory;
@@ -75,7 +74,6 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 this._notionBlockTypes = new NotionBlockTypes(this.Context);
                 this._notionDataParser = new NotionDataParser(this.Context, _settings);
-                this._toggl = new Toggl(Context);
                 _apiCacheManager = new ApiCacheManager(context);
             }
             catch { }
@@ -261,56 +259,6 @@ namespace Flow.Launcher.Plugin.Notion
                 return resultlist;
             }
 
-            string Title;
-            string Subtitle;
-            if (dict.ContainsKey("CreateFirst") && (dict["CreateFirst"] is Dictionary<string, object> filteredQuery))
-            {
-                Title = $"Add and Start {dict["Title"]}";
-                Subtitle = filteredQuery.ContainsKey("Project") ? filteredQuery["Project"].ToString() : "";
-            }
-            else if (dict.ContainsKey("edit"))
-            {
-                Title = $"Edit and Start {dict["Title"]}";
-                Subtitle = $"{dict["Project_name"]}";
-            }
-            else
-            {
-                Title = $"Start {dict["Title"]}";
-                Subtitle = $"{dict["Project_name"]}";
-            }
-
-            var result_timer = new Result
-            {
-                Title = Title,
-                SubTitle = Subtitle,
-                Action = c =>
-                {
-                    Task.Run(async delegate
-                    {
-                        if (dict.ContainsKey("CreateFirst") && (dict["CreateFirst"] is Dictionary<string, object> data_Dict_context)) _ = subProcess(create: true, dict_arg: data_Dict_context, open: c.SpecialKeyState.CtrlPressed);
-                        await this._toggl.StartTimer(desc: dict["Title"].ToString(), dict.ContainsKey("Tags") ? new List<string> { dict["Tags"].ToString() } : new List<string>(), projectName: Subtitle.ToString());
-                    });
-                    if (c.SpecialKeyState.CtrlPressed && !dict.ContainsKey("CreateFirst"))
-                    {
-                        OpenNotionPage(Convert.ToString(dict["Url"]));
-                    }
-
-                    if (c.SpecialKeyState.AltPressed)
-                    {
-                        return false;
-
-                    }
-                    else
-                    {
-                        return true;
-
-                    }
-                },
-                IcoPath = "Images/item_timer_3d.png"
-            };
-            resultlist.Add(result_timer);
-
-
             if (dict.ContainsKey("PageId"))
             {
                 if (dict["CreateFirst"] is bool)
@@ -403,38 +351,6 @@ namespace Flow.Launcher.Plugin.Notion
                         }
                     }
 
-                    resultlist.Add(new Result
-                        {
-                            Title = $"Graph view of {dict["Title"]}",
-                            SubTitle = "",
-                            Action = c =>
-                            {
-                                var htmlGraphViewPath = Path.Combine(cacheDirectory, "graph.html");
-                                
-                                var GraphViewLinkPy = $"python -m notion_graph -p {dict["PageId"]} -t {_settings.InernalInegrationToken} -o {htmlGraphViewPath} && start {htmlGraphViewPath}";
-                                if (c.SpecialKeyState.CtrlPressed)
-                                {
-                                    Context.API.OpenUrl(new Uri (htmlGraphViewPath));
-                                    return true;
-                                }
-                                else
-                                {
-                                    Context.API.ShowMsg("Preparing Graph View", "Processing your request, please wait for the graph to build.");
-                                    Context.API.ShellRun(GraphViewLinkPy);
-                                }
-                                
-                                if (c.SpecialKeyState.AltPressed)
-                                {
-                                    return false;
-                                }
-                                else
-                                {
-                                    return true;
-                                }
-                            },
-                            IcoPath = "Images//graph-view.png"
-                        });
-                    
                     if (!HiddenItems.Contains(dict["PageId"].ToString()))
                     {
                         var HideItem = new Result
