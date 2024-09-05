@@ -4,7 +4,7 @@
   "Name": "Notion",
   "Description": "A Plugin For Search, Create, Edit and Delete Notion Pages.",
   "Author": "Amin Salah",
-  "Version": "5.0.0",
+  "Version": "5.0.1",
   "Language": "csharp",
   "Website": "https://github.com/AminSallah/Flow.Launcher.Plugin.Notion",
   "IcoPath": "Images\\app.png",
