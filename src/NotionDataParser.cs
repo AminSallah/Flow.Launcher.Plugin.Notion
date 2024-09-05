@@ -252,6 +252,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 if (_settings.PagesIcons)
                                 {
                                     icon = IconParse(result["icon"]);
+
                                 }
 
 
@@ -380,6 +381,19 @@ namespace Flow.Launcher.Plugin.Notion
                         await CallApiForSearch(oldDatabaseId: null, startCursor: null, numPage: 100);
                 }
                 return new JArray();
+            }
+        }
+
+        public JObject RetrievePageProperitesById(string pageId)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
+                client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+                string url = "https://api.notion.com/v1/pages/";
+                var response = client.GetAsync(url + pageId).Result;
+                JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                return jsonObject;
             }
         }
 
@@ -999,9 +1013,3 @@ namespace Flow.Launcher.Plugin.Notion
 
     }
 }
-
-
-
-
-
-
