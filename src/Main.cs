@@ -1140,7 +1140,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     Score = 10000,
                                     Action = c =>
                                     {
-                                        Context.API.ChangeQuery($"{PluginActionKeyword().Trim()}{ConcatSplitedQuery(splitQuery, "!")}!", true);
+                                        Context.API.ChangeQuery($"{PluginActionKeyword()}{ConcatSplitedQuery(splitQuery, "!")}!", true);
                                         ProjectName[ProjectNumber] = _projectName.Name;
                                         return false;
                                     },
@@ -1191,7 +1191,7 @@ namespace Flow.Launcher.Plugin.Notion
                                                     return true;
                                                 }
 
-                                                Context.API.ChangeQuery($"{PluginActionKeyword().Trim()}{ConcatSplitedQuery(splitQuery, "!")}!{project.Value[0]} ");
+                                                Context.API.ChangeQuery($"{PluginActionKeyword()}{ConcatSplitedQuery(splitQuery, "!")}!{project.Value[0]} ");
                                                 return false;
                                             },
                                             IcoPath = project.Value[3].ToString()
@@ -1440,7 +1440,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         SubTitle = $"",
                                         Action = c =>
                                         {
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
                                             SelectionTypeMap[SelectionNumber] = PropertySelectionType.MultiSelectionType;
                                             SelectionNameMap[SelectionNumber] = _tagName.Name;
                                             return false;
@@ -1468,7 +1468,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         SubTitle = $"",
                                         Action = c =>
                                         {
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
                                             SelectionTypeMap[SelectionNumber] = PropertySelectionType.SingleSelectionType;
                                             SelectionNameMap[SelectionNumber] = _tagName.Name;
                                             return false;
@@ -1496,7 +1496,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         SubTitle = $"",
                                         Action = c =>
                                         {
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
                                             SelectionTypeMap[SelectionNumber] = PropertySelectionType.StatusSelectionType;
                                             SelectionNameMap[SelectionNumber] = _tagName.Name;
                                             return false;
@@ -1536,7 +1536,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         SubTitle = $"",
                                         Action = c =>
                                         {
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#", true);
                                             SelectionTypeMap[SelectionNumber] = PropertySelectionType.CheckBox;
                                             SelectionNameMap[SelectionNumber] = _tagName.GetString();
                                             return false;
@@ -1574,7 +1574,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         Action = c =>
                                         {
                                             ShowTags = false;
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
                                             return false;
                                         },
                                         IcoPath = "Images/database.png"
@@ -1604,7 +1604,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         Action = c =>
                                         {
                                             ShowTags = false;
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
                                             return false;
                                         },
                                         IcoPath = "Images/database.png"
@@ -1629,7 +1629,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         Action = c =>
                                         {
                                             ShowTags = false;
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#" + state + " ", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#" + state + " ", true);
                                             return false;
                                         },
                                         IcoPath = "Images/database.png"
@@ -1658,7 +1658,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         Action = c =>
                                         {
                                             ShowTags = false;
-                                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
+                                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "#") + "#" + _tagName.ToString() + " ", true);
                                             return false;
                                         },
                                         IcoPath = "Images/database.png"
@@ -1739,7 +1739,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 Action = c =>
                                 {
                                     DateName = _datePropertyName.GetString();
-                                    Context.API.ChangeQuery(PluginActionKeyword().Trim() + " " + splitQuery[0] + "@" + filteredQuery["databaseId"].ToString() + " ", true);
+                                    Context.API.ChangeQuery(PluginActionKeyword() + " " + splitQuery[0] + "@" + filteredQuery["databaseId"].ToString() + " ", true);
                                     return false;
                                 },
                                 IcoPath = "Images/database.png"
@@ -1781,7 +1781,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     DateName = _dateName.ToString();
                                     timeForce = false;
-                                    Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, filteredQuery["TimeText"] as string) + filteredQuery["TimeText"].ToString().Trim() + " ");
+                                    Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, filteredQuery["TimeText"] as string) + filteredQuery["TimeText"].ToString().Trim() + " ");
                                     // Context.API.ChangeQuery(Context.CurrentPluginMetadata.ActionKeyword + " " +
                                     // (string.IsNullOrEmpty(splitQuery[^2].Trim().Replace(filteredQuery["TimeText"].ToString(), "",
                                     //  culture: null, ignoreCase: true)) ? ""
@@ -1801,7 +1801,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             Context.API.ReQuery(false);
                             string AfterTimeText = query.Search.Substring((int)filteredQuery["End"] + 1);
-                            Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, filteredQuery["TimeText"].ToString()) +
+                            Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, filteredQuery["TimeText"].ToString()) +
                             "\\" + filteredQuery["TimeText"].ToString().Trim().Trim() + AfterTimeText, requery: true);
                             return false;
                         },
@@ -1828,7 +1828,7 @@ namespace Flow.Launcher.Plugin.Notion
                             Title = kv.Key,
                             SubTitle = $"",
                             Score = 10000,
-                            AutoCompleteText = $"{PluginActionKeyword().Trim()}${kv.Key}$",
+                            AutoCompleteText = $"{PluginActionKeyword()}${kv.Key}$",
                             TitleToolTip = "Hold Alt to select as default database\nHold Ctrl to open database page",
                             Action = c =>
                             {
@@ -1844,7 +1844,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         _settings.DefaultDatabase = kv.Key;
                                         Context.API.ShowMsg("Changing Default Database", $"The database ({kv.Key}) has been successfully set as the default database.");
                                     }
-                                    Context.API.ChangeQuery($"{PluginActionKeyword().Trim()}{ConcatSplitedQuery(splitQuery, "@")}@{kv.Key} ");
+                                    Context.API.ChangeQuery($"{PluginActionKeyword()}{ConcatSplitedQuery(splitQuery, "@")}@{kv.Key} ");
                                     return false;
                                 }
                             },
@@ -1875,7 +1875,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 Action = c =>
                                 {
                                     UrlMap = _urlOption.GetString();
-                                    Context.API.ChangeQuery(PluginActionKeyword().Trim() + ConcatSplitedQuery(splitQuery, "[") + "[", true);
+                                    Context.API.ChangeQuery(PluginActionKeyword() + ConcatSplitedQuery(splitQuery, "[") + "[", true);
                                     return false;
                                 }
                             };
@@ -1919,7 +1919,7 @@ namespace Flow.Launcher.Plugin.Notion
                     {
                         Title = $"{(string.IsNullOrWhiteSpace(item.Value[1]) ? "Untitled" : item.Value[1])}",
                         SubTitle = $"{item.Value[4]}",
-                        AutoCompleteText = $"{PluginActionKeyword().Trim()}${item.Key}$ ",
+                        AutoCompleteText = $"{PluginActionKeyword()}${item.Key}$ ",
                         ContextData = new Dictionary<string, object>
                             {
                                 {"Title", $"{item.Value[1]}" },
@@ -2079,7 +2079,7 @@ namespace Flow.Launcher.Plugin.Notion
                                         {
                                             this._notionBlockTypes.additional_options[block] = key.Key.ToString();
                                             // Context.API.ChangeQuery($"{Context.CurrentPluginMetadata.ActionKeyword} {(string.IsNullOrEmpty(resultString) ? query.Search : query.Search.Replace(resultString, ""))}", true);
-                                            Context.API.ChangeQuery($"{PluginActionKeyword().Trim()}{this.ConcatSplitedQuery(query.Search.Split("^"), "^")}^", true);
+                                            Context.API.ChangeQuery($"{PluginActionKeyword()}{this.ConcatSplitedQuery(query.Search.Split("^"), "^")}^", true);
                                             return false;
                                         },
                                         IcoPath = "Images/app.png"
@@ -2108,7 +2108,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     if (c.SpecialKeyState.AltPressed)
                                     {
-                                        Context.API.ChangeQuery($"{PluginActionKeyword().Trim() + query.Search}" + "{clipboard}", true);
+                                        Context.API.ChangeQuery($"{PluginActionKeyword() + query.Search}" + "{clipboard}", true);
                                         return false;
                                     }
 
@@ -2267,12 +2267,12 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 List<string> QueryList = splitQuery.ToList();
                 QueryList.RemoveAt(QueryList.Count - 1);
-                QueryName = " " + string.Join($"{Prefix}", QueryList);
+                QueryName = string.Join($"{Prefix}", QueryList);
                 return QueryName;
             }
             else
             {
-                QueryName = " " + splitQuery[^2];
+                QueryName = splitQuery[^2];
             }
             return QueryName;
         }
