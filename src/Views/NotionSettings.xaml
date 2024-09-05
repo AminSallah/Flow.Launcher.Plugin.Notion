@@ -184,7 +184,7 @@
                 <ui:DropDownButton x:Name="dropDownButton" Grid.Column="2" Margin="10,0,18,0" HorizontalAlignment="Left"
                 VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
                 <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False" >
-                    <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode= "Single" SelectionChanged="ListBox_SelectionChanged"
+                    <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode= "Multiple" SelectionChanged="ListBox_SelectionChanged"
                     ItemsSource = "{Binding Settings.DatabaseSelectionOptions}"
                     LostFocus = "ListBox_LostFocus"
                     >

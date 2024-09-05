@@ -10,6 +10,7 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
         private string _itemSubTitle = "relation";
         private int _timeout = 100;
         private List<string> _databases = new List<string>();
+        private List<string> _propertiesNames = new List<string>();
         private string _json;
         private string _icopath = System.IO.Path.Combine(Main.ImagesPath, "app.png");
         private CacheTypes _cacheType = CacheTypes.Disabled;
@@ -64,6 +65,16 @@ namespace Flow.Launcher.Plugin.Notion.ViewModels
                 _databases = value;
                 OnPropertyChanged(nameof(Databases));
                 OnPropertyChanged(nameof(DatabasesString));
+            }
+        }
+
+        public List<string> PropertiesNames
+        {
+            get => _propertiesNames;
+            set
+            {
+                _propertiesNames = value;
+                OnPropertyChanged(nameof(PropertiesNames));
             }
         }
 

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Text;
@@ -171,6 +172,16 @@ namespace Flow.Launcher.Plugin.Notion
             return extractedTitle;
         }
 
+        private HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _settings.InernalInegrationToken.Trim());
+            client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        
+            return client;
+        }
+
         internal async Task<JArray> CallApiForSearch(OrderedDictionary oldDatabaseId = null, string startCursor = null, string keyword = "", int numPage = 10, bool Force = false, string Value = "page")
         {
             UpdateProjectsMap();
@@ -205,10 +216,8 @@ namespace Flow.Launcher.Plugin.Notion
 
 
             // Send the POST request
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = CreateHttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
-                client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
                 var response = client.PostAsync("https://api.notion.com/v1/search", new StringContent(System.Text.Json.JsonSerializer.Serialize(data), System.Text.Encoding.UTF8, "application/json")).Result;
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -366,12 +375,25 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase, MethodBase.GetCurrentMethod().Name);
+                    _context.API.LogWarn(nameof(NotionDataParser), response.ReasonPhrase + "\n"  + response.Content.ReadAsStringAsync().Result + " \n (" + _settings.InernalInegrationToken + ")", MethodBase.GetCurrentMethod().Name);
                     // Try To recache the whole shared pages in case of page deleted on notion by Notion UI
                     if (!string.IsNullOrEmpty(startCursor))
                         await CallApiForSearch(oldDatabaseId: null, startCursor: null, numPage: 100);
                 }
                 return new JArray();
+            }
+        }
+
+        public JObject RetrievePageProperitesById(string pageId)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
+                client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
+                string url = "https://api.notion.com/v1/pages/";
+                var response = client.GetAsync(url + pageId).Result;
+                JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                return jsonObject;
             }
         }
 
@@ -664,7 +686,7 @@ namespace Flow.Launcher.Plugin.Notion
             _ = CallApiForSearch(startCursor: manuanl_cursour == null ? lastCursorKey : manuanl_cursour, oldDatabaseId: oldDatabaseId, Force: true);
         }
 
-        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null, string itemSubtitle = "relation")
+        public async Task<Dictionary<string, JsonElement>> QueryDB(string DB, string filterPayload, string filePath = null, string itemSubtitle = "relation", List<string> propNames = null)
         {
             UpdateProjectsMap();
             string url = $"https://api.notion.com/v1/databases/{DB}/query?";
@@ -707,7 +729,7 @@ namespace Flow.Launcher.Plugin.Notion
                     var TargetDatabaseMap = TargetDatabase.Value;
                     foreach (var page in allResults)
                     {
-                        string Tags = null;
+                        string Tags = string.Empty;
                         string project_name;
                         string title = GetFullTitle(page["properties"][TargetDatabaseMap.GetProperty("title").GetString()]["title"]);
 
@@ -719,7 +741,47 @@ namespace Flow.Launcher.Plugin.Notion
 
                         try
                         {
-                            Tags = page["properties"][TargetDatabaseMap.GetProperty("multi_select").EnumerateObject().First().Name.ToString()]["multi_select"][0]["name"].ToString();
+                            // Tags = page["properties"][TargetDatabaseMap.GetProperty("multi_select").EnumerateObject().First().Name.ToString()]["multi_select"][0]["name"].ToString();
+                            if (propNames != null) {
+                            foreach (var selectProp in TargetDatabaseMap.GetProperty("select").EnumerateObject())
+                            {
+                                if (!propNames.Contains(selectProp.Name.ToString())) {
+                                    continue;
+                                }
+                                try {
+                                    string selectPropValue = page["properties"][selectProp.Name.ToString()]["select"]["name"].ToString();
+
+                                    if (!String.IsNullOrEmpty(selectPropValue))
+                                    {
+                                        Tags = String.IsNullOrEmpty(Tags) ? selectPropValue : Tags + ", " + selectPropValue;
+                                    }
+                                    
+                                } 
+                                catch {
+                                    continue;
+                                }
+                            }
+
+                            foreach (var multi_selectProp in TargetDatabaseMap.GetProperty("multi_select").EnumerateObject())
+                            {
+                                if (!propNames.Contains(multi_selectProp.Name.ToString())) {
+                                    continue;
+                                }
+                                try {
+                                    string multi_selectPropValue = page["properties"][multi_selectProp.Name.ToString()]["multi_select"][0]["name"].ToString();
+
+                                    if (!String.IsNullOrEmpty(multi_selectPropValue))
+                                    {
+                                        Tags = String.IsNullOrEmpty(Tags) ? multi_selectPropValue : Tags + ", " + multi_selectPropValue;
+                                    }
+                                    
+                                } 
+                                catch {
+                                    continue;
+                                }
+                            }
+                            }
+                            //Tags = page["properties"][TargetDatabaseMap.GetProperty("select").EnumerateObject().First().Name.ToString()]["select"]["name"].ToString();
                         }
                         catch
                         {
@@ -951,10 +1013,3 @@ namespace Flow.Launcher.Plugin.Notion
 
     }
 }
-
-
-
-
-
-
-
