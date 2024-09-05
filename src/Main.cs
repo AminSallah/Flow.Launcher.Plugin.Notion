@@ -258,7 +258,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 return resultlist;
             }
-            
+
             if (dict.ContainsKey("PageId"))
             {
                 if (dict["CreateFirst"] is bool)
@@ -350,7 +350,7 @@ namespace Flow.Launcher.Plugin.Notion
                             });
                         }
                     }
-                
+                    
                     if (!HiddenItems.Contains(dict["PageId"].ToString()))
                     {
                         var HideItem = new Result
@@ -1137,7 +1137,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 {
                                     Title = _projectName.Name,
                                     SubTitle = $"",
-                                    Score = 1000,
+                                    Score = 10000,
                                     Action = c =>
                                     {
                                         Context.API.ChangeQuery($"{PluginActionKeyword().Trim()}{ConcatSplitedQuery(splitQuery, "!")}!", true);
@@ -1176,7 +1176,7 @@ namespace Flow.Launcher.Plugin.Notion
                                             Title = project.Value[0].GetString(),
                                             SubTitle = $"",
                                             AutoCompleteText = $"{PluginActionKeyword()}${project.Value[0]}$",
-                                            Score = 1000,
+                                            Score = 10000,
                                             ContextData = new Dictionary<string, object>
                                             {
                                                 {"RefreshId", targetProjectId },
@@ -1570,7 +1570,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         Title = _tagName.ToString(),
                                         SubTitle = $"",
-                                        Score = 50,
+                                        Score = 10000,
                                         Action = c =>
                                         {
                                             ShowTags = false;
@@ -1600,7 +1600,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         Title = _tagName.ToString(),
                                         SubTitle = $"",
-                                        Score = 50,
+                                        Score = 10000,
                                         Action = c =>
                                         {
                                             ShowTags = false;
@@ -1625,7 +1625,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         Title = state,
                                         SubTitle = $"",
-                                        Score = 50,
+                                        Score = 10000,
                                         Action = c =>
                                         {
                                             ShowTags = false;
@@ -1654,7 +1654,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     {
                                         Title = _tagName.ToString(),
                                         SubTitle = $"",
-                                        Score = 50,
+                                        Score = 10000,
                                         Action = c =>
                                         {
                                             ShowTags = false;
@@ -1827,7 +1827,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             Title = kv.Key,
                             SubTitle = $"",
-                            Score = 1000,
+                            Score = 10000,
                             AutoCompleteText = $"{PluginActionKeyword().Trim()}${kv.Key}$",
                             TitleToolTip = "Hold Alt to select as default database\nHold Ctrl to open database page",
                             Action = c =>
@@ -1870,7 +1870,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var result = new Result
                             {
                                 Title = _urlOption.GetString(),
-                                Score = 1000,
+                                Score = 10000,
                                 IcoPath = "Images/embed.png",
                                 Action = c =>
                                 {
@@ -1958,7 +1958,7 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 Title = $"Create {filteredQuery["Name"]}",
                                 SubTitle = string.Concat(DBSubtitle, PSubtitle, tagSubtitle, link, TimeValue),
-                                Score = -10,
+                                Score = -100,
                                 ContextData = new Dictionary<string, object>
                                 {
                                     {"Title", filteredQuery["Name"].ToString() },
@@ -2005,7 +2005,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             Title = $"{editing_title}",
                             SubTitle = SubTitle,
-                            Score = 100,
+                            Score = 10000,
                             IcoPath = searchResults[editingPatternIdMatch.Groups[1].Value][3].ToString(),
                             ContextData =
                                     new Dictionary<string, object>
@@ -2147,7 +2147,7 @@ namespace Flow.Launcher.Plugin.Notion
                             {
                                 Title = $"{resultString}",
                                 SubTitle = $"{PSubtitle}{tagSubtitle}{link}{TimeValue}",
-                                Score = 99,
+                                Score = 10000,
                                 ContextData = new Dictionary<string, object>
                                 {
                                     { "desc", filteredQuery["Name"].ToString().Trim() },
