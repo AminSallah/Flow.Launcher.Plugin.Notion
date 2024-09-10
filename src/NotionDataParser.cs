@@ -74,7 +74,7 @@ namespace Flow.Launcher.Plugin.Notion
         }
 
 
-        static string GetHumanDateFormat(DateTime date)
+        public static string GetHumanDateFormat(DateTime date)
         {
             DateTime today = DateTime.Today;
             DateTime tomorrow = today.AddDays(1);
@@ -98,8 +98,6 @@ namespace Flow.Launcher.Plugin.Notion
                 if (IsPast(date, today))
                 {
                     DateTime lastMonday = GetLastWeekday(today, DayOfWeek.Monday);
-                    Console.WriteLine("Last Monday was: " + lastMonday.ToString("yyyy-MM-dd"));
-                    Console.WriteLine("Last thursday was: " + GetLastWeekday(today, DayOfWeek.Friday).ToString("yyyy-MM-dd"));
 
                     if (date.Date < lastMonday && date.Date >= GetLastWeekday(today, DayOfWeek.Friday))
                     {
@@ -112,8 +110,6 @@ namespace Flow.Launcher.Plugin.Notion
 
                     return date.ToString("MMMM d, yyyy");
                 }
-                Console.WriteLine(GetNextWeekday(today, DayOfWeek.Monday));
-                Console.WriteLine(date.Date);
                 if (GetNextWeekday(today, DayOfWeek.Monday) <= date.Date && date.Date <= GetNextWeekday(today, DayOfWeek.Thursday))
                 {
                     return (IsPast(date, today) ? "Last " : "Next ") + date.DayOfWeek.ToString();
@@ -125,7 +121,6 @@ namespace Flow.Launcher.Plugin.Notion
                 else
                 {
                     return date.ToString("MMMM d, yyyy");
-
                 }
 
             }
