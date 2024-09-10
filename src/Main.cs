@@ -351,7 +351,7 @@ namespace Flow.Launcher.Plugin.Notion
                             });
                         }
                     }
-
+                    
                     if (!HiddenItems.Contains(dict["PageId"].ToString()))
                     {
                         var HideItem = new Result
@@ -771,15 +771,7 @@ namespace Flow.Launcher.Plugin.Notion
                 filteredQuery["Name"] = filteredQuery["Name"].ToString().Replace(editingPatternIdMatch.Groups[1].Value, "").Trim();
             }
 
-            if (filteredQuery.ContainsKey("link"))
-            {
-                filteredQuery["link"] = (filteredQuery["link"] as string).Replace("\\", "");
-                link = $"\n{filteredQuery["link"]}";
-            }
-            else
-            {
-                link = string.Empty;
-            }
+            
 
             string DBSubtitle = string.Empty;
             string PSubtitle = string.Empty;
@@ -787,9 +779,10 @@ namespace Flow.Launcher.Plugin.Notion
             if (filteredQuery.ContainsKey("Relations"))
             {
                 Dictionary<int, String> Projects = filteredQuery["Relations"] as Dictionary<int, String>;
+                DBSubtitle = filteredQuery.TryGetValue("databaseId", out object databaseName) ? (string)databaseName  : string.Empty;
                 if (Projects.Count != 0)
                 {
-                    DBSubtitle = $"{filteredQuery["databaseId"]}" + " / ";
+                    DBSubtitle = DBSubtitle + " / ";
 
                     if (Projects.Count == 1)
                     {
@@ -800,12 +793,6 @@ namespace Flow.Launcher.Plugin.Notion
                         PSubtitle = Projects.First().Value + " +" + (Projects.Count - 1).ToString();
                     }
                 }
-                else
-                {
-                    DBSubtitle = $"{filteredQuery["databaseId"]}";
-
-                }
-
             }
 
             string tagSubtitle = string.Empty;
@@ -827,6 +814,30 @@ namespace Flow.Launcher.Plugin.Notion
             if (filteredQuery.ContainsKey("Time"))
             {
                 TimeValue = $" ({filteredQuery["Time"]})";
+            }
+
+            if (filteredQuery.ContainsKey("link"))
+            {
+                filteredQuery["link"] = (filteredQuery["link"] as string).Replace("\\", "");
+                link = $"{filteredQuery["link"]}";
+
+                if (!IsWritingBlock && (
+                    (!string.IsNullOrEmpty(TimeValue) || !string.IsNullOrEmpty(tagSubtitle) || !string.IsNullOrEmpty(PSubtitle))
+                    || !editingMode)
+                    )
+                {
+                    link = "\n" + link;
+                } else if (IsWritingBlock) {
+                    if ((!string.IsNullOrEmpty(TimeValue) || !string.IsNullOrEmpty(tagSubtitle) || !string.IsNullOrEmpty(PSubtitle)) || !editingMode)
+                    {
+                        link = " 🔗";
+                    }
+                   
+                }
+            }
+            else
+            {
+                link = string.Empty;
             }
 
 
@@ -1861,7 +1872,25 @@ namespace Flow.Launcher.Plugin.Notion
 
             if (!filterMode && query.Search.Contains("[") && !filteredQuery.ContainsKey("ContainUrlKeyword") && string.IsNullOrEmpty(UrlMap) && !IsWritingBlock && !Escaped(query.Search, "\\["))
             {
-                JsonElement.ArrayEnumerator UrlMapOptions = databaseId[filteredQuery["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
+                JsonElement.ArrayEnumerator UrlMapOptions = new JsonElement.ArrayEnumerator();
+                if (filteredQuery.ContainsKey("databaseId")) {
+                    UrlMapOptions = databaseId[filteredQuery["databaseId"].ToString()].GetProperty("urlMap").EnumerateArray();
+                }
+                else
+                {
+                    var ErrorResult = new Result
+                    {
+                        Title = "Url properties can not be assigned to pages",
+                        SubTitle = "Notion only support assign Url properties to database items.",
+                        Action = c =>
+                        {
+                            return true;
+                        },
+                        IcoPath = "Images/error.png"
+                    };
+                    resultList.Add(ErrorResult);
+                    return resultList;
+                }
                 if (UrlMapOptions.Count() > 1)
                 {
                     var splitQuery = query.Search.Split("[");
@@ -2101,11 +2130,11 @@ namespace Flow.Launcher.Plugin.Notion
                                 TitleToolTip = "Hold Alt key to paste the clipboard",
                                 ContextData = new Dictionary<string, object>
                                 {
-                                    {"Title", filteredQuery["Name"].ToString() },
+                                    { "Title", filteredQuery["Name"].ToString() },
                                     { "PageId", null },
                                     { "Url", null },
                                     { "Project_name", filteredQuery.ContainsKey("Project") ? filteredQuery["Project"]: "" },
-                                    {"CreateFirst", filteredQuery}
+                                    { "CreateFirst", filteredQuery}
                                 },
                                 Action = c =>
                                 {
@@ -2149,7 +2178,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var result = new Result
                             {
                                 Title = $"{resultString}",
-                                SubTitle = $"{PSubtitle}{tagSubtitle}{TimeValue}{link}",
+                                SubTitle = string.IsNullOrEmpty(DBSubtitle) ? subtitleForBlock : subtitleForBlock.Replace(DBSubtitle,""),
                                 Score = 10000,
                                 ContextData = new Dictionary<string, object>
                                 {
@@ -2389,7 +2418,7 @@ namespace Flow.Launcher.Plugin.Notion
             string inputString = rawInputstring;
             Dictionary<string, object> dataDict = new Dictionary<string, object>();
 
-            if (!TimeSkip)
+            if (!TimeSkip && !string.IsNullOrEmpty(defaultDB))
             {
                 ModelResult modelResult;
                 string RefinedName = TextToDate(out modelResult, inputString, ((ManualTagsRunning || ManualProjectRunning) == false));
