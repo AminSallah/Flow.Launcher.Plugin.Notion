@@ -40,7 +40,7 @@ namespace Flow.Launcher.Plugin.Notion
                                 _default_serialize_fn = serialize_fn;
                                 _context.API.ShowMsg(title,$"{title} has been set as a default block type");
                             }
-                            _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeyword} {updatedQuery}", requery: true);
+                            _context.API.ChangeQuery($"{(_context.CurrentPluginMetadata.ActionKeyword == "*" ? "" : _context.CurrentPluginMetadata.ActionKeyword + " ")}{updatedQuery}", requery: true);
 
                             return false;
                         }
