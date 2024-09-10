@@ -22,7 +22,7 @@
 - High-Speed Interface
 - Efficient search (without latency) and quick access to Notion items (pages, database and relations)
 - Hide and Unhide pages from query
-- Support for databases, multi selections, relations, links and date properties
+- Support for databases, select, multi select, status, relations, links and date properties
 - Quick create database items with custom supported properties
 - Optional icons for Notion items, with the flexibility to disable them
 - Support for custom payload to search or Edit
@@ -34,7 +34,7 @@
 
 - `@` To select database
 - `!` To select relation
-- `#` To select Tag (multi select only) support multiple tags
+- `#` To select an option for a selection (select, multi select, status, check) property.
 - `[` To add a link
 - `*` or `^` To insert a block
 - `$` Used by auto complete `Tab Key` to change mode to search filter when auto complete a database or relation
