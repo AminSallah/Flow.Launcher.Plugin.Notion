@@ -1,5 +1,12 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/StandWithPalestine.svg" alt="FreePalestine">
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K5OBFG2)
+
+</div>
+
 # Flow launcher Plugin Notion
-![FreePalestine](https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/StandWithPalestine.svg)
 
 - [Features](#features)
 - [Commands](#commands)
