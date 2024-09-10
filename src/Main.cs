@@ -48,6 +48,7 @@ namespace Flow.Launcher.Plugin.Notion
         internal static string CustomImagesDirectory;
         private bool RequestNewCache = false;
         private bool ShowTags = false;
+        private bool CachedPoolEmpty = true;
         private bool pluginInit = false;
         private bool BatchDeleting = false;
         public static List<string> HiddenItems = new List<string>();
@@ -350,7 +351,7 @@ namespace Flow.Launcher.Plugin.Notion
                             });
                         }
                     }
-                    
+
                     if (!HiddenItems.Contains(dict["PageId"].ToString()))
                     {
                         var HideItem = new Result
@@ -544,10 +545,14 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             searchResults = LoadJsonData(FullCachePath);
                         }
-                        _ = Task.Run(async () =>
-                        {
-                            await RetryCachedFunctions();
-                        });
+                        if (CachedPoolEmpty) {
+                            _ = Task.Run(async () =>
+                            {
+                                CachedPoolEmpty = false;
+                                await RetryCachedFunctions();
+                                CachedPoolEmpty = true;
+                            });
+                        }
                     }
                     DateTime fileInfo = new FileInfo(_settings.FullCachePath).LastWriteTime;
                     double minutesDifference = (DateTime.Now - fileInfo).TotalSeconds;
@@ -619,7 +624,7 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        string PluginActionKeyword()
+        public string PluginActionKeyword()
         {
             string currKeyword = Context.CurrentPluginMetadata.ActionKeyword;
             if (currKeyword == "*")
@@ -748,6 +753,12 @@ namespace Flow.Launcher.Plugin.Notion
                 editingMode = false;
             }
 
+            if (filteredQuery.ContainsKey("link") && filteredQuery["link"] is string _link && _link.Contains("#") && !_link.Contains("\\#"))
+            {
+                
+                Context.API.ChangeQuery(query.RawQuery.Replace(_link, _link.Replace("#", "\\#")),true);
+            }
+
             string link;
 
             if (!filteredQuery.ContainsKey("Name"))
@@ -762,6 +773,7 @@ namespace Flow.Launcher.Plugin.Notion
 
             if (filteredQuery.ContainsKey("link"))
             {
+                filteredQuery["link"] = (filteredQuery["link"] as string).Replace("\\", "");
                 link = $"\n{filteredQuery["link"]}";
             }
             else
@@ -769,16 +781,7 @@ namespace Flow.Launcher.Plugin.Notion
                 link = string.Empty;
             }
 
-            string DBSubtitle;
-            try
-            {
-                DBSubtitle = $"{filteredQuery["databaseId"]} selected as a database";
-            }
-            catch
-            {
-                DBSubtitle = "";
-            }
-
+            string DBSubtitle = string.Empty;
             string PSubtitle = string.Empty;
 
             if (filteredQuery.ContainsKey("Relations"))
@@ -786,7 +789,7 @@ namespace Flow.Launcher.Plugin.Notion
                 Dictionary<int, String> Projects = filteredQuery["Relations"] as Dictionary<int, String>;
                 if (Projects.Count != 0)
                 {
-                    DBSubtitle = DBSubtitle.Replace(" selected as a database", " / ");
+                    DBSubtitle = $"{filteredQuery["databaseId"]}" + " / ";
 
                     if (Projects.Count == 1)
                     {
@@ -799,7 +802,7 @@ namespace Flow.Launcher.Plugin.Notion
                 }
                 else
                 {
-                    DBSubtitle = DBSubtitle.Replace(" selected as a database", "");
+                    DBSubtitle = $"{filteredQuery["databaseId"]}";
 
                 }
 
@@ -811,12 +814,12 @@ namespace Flow.Launcher.Plugin.Notion
                 Dictionary<int, String> SelectedTags = filteredQuery["tags"] as Dictionary<int, String>;
                 if (SelectedTags.Count == 1)
                 {
-                    tagSubtitle = $" :{SelectedTags[1]} selected as a Tag";
+                    tagSubtitle = $" [{SelectedTags[1]}]";
                 }
                 else if (SelectedTags.Count != 0)
                 {
 
-                    tagSubtitle = $" :{string.Join(",", SelectedTags.Values)}";
+                    tagSubtitle = $" [{string.Join(", ", SelectedTags.Values)}]";
                 }
             }
 
@@ -1957,7 +1960,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var result = new Result
                             {
                                 Title = $"Create {filteredQuery["Name"]}",
-                                SubTitle = string.Concat(DBSubtitle, PSubtitle, tagSubtitle, link, TimeValue),
+                                SubTitle = string.Concat(DBSubtitle, PSubtitle, tagSubtitle, TimeValue, link),
                                 Score = -100,
                                 ContextData = new Dictionary<string, object>
                                 {
@@ -2000,7 +2003,7 @@ namespace Flow.Launcher.Plugin.Notion
                         {
                             editing_title = $"Renaming {filteredQuery["Name"]}";
                         }
-                        string SubTitle = string.IsNullOrEmpty(PSubtitle) ? $"{tagSubtitle}{link}{TimeValue}" : $"{DBSubtitle}{PSubtitle}{tagSubtitle}{link}{TimeValue}";
+                        string SubTitle = string.IsNullOrEmpty(PSubtitle) ? $"{tagSubtitle}{TimeValue}{link}" : $"{DBSubtitle}{PSubtitle}{tagSubtitle}{TimeValue}{link}";
                         var result = new Result
                         {
                             Title = $"{editing_title}",
@@ -2058,7 +2061,7 @@ namespace Flow.Launcher.Plugin.Notion
                         string[] linesWithoutFirst = lines.Skip(Math.Max(0, lines.Length - 2)).ToArray();
                         string resultString = string.Join(Environment.NewLine, linesWithoutFirst);
                         string subtitleForBlock = (linesWithoutFirst.Length <= 1) ?
-                        string.Concat(DBSubtitle, PSubtitle, tagSubtitle, link, TimeValue) :
+                        string.Concat(DBSubtitle, PSubtitle, tagSubtitle, TimeValue, link) :
                         "";
                         if (this._notionBlockTypes.additional_options.ContainsKey(block) &&
                             this._notionBlockTypes.additional_options[block] != null &&
@@ -2146,7 +2149,7 @@ namespace Flow.Launcher.Plugin.Notion
                             var result = new Result
                             {
                                 Title = $"{resultString}",
-                                SubTitle = $"{PSubtitle}{tagSubtitle}{link}{TimeValue}",
+                                SubTitle = $"{PSubtitle}{tagSubtitle}{TimeValue}{link}",
                                 Score = 10000,
                                 ContextData = new Dictionary<string, object>
                                 {
@@ -2386,6 +2389,25 @@ namespace Flow.Launcher.Plugin.Notion
             string inputString = rawInputstring;
             Dictionary<string, object> dataDict = new Dictionary<string, object>();
 
+            if (!TimeSkip)
+            {
+                ModelResult modelResult;
+                string RefinedName = TextToDate(out modelResult, inputString, ((ManualTagsRunning || ManualProjectRunning) == false));
+                if (modelResult != null)
+                {
+                    Dictionary<string, string> LastValue = ((List<Dictionary<string, string>>)modelResult.Resolution["values"]).Last();
+                    if (LastValue.ContainsKey("start") || LastValue.ContainsKey("value"))
+                    {
+                        inputString = RefinedName;
+                        dataDict["parsedDate"] = GetDateFromMethodResult(LastValue);
+                        dataDict["Time"] = HumanizedDate(dataDict["parsedDate"] as List<string>);
+                        dataDict["TimeText"] = modelResult.Text;
+                        dataDict["Start"] = modelResult.Start;
+                        dataDict["End"] = modelResult.End;
+                    }
+                }
+            }
+
             if (!ManualDBRunning)
             {
                 if (!dataDict.ContainsKey("databaseId") && inputString.Contains("@"))
@@ -2442,27 +2464,8 @@ namespace Flow.Launcher.Plugin.Notion
                 }
             }
 
-            if (!TimeSkip)
-            {
-                ModelResult modelResult;
-                string RefinedName = TextToDate(out modelResult, inputString);
-                if (modelResult != null)
-                {
-                    Dictionary<string, string> LastValue = ((List<Dictionary<string, string>>)modelResult.Resolution["values"]).Last();
-                    if (LastValue.ContainsKey("start") || LastValue.ContainsKey("value"))
-                    {
-                        inputString = RefinedName;
-                        dataDict["parsedDate"] = GetDateFromMethodResult(LastValue);
-                        dataDict["Time"] = HumanizedDate(dataDict["parsedDate"] as string);
-                        dataDict["TimeText"] = modelResult.Text;
-                        dataDict["Start"] = modelResult.Start;
-                        dataDict["End"] = modelResult.End;
-                    }
-                }
-            }
-
             string pattern = @"(\$.*\$)|((?:\*|\^)+\s?[^\*\^]*)|\s?([^*^]+)";
-            var match = Regex.Matches(Regex.Escape(inputString), pattern);
+            var match = Regex.Matches(inputString, pattern);
             var dataList = match.Cast<Match>().SelectMany(m => m.Groups.Cast<Group>().Skip(1)).Select(g => g.Value.Trim()).Where(v => !string.IsNullOrWhiteSpace(v)).ToList();
             foreach (var type in dataList)
             {
@@ -2499,7 +2502,7 @@ namespace Flow.Launcher.Plugin.Notion
                 // Condition for *
                 if (type.StartsWith("^") || type.StartsWith("*"))
                 {
-                    var typeFormatted = type.Remove(0, 1);
+                    var typeFormatted = Regex.Unescape(type.Remove(0, 1));
                     var formattedString = Regex.Replace(typeFormatted, @"\\n", "\n");
                     if (!dataDict.ContainsKey("content"))
                     {
@@ -2548,7 +2551,7 @@ namespace Flow.Launcher.Plugin.Notion
                                     ProjectsId = LoadJsonData(ProjectsIdsPath);
                                     foreach (var availableRelation in ProjectsId.Values)
                                     {
-                                        if (userInput.Contains(availableRelation[0].GetString()))
+                                        if (("!" + userInput).Contains($"!{availableRelation[0].GetString()}"))
                                         {
                                             selectedRelations[number] = availableRelation[0].GetString();
                                             selectedRelationRegex.Add(Regex.Escape(availableRelation[0].GetString()));
@@ -2643,7 +2646,7 @@ namespace Flow.Launcher.Plugin.Notion
 
                                     foreach (var _availableTag in availableTags)
                                     {
-                                        if (userInput.Contains(_availableTag + " "))
+                                        if (("#" + userInput).Contains("#" + _availableTag + " "))
                                         {
                                             selectedTags[number] = _availableTag;
                                             selectedTagsRegex.Add(_availableTag);
@@ -2698,45 +2701,148 @@ namespace Flow.Launcher.Plugin.Notion
             return dataDict;
         }
 
-        string GetDateFromMethodResult(Dictionary<string, string> ResoultionValues)
+        List<string> GetDateFromMethodResult(Dictionary<string, string> ResoultionValues)
         {
-            string parsedDate;
+            List<string> parsedDates;
 
             if (ResoultionValues.TryGetValue("value", out string date))
-                parsedDate = Convert.ToString(date);
+            {
+                parsedDates = new List<string> {date, null};
+            }
             else
-                parsedDate = Convert.ToString(ResoultionValues["start"]);
+                if (ResoultionValues.TryGetValue("type", out string type) && (type == "daterange" || type == "datetimerange" || type == "timerange" ))
+                {
+                    if (ResoultionValues.TryGetValue("start", out string startDate)) {
+                        parsedDates = new List<string> {ResoultionValues["start"], ResoultionValues["end"]};
+                    } else {
+                        parsedDates = new List<string> {ResoultionValues["end"], null};
+                    }
+                }
+                else
+                {
+                    parsedDates = new List<string> {ResoultionValues["start"], null};
+                }
 
-            return parsedDate;
+            return parsedDates;
         }
 
-        string HumanizedDate(string parsedDate)
+        string AppendTimeIfNeeded(DateTime dateTime, string sep = " | ")
         {
-            DateTime parsedclock = Convert.ToDateTime(parsedDate);
-            string HumanizedDate = parsedclock.ToString("ddd", CultureInfo.InvariantCulture);
-            if (parsedclock.TimeOfDay != TimeSpan.Zero)
+            if (dateTime.TimeOfDay != TimeSpan.Zero)
             {
-                HumanizedDate = $"{HumanizedDate} | {parsedclock.ToString("h:mm tt", CultureInfo.InvariantCulture)}";
+                return sep + dateTime.ToString("h:mm tt", CultureInfo.InvariantCulture);
+            }
+            else {
+                return string.Empty;
+            }
+        }
+
+        string HumanizedDate(List<string> parsedDate)
+        {
+            if (string.IsNullOrEmpty(parsedDate[1])) {
+                DateTime parsedclock = Convert.ToDateTime(parsedDate[0]);
+                string HumanizedDate = parsedclock.ToString("ddd", CultureInfo.InvariantCulture);
+                if (parsedclock.TimeOfDay != TimeSpan.Zero)
+                {
+                    HumanizedDate = HumanizedDate + AppendTimeIfNeeded(parsedclock);
+                }
+                else
+                {
+                    string daySuffix = GetDaySuffix(parsedclock.Day);
+                    HumanizedDate = $"{HumanizedDate} | {parsedclock.Day + daySuffix} {parsedclock.ToString("MMM yyyy", CultureInfo.InvariantCulture)}";
+                }
+                return HumanizedDate;
             }
             else
             {
-                string daySuffix = GetDaySuffix(parsedclock.Day);
-                HumanizedDate = $"{HumanizedDate} | {parsedclock.Day + daySuffix} {parsedclock.ToString("MMM yyyy", CultureInfo.InvariantCulture)}";
+                DateTime StartDate = Convert.ToDateTime(parsedDate[0]);
+                DateTime EndDate = Convert.ToDateTime(parsedDate[1]);
+                string HumanizedStartDate = NotionDataParser.GetHumanDateFormat(StartDate);
+                string HumanizedEndDate = NotionDataParser.GetHumanDateFormat(EndDate);
+
+                if (HumanizedStartDate == HumanizedEndDate)
+                {
+                    string DateTime = AppendTimeIfNeeded(EndDate,sep: "");
+                    if (!string.IsNullOrEmpty(DateTime))
+                    {
+                        return HumanizedStartDate + AppendTimeIfNeeded(StartDate,sep: " ") + " → " + DateTime;
+                    }
+                }
+                 
+                // return (HumanizedEndDate.Contains(HumanizedStartDate.Substring(HumanizedStartDate.Length - 4))
+                //      ? HumanizedStartDate.Substring(0, HumanizedStartDate.Length - 6)
+                //      : HumanizedStartDate) + " → " + HumanizedEndDate;
+                return HumanizedStartDate + AppendTimeIfNeeded(StartDate,sep: " ") + " → " + HumanizedEndDate + AppendTimeIfNeeded(EndDate,sep: " ");
+
             }
 
-            return HumanizedDate;
+            
         }
 
-        public string TextToDate(out ModelResult methodResult, string input = "")
+        bool IsDateOrTime(string typeName) =>
+            typeName.StartsWith("datetimeV2.date") || typeName.StartsWith("datetimeV2.time");
+
+        bool IsDuration(string typeName) =>
+            typeName == "datetimeV2.duration";
+
+
+        bool IsCombinedBetweenRangeAndDuration (List<ModelResult> results,string input, out ModelResult CombinedOne)
+        {
+            CombinedOne = new ModelResult();
+            if ((IsDateOrTime(results[0].TypeName) && IsDuration(results[1].TypeName)) ||
+                (IsDateOrTime(results[1].TypeName) && IsDuration(results[0].TypeName)))
+            {
+                string StartDate;
+                string EndDate;
+                if (IsDateOrTime(results[0].TypeName))
+                {
+                    StartDate = GetDateFromMethodResult(((List<Dictionary<string, string>>)results[0].Resolution["values"]).Last())[0];
+                    
+                    EndDate = Convert.ToDateTime(StartDate).AddSeconds(int.Parse(((List<Dictionary<string, string>>)results[1].Resolution["values"]).Last()["value"])).ToString();
+
+                } else {
+                    StartDate = GetDateFromMethodResult(((List<Dictionary<string, string>>)results[1].Resolution["values"]).Last())[0];
+                    EndDate = Convert.ToDateTime(StartDate).AddSeconds(int.Parse(((List<Dictionary<string, string>>)results[0].Resolution["values"]).Last()["value"])).ToString();
+
+                }
+                CombinedOne.Start = results[0].Start; 
+                CombinedOne.End = results[1].End;
+                CombinedOne.Text = input.Substring(results[0].Start, results[1].End - results[0].Start + 1);
+                CombinedOne.TypeName = "datetimeV2.daterange";
+                CombinedOne.Resolution = new SortedDictionary<string, object> 
+                {
+                    { 
+                        "values", new List<Dictionary<string, string>> 
+                        { 
+                            new Dictionary<string, string> 
+                            {
+                                { "type", "daterange" },
+                                { "start", StartDate } ,
+                                { "end", EndDate } 
+
+                            }
+                        } 
+                    }
+                };
+
+                return true;
+            }
+            return false;
+
+        }
+
+        public string TextToDate(out ModelResult methodResult, string input = "", bool fullInput = true)
         {
             methodResult = null;
             var results = DateTimeRecognizer.RecognizeDateTime(input, "en-us");
             bool IsItFilter = false;
-            foreach (CustomPayload filter in _settings.Filters)
-            {
-                if (filter.Enabled && filter.JsonType == JsonType.Filter && input.StartsWith(filter.Title, StringComparison.OrdinalIgnoreCase))
+            if (fullInput) {
+                foreach (CustomPayload filter in _settings.Filters)
                 {
-                    IsItFilter = true;
+                    if (filter.Enabled && filter.JsonType == JsonType.Filter && input.StartsWith(filter.Title, StringComparison.OrdinalIgnoreCase))
+                    {
+                        IsItFilter = true;
+                    }
                 }
             }
 
@@ -2745,19 +2851,41 @@ namespace Flow.Launcher.Plugin.Notion
             {
                 try
                 {
-
+                    // string jsonString = System.Text.Json.JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
+                    // File.WriteAllText(_settings.FullCachePath + ".txt", jsonString);
+                    
+                    if (results.Count > 1)
+                    {
+                        bool Combined = IsCombinedBetweenRangeAndDuration(results, input,out ModelResult CombinedResult);
+                        if (Combined)
+                        {
+                            results = new List<ModelResult> {CombinedResult};
+                        }
+                        
+                    }
+                    
+                    
                     foreach (ModelResult result in results)
                     {
+                        
                         if (result.TypeName != "datetimeV2.duration" && !IsItFilter &&
                         (input.Trim().StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) ||
                         input.Substring(result.Start - 1, 1) != "\\") &&
                         !(input.Substring(0, result.Start).Contains("*") || input.Substring(0, result.Start).Contains("^")))
                         {
                             methodResult = result;
-                            if (!input.Trim().StartsWith(result.Text, StringComparison.OrdinalIgnoreCase) &&
-                                (input.Substring(result.Start - 3, 3) == "on " || input.Substring(result.Start - 3, 3) == "On "))
+                            if (!input.Trim().StartsWith(result.Text, StringComparison.OrdinalIgnoreCase))
                             {
-                                returnedName = returnedName.Remove(result.Start - 3, result.End - result.Start + 4);
+                                if (input.StartsWith("on", StringComparison.OrdinalIgnoreCase) || input.Substring(result.Start - 4, 4).Equals(" on ", StringComparison.OrdinalIgnoreCase) ) {
+                                    returnedName = returnedName.Remove(result.Start - 3, result.End - result.Start + 4);
+                                }
+                                else if (input.StartsWith("from", StringComparison.OrdinalIgnoreCase) || input.Substring(result.Start - 6, 6).Equals(" from ", StringComparison.OrdinalIgnoreCase)) {
+                                    returnedName = returnedName.Remove(result.Start - 5, result.End - result.Start + 6);
+                                }
+                                else {
+                                    returnedName = returnedName.Remove(result.Start, result.End - result.Start + 1);
+
+                                }
                             }
                             else
                             {
@@ -2881,23 +3009,36 @@ namespace Flow.Launcher.Plugin.Notion
 
                 if (filteredQueryEditing.ContainsKey("parsedDate") && databaseId[filteredQueryEditing["databaseId"].ToString()].GetProperty("date").GetArrayLength() > 0)
                 {
-                    string parsed_result_string;
-                    DateTime parsed_result = Convert.ToDateTime(filteredQueryEditing["parsedDate"]);
-                    if (parsed_result.TimeOfDay != TimeSpan.Zero)
+                    List<string> parsed_result_strings = new List<string>();
+                    foreach (string dateValue in filteredQueryEditing["parsedDate"] as List<string>)
                     {
-                        parsed_result = parsed_result.ToUniversalTime();
-                        parsed_result_string = parsed_result.ToString("yyyy-MM-ddTHH:mm:ss");
+                        string parsed_result_string = null;
+                        if(!string.IsNullOrEmpty(dateValue))
+                        {
+                            DateTime parsed_result = Convert.ToDateTime(dateValue);
+                            
+                            if (parsed_result.TimeOfDay != TimeSpan.Zero)
+                            {
+                                parsed_result = parsed_result.ToUniversalTime();
+                                parsed_result_string = parsed_result.ToString("yyyy-MM-ddTHH:mm:ss");
+                            }
+                            else
+                            {
+                                parsed_result_string = parsed_result.ToString("yyyy-MM-dd");
+                            }
+                        }
+                        parsed_result_strings.Add(parsed_result_string);
+
                     }
-                    else
-                    {
-                        parsed_result_string = parsed_result.ToString("yyyy-MM-dd");
-                    }
+                    
+                    
+                    
 
                     if (!data.ContainsKey(DateName))
                     {
                         data.Add(DateName, new Dictionary<string, object>());
                     }
-                    data[DateName].Add("date", new Dictionary<string, object> { { "start", parsed_result_string }, { "end", null } });
+                    data[DateName].Add("date", new Dictionary<string, object> { { "start", parsed_result_strings[0] }, { "end", parsed_result_strings[1] } });
                 }
 
                 if (filteredQueryEditing.TryGetValue("tags", out object tags) && tags is Dictionary<int, string> Tags && Tags.Count > 0)
@@ -3002,7 +3143,9 @@ namespace Flow.Launcher.Plugin.Notion
                     }
                     
                     if (Mode == "Edit") {
+                        try {
                         GetOldRelations ();
+                        } catch { }
                     }
                     
                     foreach (var relation in ProjectName)
@@ -3040,30 +3183,32 @@ namespace Flow.Launcher.Plugin.Notion
 
             if (filteredQueryEditing.ContainsKey("content"))
             {
-                var contentItem = (List<List<string>>)filteredQueryEditing["content"];
-                foreach (int block in Enumerable.Range(0, contentItem.Count))
+                if (filteredQueryEditing["content"] is List<List<string>> contentItem)
                 {
-                    if (this._notionBlockTypes.additional_options.ContainsKey(block))
+                    foreach (int block in Enumerable.Range(0, contentItem.Count))
                     {
-                        if (!(this._notionBlockTypes.additional_options[block] is string))
+                        if (this._notionBlockTypes.additional_options.ContainsKey(block))
+                        {
+                            if (!(this._notionBlockTypes.additional_options[block] is string))
+                            {
+                                this._notionBlockTypes.additional_options[block] = "";
+                            }
+                        }
+                        else
                         {
                             this._notionBlockTypes.additional_options[block] = "";
                         }
-                    }
-                    else
-                    {
-                        this._notionBlockTypes.additional_options[block] = "";
-                    }
-
-                    if (this._notionBlockTypes._enabled.ContainsKey(block))
-                    {
-
-                        children["children"].Add(this._notionBlockTypes._enabled[block](contentItem[block][1], block));
-                    }
-                    else
-                    {
-                        // default value for Blocks.
-                        children["children"].Add(this._notionBlockTypes._default_serialize_fn(contentItem[block][1], block));
+    
+                        if (this._notionBlockTypes._enabled.ContainsKey(block))
+                        {
+    
+                            children["children"].Add(this._notionBlockTypes._enabled[block](contentItem[block][1], block));
+                        }
+                        else
+                        {
+                            // default value for Blocks.
+                            children["children"].Add(this._notionBlockTypes._default_serialize_fn(contentItem[block][1], block));
+                        }
                     }
                 }
                 return (data, children, DATABASE_ID);
@@ -3075,12 +3220,15 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        public async Task<HttpResponseMessage> CreatePage(Dictionary<string, object> filteredDataDict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null)
+        public async Task<HttpResponseMessage> CreatePage(Dictionary<string, object> filteredDataDict, Dictionary<string, List<Dictionary<string, object>>> children = null, string DatabaseId = null, bool open = false, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null, string mainPayload = null)
         {
+            Dictionary<string, object> payload = new Dictionary<string, object> ();
+            
             try
             {
                 if (retryFailedRequest)
                 {
+                    Context.API.LogWarn(nameof(Main), mainPayload, MethodBase.GetCurrentMethod().Name);
                     DateName = datePropName;
                     UrlMap = urlPropName;
                     ProjectName = relationPropName;
@@ -3097,22 +3245,27 @@ namespace Flow.Launcher.Plugin.Notion
                     client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
 
                     string createUrl = "https://api.notion.com/v1/pages";
-
-                    Dictionary<string, object> payload = new Dictionary<string, object>
-                    {
-                        { "parent", new Dictionary<string, object> { { "database_id", DATABASE_ID } } },
-                        { "properties", data }
-                    };
+                    
+                    payload["parent"] = new Dictionary<string, object> { { "database_id", DATABASE_ID } };
+                    payload["properties"] = data;
 
                     if (children != null)
                     {
                         payload["children"] = children["children"];
                     }
-
-                    string payloadJson = System.Text.Json.JsonSerializer.Serialize(payload, new JsonSerializerOptions
-                    {
-                        WriteIndented = true
-                    });
+                    string payloadJson = " ";
+                    if (retryFailedRequest) {
+                        payloadJson = mainPayload;
+                    }
+                    else {
+                        
+                        payloadJson = System.Text.Json.JsonSerializer.Serialize(payload, new JsonSerializerOptions
+                        {
+                            WriteIndented = true
+                        });
+                        mainPayload = payloadJson;
+                    }
+                    Context.API.LogWarn(nameof(Main), mainPayload, MethodBase.GetCurrentMethod().Name);
 
                     StringContent content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
                     Console.WriteLine(payloadJson);
@@ -3121,57 +3274,67 @@ namespace Flow.Launcher.Plugin.Notion
 
                     if (response.IsSuccessStatusCode)
                     {
-                        JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                        var itemDatabaseObject = databaseId.FirstOrDefault(Database => Database.Key == filteredDataDict["databaseId"].ToString());
-                        string DBName = itemDatabaseObject.Key;
-                        Dictionary<int, string> FilteredProjects = filteredDataDict.ContainsKey("Relations") ? filteredDataDict["Relations"] as Dictionary<int, string> : new Dictionary<int, string>();
-                        string projectName = FilteredProjects.Count != 0 ?
-                         FilteredProjects.Count == 1 ? $"<{FilteredProjects.First().Value}>" : $"<{FilteredProjects.Count} relations>"
-                         : string.Empty;
-                        string itemName = filteredDataDict.ContainsKey("Name") ? filteredDataDict["Name"].ToString() : string.Empty;
-
-
-
-                        JsonArray jsonArray = new JsonArray
-                        {
-                            itemName,
-                            FilteredProjects.Count != 0 ? FilteredProjects.First().Value : string.Empty ,
-                            DBName,
-                            "Images\\app.png"
-                        };
-
-                        searchResults[jsonObject["id"].ToString()] = JsonDocument.Parse(jsonArray.ToString()).RootElement;
-
-                        string jsonString = System.Text.Json.JsonSerializer.Serialize(searchResults, new JsonSerializerOptions
-                        {
-                            WriteIndented = true
-                        });
-
-
-                        File.WriteAllText(_settings.FullCachePath, jsonString);
-
-                        if (_settings.RelationDatabasesIds.Contains(itemDatabaseObject.Value.GetProperty("id").GetString()))
-                        {
-                            JsonArray newRelationItem = new JsonArray
+                            JObject jsonObject = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                            Dictionary<int, string> FilteredProjects;
+                            if (filteredDataDict.ContainsKey("Relations") && filteredDataDict["Relations"] is Dictionary<int, string> _filteredProjects)
+                            {
+                                FilteredProjects = _filteredProjects;
+                            }
+                            else if (retryFailedRequest)
+                            {
+                                FilteredProjects = (filteredDataDict["Relations"] as JObject).ToObject<Dictionary<int, string>>();
+                            }
+                            else {
+                                FilteredProjects = new Dictionary<int, string>();
+                            }
+                            var itemDatabaseObject = databaseId.FirstOrDefault(Database => Database.Key == filteredDataDict["databaseId"].ToString());
+                            string DBName = itemDatabaseObject.Key;
+                            string projectName = FilteredProjects.Count != 0 ?
+                             FilteredProjects.Count == 1 ? $"<{FilteredProjects.First().Value}>" : $"<{FilteredProjects.Count} relations>"
+                             : string.Empty;
+                            string itemName = filteredDataDict.ContainsKey("Name") ? filteredDataDict["Name"].ToString() : string.Empty;
+    
+                            JsonArray jsonArray = new JsonArray
                             {
                                 itemName,
-                                "" ,
-                                "notion://www.notion.so/" + jsonObject["id"].ToString().Replace("-",""),
-                                "Images\\app.png",
-                                "",
-                                DBName
+                                FilteredProjects.Count != 0 ? FilteredProjects.First().Value : string.Empty ,
+                                DBName,
+                                "Images\\app.png"
                             };
-                            string targetRelationDatabasePath = Path.Combine(cacheDirectory, itemDatabaseObject.Value.GetProperty("id").GetString() + ".json");
-                            ProjectsId = LoadJsonData(targetRelationDatabasePath);
-
-                            ProjectsId[jsonObject["id"].ToString()] = JsonDocument.Parse(newRelationItem.ToString()).RootElement;
-
-                            string relationItemJson = System.Text.Json.JsonSerializer.Serialize(ProjectsId, new JsonSerializerOptions
+    
+                            searchResults[jsonObject["id"].ToString()] = JsonDocument.Parse(jsonArray.ToString()).RootElement;
+    
+                            string jsonString = System.Text.Json.JsonSerializer.Serialize(searchResults, new JsonSerializerOptions
                             {
                                 WriteIndented = true
                             });
-                            File.WriteAllText(targetRelationDatabasePath, relationItemJson);
-                        }
+    
+    
+                            File.WriteAllText(_settings.FullCachePath, jsonString);
+    
+                            if (_settings.RelationDatabasesIds.Contains(itemDatabaseObject.Value.GetProperty("id").GetString()))
+                            {
+                                JsonArray newRelationItem = new JsonArray
+                                {
+                                    itemName,
+                                    "" ,
+                                    "notion://www.notion.so/" + jsonObject["id"].ToString().Replace("-",""),
+                                    "Images\\app.png",
+                                    "",
+                                    DBName
+                                };
+                                string targetRelationDatabasePath = Path.Combine(cacheDirectory, itemDatabaseObject.Value.GetProperty("id").GetString() + ".json");
+                                ProjectsId = LoadJsonData(targetRelationDatabasePath);
+    
+                                ProjectsId[jsonObject["id"].ToString()] = JsonDocument.Parse(newRelationItem.ToString()).RootElement;
+    
+                                string relationItemJson = System.Text.Json.JsonSerializer.Serialize(ProjectsId, new JsonSerializerOptions
+                                {
+                                    WriteIndented = true
+                                });
+                                File.WriteAllText(targetRelationDatabasePath, relationItemJson);
+                            }
+                        
 
                         if (open)
                         {
@@ -3211,7 +3374,8 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     if (_settings.FailedRequests)
                     {
-                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { filteredDataDict, null, DatabaseId, open, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName) });
+                        
+                        await _apiCacheManager.CacheFunction(nameof(CreatePage), new List<object> { filteredDataDict, null, DatabaseId, open, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName), mainPayload });
                         Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
                     }
                     else
@@ -3238,8 +3402,9 @@ namespace Flow.Launcher.Plugin.Notion
             }
         }
 
-        async Task<HttpResponseMessage> EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null)
+        async Task<HttpResponseMessage> EditPageMainProperty(bool open, string pageId, Dictionary<string, object> filteredQueryEditing, List<string> fromContext = null, bool retryFailedRequest = false, string datePropName = null, string urlPropName = null, Dictionary<int, string> relationPropName = null, string mainPayload = null, string childPayload = null)
         {
+            Dictionary<string, object> payload = new Dictionary<string, object>();
             try
             {
                 if (retryFailedRequest)
@@ -3247,8 +3412,6 @@ namespace Flow.Launcher.Plugin.Notion
                     DateName = datePropName;
                     UrlMap = urlPropName;
                     ProjectName = relationPropName;
-                    //SelectionTypeMap = selectionPropType;
-                    //SelectionNameMap = selectionPropName;
                 }
 
                 var (data, children, DatabaseId) = FormatData(filteredQueryEditing, Mode: "Edit", DbNameInCache: searchResults[pageId][2].GetString(), pageId:pageId);
@@ -3259,34 +3422,51 @@ namespace Flow.Launcher.Plugin.Notion
                     client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
                     client.DefaultRequestHeaders.Add("Notion-Version", "2022-06-28");
 
-                    Dictionary<string, object> payload = new Dictionary<string, object> { };
-
-                    if (children != null)
+                    if (children != null || (retryFailedRequest && !string.IsNullOrEmpty(childPayload)))
                     {
+                        string childrenPayloadJson = string.Empty;
                         EditUrl = $"https://api.notion.com/v1/blocks/{pageId}/children";
-                        string payloadJson = System.Text.Json.JsonSerializer.Serialize(children, new JsonSerializerOptions
-                        {
-                            WriteIndented = true
-                        });
-                        StringContent content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-
-                        response = await client.PatchAsync(EditUrl, content);
-                    }
-
-                    if (data.Count != 0)
-                    {
-                        {
-                            payload["properties"] = data;
-                            EditUrl = $"https://api.notion.com/v1/pages/{pageId}";
-                            string payloadJson = System.Text.Json.JsonSerializer.Serialize(payload, new JsonSerializerOptions
+                        if (retryFailedRequest) { 
+                            childrenPayloadJson = childPayload;
+                        }
+                        else {
+                            childrenPayloadJson = System.Text.Json.JsonSerializer.Serialize(children, new JsonSerializerOptions
                             {
                                 WriteIndented = true
                             });
+                            childPayload = childrenPayloadJson;
+                        }
+                        StringContent content = new StringContent(childrenPayloadJson, Encoding.UTF8, "application/json");
+                        try {
+                            response = await client.PatchAsync(EditUrl, content);
+                        } 
+                        catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException) { }
+
+                    }
+
+                    if (data.Count != 0 || (retryFailedRequest && !string.IsNullOrEmpty(mainPayload)) )
+                    {
+                            EditUrl = $"https://api.notion.com/v1/pages/{pageId}";
+                            string payloadJson = string.Empty;
+                        
+                            if (retryFailedRequest) 
+                            {
+                                payloadJson = mainPayload;
+                            } 
+                            else { 
+                                payload["properties"] = data;
+                                payloadJson = System.Text.Json.JsonSerializer.Serialize( payload , new JsonSerializerOptions
+                                {
+                                    WriteIndented = true
+                                });
+                                mainPayload = payloadJson;
+                            }
+                            
                             StringContent content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
 
                             response = await client.PatchAsync(EditUrl, content);
 
-                        }
+                        
                     }
                     if (response != null && response.IsSuccessStatusCode)
                     {
@@ -3330,9 +3510,25 @@ namespace Flow.Launcher.Plugin.Notion
 
                                 }
                             }
-                            if (filteredQueryEditing.TryGetValue("Project", out var Project) && !string.IsNullOrEmpty(Project.ToString()))
+                            if (filteredQueryEditing.TryGetValue("Relations", out var _relations))
                             {
-                                jsonArray[1] = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(Project)).RootElement; ;
+                                Dictionary<int, string> FilteredProjects;
+                                if (retryFailedRequest ) {
+                                    FilteredProjects = (_relations as JObject).ToObject<Dictionary<int, string>>();
+                                } else {
+                                    FilteredProjects = _relations as Dictionary<int, string>;
+                                }
+                                if (FilteredProjects.Count() > 0)
+                                {
+                                    string targetRelationDatabasePath = Path.Combine(cacheDirectory, _settings.RelationDatabasesIds[0] + ".json");
+                                    ProjectsId = LoadJsonData(targetRelationDatabasePath);
+                                    foreach (string relation in FilteredProjects.Values) {
+                                        if (ProjectsId.Any(x => x.Value[0].GetString() == relation)) {
+                                            jsonArray[1] = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(relation)).RootElement;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
 
                             var newArray = JsonDocument.Parse(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(jsonArray)).RootElement;
@@ -3378,8 +3574,7 @@ namespace Flow.Launcher.Plugin.Notion
                 {
                     if (_settings.FailedRequests)
                     {
-                        // await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName ), (retryFailedRequest ? selectionPropType : SelectionTypeMap ), (retryFailedRequest ? selectionPropName : SelectionNameMap ) });
-                        await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName) });
+                        await _apiCacheManager.CacheFunction(nameof(EditPageMainProperty), new List<object> { open, pageId, filteredQueryEditing, fromContext, true, (retryFailedRequest ? datePropName : DateName), (retryFailedRequest ? urlPropName : UrlMap), (retryFailedRequest ? relationPropName : ProjectName), mainPayload, childPayload });
                         Context.API.ShowMsgError($"Internet Connection Error", "The request has been saved by the cache manager and will be processed once an internet connection is available.");
                     }
                     else
@@ -3591,7 +3786,7 @@ namespace Flow.Launcher.Plugin.Notion
 
         public async Task SaveCacheToFile()
         {
-            string cacheJson = JsonConvert.SerializeObject(new { CachedFunctions = cachedFunctions }, Formatting.Indented);
+            string cacheJson = JsonConvert.SerializeObject(cachedFunctions, Formatting.Indented);
             await File.WriteAllTextAsync(Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, "FailedRequests.json"), cacheJson);
         }
         public async Task<List<CachedFunction>> GetCachedFunctions()
@@ -3599,8 +3794,7 @@ namespace Flow.Launcher.Plugin.Notion
             try
             {
                 string cacheJson = await File.ReadAllTextAsync(Path.Combine(_context.CurrentPluginMetadata.PluginDirectory, "FailedRequests.json"));
-                var cachedData = JsonConvert.DeserializeObject<dynamic>(cacheJson);
-                return JsonConvert.DeserializeObject<List<CachedFunction>>(cachedData.CachedFunctions.ToString());
+                return JsonConvert.DeserializeObject<List<CachedFunction>>(cacheJson);
             }
             catch
             {
