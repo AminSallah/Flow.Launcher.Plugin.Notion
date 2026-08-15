@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:Flow.Launcher.Plugin.Notion.ViewModels"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="Change Keyword"
     Width="850"
     d:DataContext="{d:DesignInstance Type=vm:CustomPayloadViewModel}"
@@ -172,7 +171,7 @@
                             ItemsSource="{Binding ItemSubtitleOptions}"
                             SelectedItem="{Binding FilterItemSubTitle}"
                             />
-                                <ui:DropDownButton x:Name="dropDownButtonTags" Margin="4" VerticalAlignment="Center"
+                                <Button x:Name="dropDownButtonTags" Margin="4" VerticalAlignment="Center"
                             Width="125" Content="" Click="DropDownButtonTags_Click"/>
                             <Popup x:Name="popupTags" Width="125" PlacementTarget="{Binding ElementName=dropDownButtonTags}" StaysOpen="False">
                                 <ListBox x:Name="listBoxTags" Width="125" MaxHeight="200" SelectionMode="Multiple" SelectionChanged="ListBoxTags_SelectionChanged"
@@ -241,7 +240,7 @@
 
 
 
-                            <ui:DropDownButton x:Name="dropDownButton" Grid.Row="5" Grid.Column="1" Margin="10" HorizontalAlignment="Left"
+                            <Button x:Name="dropDownButton" Grid.Row="5" Grid.Column="1" Margin="10" HorizontalAlignment="Left"
                             VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
                             <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False">
                                 <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode="{Binding ListBoxSelectionMode}" SelectionChanged="ListBox_SelectionChanged"
@@ -309,7 +308,7 @@
                                  Margin = "0,5,5,0"
                                  FontSize="14"
                                  Text="Show Count"/>
-                                <ui:ToggleSwitch Grid.Row = "7" Grid.Column = "1" IsEnabled = "{Binding CountVisibility}" IsOn="{Binding Count}" Margin = "10,5,0,0"/>
+                                <CheckBox Grid.Row = "7" Grid.Column = "1" IsEnabled = "{Binding CountVisibility}" IsChecked="{Binding Count}" Margin = "10,5,0,0"/>
 
                                 <TextBlock
                                  Grid.Row="8"
@@ -319,7 +318,7 @@
                                  Margin = "0,5,5,0"
                                  FontSize="14"
                                  Text="Enabled"/>
-                                <ui:ToggleSwitch Grid.Row = "8" Grid.Column = "1" IsOn="{Binding Status}" Margin = "10,5,0,0"/>
+                                <CheckBox Grid.Row = "8" Grid.Column = "1" IsChecked="{Binding Status}" Margin = "10,5,0,0"/>
 
                             </Grid>
 

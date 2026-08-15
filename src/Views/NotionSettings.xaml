@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:vm="clr-namespace:Flow.Launcher.Plugin.Notion.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
     d:DesignHeight="700"
@@ -14,7 +13,6 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources />
                 <ResourceDictionary Source="/Flow.Launcher.Plugin.Notion;component/Views/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -40,7 +38,7 @@
                         Text="{Binding InernalInegrationToken}"
                         TextWrapping="NoWrap" />
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xe72e;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xe72e;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -72,9 +70,9 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <ui:ToggleSwitch IsOn="{Binding Settings.Hide}" Style="{DynamicResource SideToggleSwitch}" />
+                    <CheckBox IsChecked="{Binding Settings.Hide}" Style="{DynamicResource SideToggleSwitch}" />
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xed1a;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xed1a;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -84,11 +82,11 @@
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Open in browser" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When disabled, pages will be opened in the Notion desktop app." />
                 </StackPanel>
-                <ui:ToggleSwitch
+                <CheckBox
                     Grid.Column="2"
-                    IsOn="{Binding Settings.UseBrowser}"
+                    IsChecked="{Binding Settings.UseBrowser}"
                     Style="{DynamicResource SideToggleSwitch}" />
-                <ui:FontIcon Glyph="&#xe774;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xe774;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -98,11 +96,11 @@
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Automatic Open" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="When enabled, pages created will automatically open by default upon creation." />
                 </StackPanel>
-                <ui:ToggleSwitch
+                <CheckBox
                     Grid.Column="2"
-                    IsOn="{Binding Settings.PopUpPageAfterCreate}"
+                    IsChecked="{Binding Settings.PopUpPageAfterCreate}"
                     Style="{DynamicResource SideToggleSwitch}" />
-                <ui:FontIcon Glyph="&#xe7c3;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xe7c3;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -133,9 +131,9 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <ui:ToggleSwitch IsOn="{Binding Settings.FailedRequests}" Style="{DynamicResource SideToggleSwitch}" />
+                    <CheckBox IsChecked="{Binding Settings.FailedRequests}" Style="{DynamicResource SideToggleSwitch}" />
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xecc5;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xecc5;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -152,7 +150,7 @@
                     <CheckBox Content="Databases"  Margin="7"  IsChecked="{Binding Settings.DatabaseIcons}"/>
                     <CheckBox Content="Relations"  Margin="7,7,25,7"  IsChecked="{Binding Settings.RelationsIcons}"/>
                 </StackPanel>
-                <ui:FontIcon Glyph="&#xeb9f;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xeb9f;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -170,7 +168,24 @@
                     ItemsSource="{Binding Settings.DatabaseSelectionOptions}"
                     SelectedItem="{Binding Settings.DefaultDatabase}"
                     SelectionChanged="Database_SelectionChanged"/>
-                <ui:FontIcon Glyph="&#xe923;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xe923;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
+        <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Default Create Payload" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="Apply a Property payload whenever a new database page is created. Query properties override these defaults." />
+                </StackPanel>
+                <ComboBox
+                    Grid.Column="2"
+                    Width="150"
+                    Margin="10,0,18,0"
+                    HorizontalContentAlignment="Center"
+                    ItemsSource="{Binding Settings.DefaultCreatePayloadOptions}"
+                    SelectedItem="{Binding Settings.DefaultCreatePayload}" />
+                <TextBlock Text="&#xe8f1;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -181,7 +196,7 @@
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="The entire DB will be cached, and you can select one of them when creating a page (e.g., Workout !Health)." />
                 </StackPanel>
 
-                <ui:DropDownButton x:Name="dropDownButton" Grid.Column="2" Margin="10,0,18,0" HorizontalAlignment="Left"
+                <Button x:Name="dropDownButton" Grid.Column="2" Margin="10,0,18,0" HorizontalAlignment="Left"
                 VerticalAlignment="Center" Width="150" Content="" Click="DropDownButton_Click"/>
                 <Popup x:Name="popup" Width="150" PlacementTarget="{Binding ElementName=dropDownButton}" StaysOpen="False" >
                     <ListBox x:Name="listBox" Width="150" Height="200" SelectionMode= "Multiple" SelectionChanged="ListBox_SelectionChanged"
@@ -191,7 +206,7 @@
                     </ListBox>
                 </Popup>
 
-                <ui:FontIcon  Glyph="&#xE946;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xE946;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -209,7 +224,7 @@
             ItemsSource="{Binding Settings.SearchFiltersOptions}"
             SelectedItem="{Binding Settings.SearchBase}" 
             />
-                <ui:FontIcon  Glyph="&#xe773;" Style="{StaticResource Glyph}" />
+                <TextBlock Text="&#xe773;" Style="{StaticResource Glyph}" />
             </ItemsControl>
         </Border>
 
@@ -226,9 +241,9 @@
                             <RowDefinition Height="9*"/>
                         </Grid.RowDefinitions>
                         <ItemsControl Margin="0,0,0,0" Style="{StaticResource SettingGrid}" HorizontalAlignment="Left" Grid.RowSpan="2">
-                            <ui:FontIcon
+                            <TextBlock
                             Grid.Column="0"
-                            Glyph="&#xe819;"
+                            Text="&#xe819;"
                             Style="{StaticResource Glyph}" />
                             <TextBlock
                             Grid.Column="1"
@@ -256,10 +271,10 @@
                                     </Style>
                                 </Button.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:FontIcon
+                                    <TextBlock
                                     Margin="0,0,15,0"
                                     FontSize="12"
-                                    Glyph="&#xe710;"
+                                    Text="&#xe710;"
                                     Style="{StaticResource Glyph}" />
                                     <TextBlock Text="Add" />
                                 </StackPanel>
@@ -284,10 +299,10 @@
                                     </Style>
                                 </Button.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:FontIcon
+                                    <TextBlock
                                     Margin="0,0,15,0"
                                     FontSize="12"
-                                    Glyph="&#xe70f;"
+                                    Text="&#xe70f;"
                                     Style="{StaticResource Glyph}" />
                                     <TextBlock Text="Edit" />
                                 </StackPanel>
@@ -313,10 +328,10 @@
                                     </Style>
                                 </Button.Style>
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:FontIcon
+                                    <TextBlock
                                     Margin="0,0,15,0"
                                     FontSize="12"
-                                    Glyph="&#xe711;"
+                                    Text="&#xe711;"
                                     Style="{StaticResource Glyph}" />
                                     <TextBlock Text="Delete" />
                                 </StackPanel>

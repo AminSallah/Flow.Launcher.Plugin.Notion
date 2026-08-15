@@ -1,4 +1,3 @@
-using Modern = ModernWpf.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -35,6 +34,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             _viewModel = viewModel;
             _settings = viewModel.Settings;
             _settings.UpdateSearchFiltersOptions();
+            _settings.UpdateDefaultCreatePayloadOptions();
             DataContext = viewModel;
 
             if (viewModel.Databases != null && viewModel.Databases.Count != 0)
@@ -61,6 +61,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             {
                 var selected = _settings.SelectedPayload;
                 new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
+                _settings.UpdateDefaultCreatePayloadOptions();
             }
         }
 
@@ -156,6 +157,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
             {
                 var selected = _settings.SelectedPayload;
                 new CustomPayloadWindow(_settings, selected, Action.Edit, Context).ShowDialog();
+                _settings.UpdateDefaultCreatePayloadOptions();
             }
         }
 
@@ -171,6 +173,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
                 }
                 _settings.Filters.Remove(selectedCustomBrowser);
                 _settings.UpdateSearchFiltersOptions();
+                _settings.UpdateDefaultCreatePayloadOptions();
 
 
             }
@@ -180,6 +183,7 @@ namespace Flow.Launcher.Plugin.Notion.Views
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
             new CustomPayloadWindow(_settings, new CustomPayload(), Action.Add, Context).ShowDialog();
+            _settings.UpdateDefaultCreatePayloadOptions();
         }
 
 
