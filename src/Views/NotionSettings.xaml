@@ -175,6 +175,23 @@
         <Border Style="{DynamicResource SettingGroupBox}">
             <ItemsControl Style="{StaticResource SettingGrid}">
                 <StackPanel Style="{StaticResource TextPanel}">
+                    <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Default Create Payload" />
+                    <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="Apply a Property payload whenever a new database page is created. Query properties override these defaults." />
+                </StackPanel>
+                <ComboBox
+                    Grid.Column="2"
+                    Width="150"
+                    Margin="10,0,18,0"
+                    HorizontalContentAlignment="Center"
+                    ItemsSource="{Binding Settings.DefaultCreatePayloadOptions}"
+                    SelectedItem="{Binding Settings.DefaultCreatePayload}" />
+                <TextBlock Text="&#xe8f1;" Style="{StaticResource Glyph}" />
+            </ItemsControl>
+        </Border>
+
+        <Border Style="{DynamicResource SettingGroupBox}">
+            <ItemsControl Style="{StaticResource SettingGrid}">
+                <StackPanel Style="{StaticResource TextPanel}">
                     <TextBlock Style="{DynamicResource SettingTitleLabel}" Text="Relation Database" />
                     <TextBlock Style="{DynamicResource SettingSubTitleLabel}" Text="The entire DB will be cached, and you can select one of them when creating a page (e.g., Workout !Health)." />
                 </StackPanel>

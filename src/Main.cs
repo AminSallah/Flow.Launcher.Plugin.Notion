@@ -1379,7 +1379,7 @@ namespace Flow.Launcher.Plugin.Notion
                 try
                 {
                     int MultiSelectOptionsCount = MultiSelectOptions.EnumerateObject().Count();
-                    int SingleSelectOptionsCount = StatusOptions.EnumerateObject().Count();
+                    int SingleSelectOptionsCount = SingleSelectOptions.EnumerateObject().Count();
                     int StatusOptionsCount = StatusOptions.EnumerateObject().Count();
                     int CheckBoxOptionsCount = CheckBoxOptions.EnumerateArray().Count();
 
@@ -1397,7 +1397,7 @@ namespace Flow.Launcher.Plugin.Notion
                         }
                         else if (CheckBoxOptionsCount == 1)
                         {
-                            SelectionNameMap[SelectionNumber] = CheckBoxOptions.EnumerateObject().First().Name;
+                            SelectionNameMap[SelectionNumber] = CheckBoxOptions.EnumerateArray().First().GetString();
                             SelectionTypeMap[SelectionNumber] = PropertySelectionType.CheckBox;
 
                         }
@@ -3268,6 +3268,8 @@ namespace Flow.Launcher.Plugin.Notion
                 var data = data_return;
                 children = children_return;
 
+                ApplyDefaultCreatePayload(filteredDataDict, data);
+
                 using (HttpClient client = new HttpClient())
                 {
                     client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _settings.InernalInegrationToken);
@@ -3428,6 +3430,60 @@ namespace Flow.Launcher.Plugin.Notion
             catch (PingException)
             {
                 return false;
+            }
+        }
+
+        private void ApplyDefaultCreatePayload(
+            Dictionary<string, object> filteredDataDict,
+            Dictionary<string, Dictionary<string, object>> data)
+        {
+            if (string.IsNullOrEmpty(_settings.DefaultCreatePayload) ||
+                _settings.DefaultCreatePayload == "Disabled")
+            {
+                return;
+            }
+
+            var defaultPayload = _settings.Filters.FirstOrDefault(payload =>
+                payload.Enabled &&
+                payload.JsonType == JsonType.Property &&
+                payload.Title == _settings.DefaultCreatePayload);
+
+            if (defaultPayload == null || string.IsNullOrWhiteSpace(defaultPayload.Json))
+            {
+                return;
+            }
+
+            var databaseName = filteredDataDict.TryGetValue("databaseId", out var databaseValue)
+                ? databaseValue?.ToString()
+                : null;
+            if (defaultPayload.Databases?.Count > 0 &&
+                !defaultPayload.Databases.Contains(databaseName))
+            {
+                return;
+            }
+
+            try
+            {
+                var payloadJson = JObject.Parse(defaultPayload.Json);
+                if (payloadJson["properties"] is not JObject properties)
+                {
+                    return;
+                }
+
+                foreach (var property in properties.Properties())
+                {
+                    // Values supplied in the launcher query take precedence over defaults.
+                    if (!data.ContainsKey(property.Name))
+                    {
+                        data[property.Name] = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(
+                            property.Value.ToString(Newtonsoft.Json.Formatting.None));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Context.API.LogException(nameof(Main),
+                    $"Unable to apply default create payload '{_settings.DefaultCreatePayload}'.", ex);
             }
         }
 

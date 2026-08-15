@@ -59,6 +59,29 @@ namespace Flow.Launcher.Plugin.Notion
 				_defaultDatabase = value;
 			}
 		}
+
+		private string _defaultCreatePayload = "Disabled";
+		public string DefaultCreatePayload
+		{
+			get => _defaultCreatePayload;
+			set
+			{
+				_defaultCreatePayload = value;
+				OnPropertyChanged(nameof(DefaultCreatePayload));
+			}
+		}
+
+		private ObservableCollection<string> _defaultCreatePayloadOptions;
+		[JsonIgnore]
+		public ObservableCollection<string> DefaultCreatePayloadOptions
+		{
+			get => _defaultCreatePayloadOptions;
+			private set
+			{
+				_defaultCreatePayloadOptions = value;
+				OnPropertyChanged(nameof(DefaultCreatePayloadOptions));
+			}
+		}
 		
 		public string RelationDatabase { get; set; } = string.Empty;
 		public List<string> RelationDatabases { get; set; } = new List<string>();
@@ -90,6 +113,22 @@ namespace Flow.Launcher.Plugin.Notion
 		{
 			this.Filters = Filters;
 			UpdateSearchFiltersOptions();
+			UpdateDefaultCreatePayloadOptions();
+		}
+
+		public void UpdateDefaultCreatePayloadOptions()
+		{
+			var titles = Filters
+				.Where(x => x.JsonType == JsonType.Property && x.Enabled)
+				.Select(x => x.Title)
+				.ToList();
+			titles.Insert(0, "Disabled");
+
+			DefaultCreatePayloadOptions = new ObservableCollection<string>(titles);
+			if (!DefaultCreatePayloadOptions.Contains(DefaultCreatePayload))
+			{
+				DefaultCreatePayload = "Disabled";
+			}
 		}
 
 		private ObservableCollection<string> _searchFiltersOptions;
